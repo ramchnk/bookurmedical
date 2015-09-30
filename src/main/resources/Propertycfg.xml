@@ -1,0 +1,49 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+            http://www.springframework.org/schema/beans     
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/tx 
+            http://www.springframework.org/schema/tx/spring-tx.xsd
+            http://www.springframework.org/schema/context 
+            http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
+		<property name="algorithm" value="PBEWithMD5AndDES" />
+		<property name="passwordEnvName" value="APP_ENCRYPTION_PASSWORD" />
+	</bean>
+	<bean id="configurationEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
+		<property name="config" ref="environmentVariablesConfiguration" />
+	</bean>
+	<bean class="org.jasypt.spring31.properties.EncryptablePropertyPlaceholderConfigurer">
+		<constructor-arg ref="configurationEncryptor" />
+		<property name="locations">
+			<value>classpath:ConfigValues.properties</value>
+		</property>
+	</bean>
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>ConfigValues.properties</value>
+		</property>
+	</bean>
+	<bean id="Config" class="com.mudra.sellinall.config.Config">
+
+		<!-- faceBook Excahnge Token -->
+		<property name="FbTokenExchangeUri" value="${FbTokenExchangeUri}" />
+		
+		<!-- DB Values -->
+		<property name="DbUserName" value="${DbUserName}" />
+		<property name="DbPassword" value="${DbPassword}" />
+		<property name="UserCollectionHostName" value="${UserCollectionHostName}" />
+		<property name="UserCollectionPort" value="${UserCollectionPort}" />
+		<property name="UserCollectionDBName" value="${UserCollectionDBName}" />
+		<property name="InventoryCollectionHostName" value="${InventoryCollectionHostName}" />
+		<property name="InventoryCollectionPort" value="${InventoryCollectionPort}" />
+		<property name="InventoryCollectionDBName" value="${InventoryCollectionDBName}" />
+
+	</bean>
+</beans>

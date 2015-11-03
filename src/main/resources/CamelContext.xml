@@ -8,9 +8,14 @@
        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
        ">
+       
+    <bean id="initBidRoute" class="com.sellinall.bid.bl.InitBidRoute" />
+    <bean id="insertBidNotification" class="com.sellinall.bid.db.InsertBidNotification" />
+    <bean id="updateInventoryForBidMessage" class="com.sellinall.bid.process.UpdateInventoryForBidMessage" />
+    
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
-	<bean id="initOrderRoute" class="com.sellinall.order.bl.InitOrderRoute" />
+	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
 	<bean id="initOrderItemRoute" class="com.sellinall.order.bl.InitOrderItemRoute" />
 	<bean id="prepareOrderIdDBQuery" class="com.sellinall.order.db.PrepareOrderIdDBQuery" />
 	<bean id="processOrderIdDBQuery" class="com.sellinall.order.db.ProcessOrderIdDBQuery" />
@@ -96,12 +101,31 @@
 		<route id="messageListner">
 			<from
 				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
-			<to uri="direct:processOrderNotification" pattern="InOut"/>
+			<process ref="initMessageListenerRoute" />
+			<when>
+				<simple>${exchangeProperty.messageType} == 'order'</simple>
+				<to uri="direct:processOrderNotification" />
+			</when>
+			<when>
+				<simple>${exchangeProperty.messageType} == 'bid'</simple>
+				<to uri="direct:processBidNotification" />
+			</when>
+		</route>
+		
+		<route id="processBidNotification">
+			<from uri="direct:processBidNotification" />
+			<process ref="initBidRoute" />
+			<process ref="insertBidNotification" />
+			<to uri="direct:loadInventoryData"/>
+			<when>
+				<simple>${exchangeProperty.isSyncRequired} == true</simple>
+				<process ref="updateInventoryForBidMessage" />
+				<to uri="direct:publishToMQ"/>
+			</when>
 		</route>
 		
 		<route id="processOrderNotification">
 			<from uri="direct:processOrderNotification" />
-			<process ref="initOrderRoute" />
 			<to uri="direct:loadOrderData"/>
 			<process ref="processOrderStatus" />
  			<split parallelProcessing="true" strategyRef="aggregatorStrategy">

@@ -13,7 +13,7 @@ public class ProcessOrderStatus implements Processor {
 	static Logger log = Logger.getLogger(ProcessOrderStatus.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject orderMessage = new JSONObject(exchange.getProperty("orderMessage", String.class));
+		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		SIAOrderStatus notificationOrderStatus = SIAOrderStatus.valueOf(orderMessage.getString("orderStatus"));
 		NotificationOrderActionStatus notificationOrderActionStatus = NotificationOrderActionStatus.NO_ACTION;
 		if ( ( SIAOrderStatus.UNKNOWN.equals(notificationOrderStatus) ||

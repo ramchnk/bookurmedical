@@ -20,9 +20,10 @@ public class PrepareSKUDBQuery implements Processor {
 	static Logger log = Logger.getLogger(PrepareSKUDBQuery.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject orderItem = exchange.getIn().getBody(JSONObject.class);
-		log.debug("Test property : " + exchange.getProperty("itemQuantity", String.class));
-		DBObject outBody = new BasicDBObject("SKU", orderItem.getString("SKU"));
+		JSONObject inBody = exchange.getIn().getBody(JSONObject.class);
+		String SKU = inBody.getString("SKU");
+		exchange.setProperty("SKU", SKU);
+		DBObject outBody = new BasicDBObject("SKU", SKU);
 		exchange.getOut().setBody(outBody);
 	}
 }

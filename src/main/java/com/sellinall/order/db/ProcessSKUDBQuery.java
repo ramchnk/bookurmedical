@@ -13,8 +13,8 @@ public class ProcessSKUDBQuery implements Processor {
 		String inventoryString = exchange.getIn().getBody(String.class);
 		JSONObject inventory = new JSONObject(inventoryString);
 		if (inventory.isNull("SKU")) {
-			// TODO handle the error here
-			throw new Exception("Inventory Record not found");
+			throw new Exception("Inventory record doesn't exists for this SKU : "+ 
+				exchange.getProperty("SKU", String.class));
 		}
 		exchange.setProperty("inventory", inventoryString);
 	}

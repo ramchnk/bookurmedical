@@ -31,7 +31,7 @@ public class UpdateInventoryDBQuery implements Processor {
 		
 		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getIn().getBody(String.class));
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange.getProperty("notificationOrderActionStatus");
-		JSONObject orderMessage = new JSONObject(exchange.getProperty("orderMessage", String.class));
+		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		

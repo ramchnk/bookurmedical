@@ -16,7 +16,7 @@ public class PrepareOrderIdDBQuery implements Processor {
 	static Logger log = Logger.getLogger(PrepareOrderIdDBQuery.class.getName());
 	
 	public void process(Exchange exchange) throws Exception {
-		JSONObject orderMessage = new JSONObject(exchange.getProperty("orderMessage", String.class));
+		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject outBody = createBody(orderMessage);
 		log.debug("outBody "+ outBody);
 		exchange.getOut().setBody(outBody);

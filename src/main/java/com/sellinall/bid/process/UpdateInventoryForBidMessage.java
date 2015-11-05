@@ -15,6 +15,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
+import com.mudra.sellinall.util.DateUtil;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.enums.SIAInventoryStatus;
 
@@ -71,7 +72,10 @@ public class UpdateInventoryForBidMessage implements Processor {
 			if (hasSiteSpecificIndex) {
 				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItem", -BID_QUANTITY, updateInventoryQuantity);	
 				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", BID_QUANTITY, updateInventoryQuantity);
-				updateFields.put("$set", new BasicDBObject(siteName+"."+siteSpecificIndex+".status", SIAInventoryStatus.BIDDING));
+				BasicDBObject valuesSet = new BasicDBObject(siteName+"."+siteSpecificIndex+".status", SIAInventoryStatus.BIDDING);
+				valuesSet.put(siteName+"."+siteSpecificIndex+".failureReason", "");
+				valuesSet.put(siteName+"."+siteSpecificIndex+".timeLastUpdated", DateUtil.getSIADateFormat());
+				updateFields.put("$set", valuesSet);
 			}
 		}
 

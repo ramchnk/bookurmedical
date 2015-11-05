@@ -16,6 +16,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
+import com.sellinall.enums.SIAInventoryStatus;
 
 /**
  * @author Mallikarjun
@@ -36,6 +37,7 @@ public class UpdateInventoryForBidMessage implements Processor {
 		
 		List<String> syncSites = new ArrayList<String>();
 		BasicDBObject quantityModifier = new BasicDBObject();
+		BasicDBObject updateFields = new BasicDBObject();
 
 		for (String siteName : siteNames ) {
 			if (!inventoryDBRecord.containsField(siteName)) {
@@ -68,7 +70,8 @@ public class UpdateInventoryForBidMessage implements Processor {
 			incrementSetter(quantityModifier, "noOfItemsold", BID_QUANTITY, updateInventoryQuantity);			
 			if (hasSiteSpecificIndex) {
 				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItem", -BID_QUANTITY, updateInventoryQuantity);	
-				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", BID_QUANTITY, updateInventoryQuantity);	
+				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", BID_QUANTITY, updateInventoryQuantity);
+				updateFields.put("$set", new BasicDBObject(siteName+"."+siteSpecificIndex+".status", SIAInventoryStatus.BIDDING));
 			}
 		}
 
@@ -79,7 +82,8 @@ public class UpdateInventoryForBidMessage implements Processor {
 		if ( quantityModifier.isEmpty() ) {
 			syncSites.clear();
 		} else {
-			table.update(searchQuery, new BasicDBObject("$inc", quantityModifier));
+			updateFields.put("$inc", quantityModifier);
+			table.update(searchQuery, updateFields);
 		}
 		exchange.getOut().setBody(syncSites);
 	}

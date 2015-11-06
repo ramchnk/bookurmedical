@@ -72,7 +72,7 @@ public class UpdateInventoryForBidMessage implements Processor {
 			if (hasSiteSpecificIndex) {
 				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItem", -BID_QUANTITY, updateInventoryQuantity);	
 				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", BID_QUANTITY, updateInventoryQuantity);
-				BasicDBObject valuesSet = new BasicDBObject(siteName+"."+siteSpecificIndex+".status", SIAInventoryStatus.BIDDING);
+				BasicDBObject valuesSet = new BasicDBObject(siteName+"."+siteSpecificIndex+".status", SIAInventoryStatus.BIDDING.toString());
 				valuesSet.put(siteName+"."+siteSpecificIndex+".failureReason", "");
 				valuesSet.put(siteName+"."+siteSpecificIndex+".timeLastUpdated", DateUtil.getSIADateFormat());
 				updateFields.put("$set", valuesSet);

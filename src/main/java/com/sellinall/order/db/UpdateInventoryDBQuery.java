@@ -100,7 +100,7 @@ public class UpdateInventoryDBQuery implements Processor {
 					// skip auction site quantity update, if we have more than one quantity
 					if ( !isNotificationFromThisNickNameID &&
 						 siteSpecific.containsField("isAuction") && siteSpecific.getBoolean("isAuction") &&
-						 inventoryDBRecord.getInt("noOfItem") > 1 ) {
+						 inventoryDBRecord.getInt("noOfItem") > siteSpecific.getInt("noOfItem") ) {
 							continue;
 					}
 					if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||

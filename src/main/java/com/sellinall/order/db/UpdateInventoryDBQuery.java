@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
@@ -54,6 +55,28 @@ public class UpdateInventoryDBQuery implements Processor {
 		List<String> syncSites = new ArrayList<String>();
 		BasicDBObject quantityModifier = new BasicDBObject();
 
+		processQuantityUpdates(notificationOrderActionStatus, orderMessage,
+				inventoryDBRecord, updateInventoryQuantity, quantity,
+				syncSites, quantityModifier);
+
+		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
+		log.debug("searchQuery:"+searchQuery);
+		log.debug("updateInventoryRecord: Quantity: "+updateInventoryQuantity);
+		if ( quantityModifier.isEmpty() ) {
+			syncSites.clear();
+		} else {
+			table.update(searchQuery, new BasicDBObject("$inc", quantityModifier));
+		}
+		exchange.getOut().setBody(syncSites);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void processQuantityUpdates(
+			NotificationOrderActionStatus notificationOrderActionStatus,
+			JSONObject orderMessage, BasicDBObject inventoryDBRecord,
+			BasicDBObject updateInventoryQuantity, int quantity,
+			List<String> syncSites, BasicDBObject quantityModifier)
+			throws JSONException {
 		for (String siteName : siteNames ) {
 			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
@@ -66,12 +89,20 @@ public class UpdateInventoryDBQuery implements Processor {
 			int siteSpecificIndex = 0;
 			for (int index = 0; index < siteSpecificList.size(); index++) {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
+				Boolean isNotificationFromThisNickNameID = false;
 				if (siteSpecific.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
 					siteSpecificIndex = index;
 					hasSiteSpecificIndex = true;
+					isNotificationFromThisNickNameID = true;
 				}
-				// TODO need re-factor here
+				
 				if ( inventoryDBRecord.getBoolean("sync")) {  // Update other sites only if sync true
+					// skip auction site quantity update, if we have more than one quantity
+					if ( !isNotificationFromThisNickNameID &&
+						 siteSpecific.containsField("isAuction") && siteSpecific.getBoolean("isAuction") &&
+						 inventoryDBRecord.getInt("noOfItem") > 1 ) {
+							continue;
+					}
 					if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
 							notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ) {
 						incrementSetter(quantityModifier, siteName+"."+index+".noOfItem", -quantity, updateInventoryQuantity);	
@@ -95,18 +126,8 @@ public class UpdateInventoryDBQuery implements Processor {
 					incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItem", quantity, updateInventoryQuantity);	
 					incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", -quantity, updateInventoryQuantity);	
 				}
-			} 
+			}
 		}
-		
-		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
-		log.debug("searchQuery:"+searchQuery);
-		log.debug("updateInventoryRecord: Quantity: "+updateInventoryQuantity);
-		if ( quantityModifier.isEmpty() ) {
-			syncSites.clear();
-		} else {
-			table.update(searchQuery, new BasicDBObject("$inc", quantityModifier));
-		}
-		exchange.getOut().setBody(syncSites);
 	}
 	
 	private void incrementSetter(BasicDBObject modifier, String key, int value, BasicDBObject updateInventoryQuantity) {

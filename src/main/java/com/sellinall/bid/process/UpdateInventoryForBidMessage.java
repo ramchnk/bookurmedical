@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
@@ -28,7 +29,6 @@ public class UpdateInventoryForBidMessage implements Processor {
 	static Logger log = Logger.getLogger(UpdateInventoryForBidMessage.class.getName());
 	static String siteNames[] = PostingSites.getConfig().getSitesList() ;
 
-	@SuppressWarnings("unchecked")
 	public void process(Exchange exchange) throws Exception {
 		
 		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getIn().getBody(String.class));	
@@ -40,6 +40,28 @@ public class UpdateInventoryForBidMessage implements Processor {
 		BasicDBObject quantityModifier = new BasicDBObject();
 		BasicDBObject updateFields = new BasicDBObject();
 
+		processQuantityUpdates(inventoryDBRecord, bidMessage,
+				updateInventoryQuantity, syncSites, quantityModifier,
+				updateFields);
+
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
+		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
+		log.debug("searchQuery:"+searchQuery);
+		if ( quantityModifier.isEmpty() ) {
+			syncSites.clear();
+		} else {
+			updateFields.put("$inc", quantityModifier);
+			table.update(searchQuery, updateFields);
+		}
+		exchange.getOut().setBody(syncSites);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void processQuantityUpdates(BasicDBObject inventoryDBRecord,
+			JSONObject bidMessage, BasicDBObject updateInventoryQuantity,
+			List<String> syncSites, BasicDBObject quantityModifier,
+			BasicDBObject updateFields) throws JSONException {
 		for (String siteName : siteNames ) {
 			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
@@ -52,6 +74,7 @@ public class UpdateInventoryForBidMessage implements Processor {
 			int siteSpecificIndex = 0;
 			for (int index = 0; index < siteSpecificList.size(); index++) {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
+				Boolean isNotificationFromThisNickNameID = false;
 				
 				// This case may happen for auction and buy it now sync with different quantity
 				if ( siteSpecific.getInt("noOfItem") <= 0) {
@@ -61,9 +84,16 @@ public class UpdateInventoryForBidMessage implements Processor {
 				if (siteSpecific.getString("nickNameID").equals(bidMessage.getString("nickNameID"))) {
 					siteSpecificIndex = index;
 					hasSiteSpecificIndex = true;
+					isNotificationFromThisNickNameID = true;
 				}
-				// TODO need re-factor here
+
 				if ( inventoryDBRecord.getBoolean("sync")) {  // Update other sites only if sync true
+					// skip auction site quantity update, if we have more than one quantity
+					if ( !isNotificationFromThisNickNameID && 
+						 siteSpecific.containsField("isAuction") && siteSpecific.getBoolean("isAuction") &&
+						 inventoryDBRecord.getInt("noOfItem") > siteSpecific.getInt("noOfItem") ) {
+							continue;
+					}
 					incrementSetter(quantityModifier, siteName+"."+index+".noOfItem", -BID_QUANTITY, updateInventoryQuantity);
 				}
 			}
@@ -78,18 +108,6 @@ public class UpdateInventoryForBidMessage implements Processor {
 				updateFields.put("$set", valuesSet);
 			}
 		}
-
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
-		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
-		log.debug("searchQuery:"+searchQuery);
-		if ( quantityModifier.isEmpty() ) {
-			syncSites.clear();
-		} else {
-			updateFields.put("$inc", quantityModifier);
-			table.update(searchQuery, updateFields);
-		}
-		exchange.getOut().setBody(syncSites);
 	}
 	
 	private void incrementSetter(BasicDBObject modifier, String key, int value, BasicDBObject updateInventoryQuantity) {

@@ -99,7 +99,7 @@ public class UpdateInventoryDBQuery implements Processor {
 				if ( inventoryDBRecord.getBoolean("sync")) {  // Update other sites only if sync true
 					// skip auction site quantity update, if we have more than one quantity
 					if ( !isNotificationFromThisNickNameID &&
-						 siteSpecific.containsField("isAuction") && siteSpecific.getBoolean("isAuction") &&
+						 siteSpecific.containsField("auction") && siteSpecific.getBoolean("auction") &&
 						 inventoryDBRecord.getInt("noOfItem") > siteSpecific.getInt("noOfItem") ) {
 							continue;
 					}

@@ -87,6 +87,13 @@
 		<property name="password" value="${flipkartmq.password}" />
 		<property name="virtualHost" value="${flipkartmq.virtualHost}" />
 	</bean>
+	<bean id="etsyTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${etsymq.host}" />
+		<property name="port" value="${etsymq.tx.port}" />
+		<property name="username" value="${etsymq.username}" />
+		<property name="password" value="${etsymq.password}" />
+		<property name="virtualHost" value="${etsymq.virtualHost}" />
+	</bean>
 	<!-- mongo db bean -->
 	<bean id="mongoInventoryBean" class="com.mongodb.Mongo">
 		<constructor-arg index="0">
@@ -200,6 +207,13 @@
 				<to	uri="rabbitmq://{{flipkartmq.host}}:{{flipkartmq.tx.port}}/flipkartListingExchange?connectionFactory=#flipkartTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
 				pattern="InOut" />
 	 		</when>
+			<when>
+				<simple>${header.etsy} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY"> <constant>etsyListingKey</constant>	</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to	uri="rabbitmq://{{etsymq.host}}:{{etsymq.tx.port}}/etsyListingExchange?connectionFactory=#etsyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
+				pattern="InOut" />
+			</when>
 		</route>	
 	</camelContext>
 </beans>

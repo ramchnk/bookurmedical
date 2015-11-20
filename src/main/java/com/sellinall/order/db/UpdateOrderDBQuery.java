@@ -107,7 +107,7 @@ public class UpdateOrderDBQuery implements Processor {
 			}
 			orderItems.set(i, orderItem);
 		}
-		orderRecord.replace("orderItems", orderItems);
+		orderRecord.put("orderItems", orderItems);
 	}
 
 	private void fillTransactionKeyValuePair (BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {

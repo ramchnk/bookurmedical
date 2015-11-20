@@ -1,9 +1,17 @@
 package com.sellinall.order.db;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 
 public class ProcessSKUDBQuery implements Processor {
 
@@ -17,5 +25,31 @@ public class ProcessSKUDBQuery implements Processor {
 				exchange.getProperty("SKU", String.class));
 		}
 		exchange.setProperty("inventory", inventoryString);
+		extractInventoryValues(exchange, inventory);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void extractInventoryValues(Exchange exchange, JSONObject inventory)
+			throws JSONException {
+		Map<String, BasicDBObject> inventoryDetailsMap = new HashMap<String, BasicDBObject>();
+		if (exchange.getProperties().containsKey("inventoryDetailsMap")) {
+			inventoryDetailsMap = (Map<String, BasicDBObject>) exchange.getProperty("inventoryDetailsMap");
+		}
+		BasicDBObject inventoryValues = new BasicDBObject();
+		inventoryValues.put("itemTitle", inventory.getString("itemTitle"));
+		if ( inventory.has("variantDetails") ) {
+			BasicDBList variants = new BasicDBList();
+			JSONArray invVariants = inventory.getJSONArray("variantDetails");
+			for (int i = 0 ; i < invVariants.length(); i ++) {
+				JSONObject variant = invVariants.getJSONObject(i);
+				BasicDBObject bVariant = new BasicDBObject();
+				bVariant.put("title", variant.getString("title"));
+				bVariant.put("name", variant.getString("name"));
+				variants.add(bVariant);
+			}
+			inventoryValues.put("variantDetails", variants);
+		}
+		inventoryDetailsMap.put(inventory.getString("SKU"), inventoryValues);
+		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);
 	}
 }

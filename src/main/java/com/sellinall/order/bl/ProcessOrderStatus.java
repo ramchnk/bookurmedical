@@ -1,5 +1,8 @@
 package com.sellinall.order.bl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
@@ -30,6 +33,11 @@ public class ProcessOrderStatus implements Processor {
 		} 
 		log.debug("OrderActionStatus	: " + notificationOrderActionStatus);
 		exchange.setProperty("notificationOrderActionStatus", notificationOrderActionStatus);
+
+		// inventoryDetailsMap is set empty as this is used inside the splitter
+		Map<String, BasicDBObject> inventoryDetailsMap = new HashMap<String, BasicDBObject>();
+		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);
+
 		exchange.getOut().setBody(orderMessage);
 	}
 	

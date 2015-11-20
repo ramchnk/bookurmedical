@@ -5,6 +5,7 @@ package com.sellinall.order.db;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -35,13 +36,16 @@ public class UpdateOrderDBQuery implements Processor {
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
 		
 		if (!hasOrderInDB) {
-			insertOrderRecord(notificationOrderActionStatus, orderMessage, inBody);
+			insertOrderRecord(exchange, notificationOrderActionStatus, orderMessage, inBody);
 			return;
 		}
-		updateOrderRecord(notificationOrderActionStatus, orderMessage);
+		updateOrderRecord(exchange, notificationOrderActionStatus, orderMessage);
 	}
 
-	private void insertOrderRecord(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderMessage, JSONObject inBody) throws JSONException {
+	private void insertOrderRecord(Exchange exchange, 
+			NotificationOrderActionStatus notificationOrderActionStatus, 
+			BasicDBObject orderMessage, 
+			JSONObject inBody) throws JSONException {
 		BasicDBObject site = new BasicDBObject();
 		site.put("name", orderMessage.getString("site"));
 		site.put("nickNameID", orderMessage.getString("nickNameID"));
@@ -54,13 +58,14 @@ public class UpdateOrderDBQuery implements Processor {
 		notificationIDList.add(orderMessage.getString("notificationID"));
 		orderRecord.put("notificationID", notificationIDList);
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
-		log.debug("Order Document Inserting : "+orderRecord);
+		fillAdditionDetails(exchange, orderRecord);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);
 	}
 	
-	private void updateOrderRecord(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderMessage) throws JSONException {
-		
+	private void updateOrderRecord(Exchange exchange,
+			NotificationOrderActionStatus notificationOrderActionStatus,
+			BasicDBObject orderMessage) throws JSONException {
 		BasicDBObject orderRecord = new BasicDBObject();
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
@@ -71,8 +76,8 @@ public class UpdateOrderDBQuery implements Processor {
 		// Append the OrderNotificationID to the database
 		table.update(searchQuery, new BasicDBObject("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
+		fillAdditionDetails(exchange, orderRecord);
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
-		log.debug("Order Document Updating : "+orderRecord);
 		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
 	}
 	
@@ -86,6 +91,23 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "orderAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "shippingDetails", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord) throws JSONException {
+		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange.getProperty("inventoryDetailsMap");
+		List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
+		for (int i = 0 ; i < orderItems.size(); i++) {
+			BasicDBObject orderItem = orderItems.get(i);
+			String SKU = orderItem.getString("SKU");
+			BasicDBObject inventoryValues = inventoryDetailsMap.get(SKU);
+			orderItem.put("itemTitle", inventoryValues.getString("itemTitle"));
+			if (inventoryValues.containsField("variantDetails")) {
+				orderItem.put("variantDetails", inventoryValues.get("variantDetails"));
+			}
+			orderItems.set(i, orderItem);
+		}
+		orderRecord.replace("orderItems", orderItems);
 	}
 
 	private void fillTransactionKeyValuePair (BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {

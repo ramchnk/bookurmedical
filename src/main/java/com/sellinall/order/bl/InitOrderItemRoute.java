@@ -10,6 +10,9 @@ public class InitOrderItemRoute implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderItemMessage = new JSONObject(exchange.getIn().getBody(String.class));
 		exchange.setProperty("orderItemMessage", orderItemMessage);
+		if (orderItemMessage.has("SKU")){
+			exchange.setProperty("hasSKU", true);
+		}
 		exchange.getOut().setBody(orderItemMessage);
 	}
 }

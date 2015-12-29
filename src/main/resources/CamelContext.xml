@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:cxf="http://camel.apache.org/schema/cxf" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:cxf="http://camel.apache.org/schema/cxf"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
        ">
-       
-    <bean id="initBidRoute" class="com.sellinall.bid.bl.InitBidRoute" />
-    <bean id="insertBidNotification" class="com.sellinall.bid.db.InsertBidNotification" />
-    <bean id="updateInventoryForBidMessage" class="com.sellinall.bid.process.UpdateInventoryForBidMessage" />
-    
+
+	<bean id="initBidRoute" class="com.sellinall.bid.bl.InitBidRoute" />
+	<bean id="insertBidNotification" class="com.sellinall.bid.db.InsertBidNotification" />
+	<bean id="updateInventoryForBidMessage" class="com.sellinall.bid.process.UpdateInventoryForBidMessage" />
+
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
 	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
@@ -27,7 +27,7 @@
 	<bean id="myPrint" class="com.sellinall.order.LoggingProcessor" />
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
-	
+
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
 		<property name="passwordEnvName" value="APP_ENCRYPTION_PASSWORD" />
@@ -41,8 +41,7 @@
 			<value>classpath:config.properties</value>
 		</property>
 	</bean>
-	<bean id="properties"
-		class="org.apache.camel.component.properties.PropertiesComponent">
+	<bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
 		<property name="location" value="classpath:config.properties" />
 	</bean>
 	<bean id="partnerNotifRxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
@@ -102,7 +101,7 @@
 			</bean>
 		</constructor-arg>
 	</bean>
-	
+
 	<!-- The camel route context -->
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 		<route id="messageListner">
@@ -118,102 +117,125 @@
 				<to uri="direct:processBidNotification" />
 			</when>
 		</route>
-		
+
 		<route id="processBidNotification">
 			<from uri="direct:processBidNotification" />
 			<process ref="initBidRoute" />
 			<process ref="insertBidNotification" />
-			<to uri="direct:loadInventoryData"/>
+			<to uri="direct:loadInventoryData" />
 			<when>
 				<simple>${exchangeProperty.isSyncRequired} == true</simple>
 				<process ref="updateInventoryForBidMessage" />
-				<to uri="direct:publishToMQ"/>
+				<to uri="direct:publishToMQ" />
 			</when>
 		</route>
-		
+
 		<route id="processOrderNotification">
 			<from uri="direct:processOrderNotification" />
-			<to uri="direct:loadOrderData"/>
+			<to uri="direct:loadOrderData" />
 			<process ref="processOrderStatus" />
- 			<split parallelProcessing="true" strategyRef="aggregatorStrategy">
+			<split parallelProcessing="true" strategyRef="aggregatorStrategy">
 				<method ref="splitterBean" method="splitOrders" />
 				<to uri="direct:processOrderItem" />
 			</split>
 			<process ref="updateOrderDBQuery" />
 		</route>
-		
+
 		<route id="processOrderItem">
 			<from uri="direct:processOrderItem" />
 			<process ref="initOrderItemRoute" />
- 			<to uri="direct:loadInventoryData"/>
-			<process ref="updateInventoryDBQuery" />
-			<to uri="direct:publishToMQ"/>
+			<when>
+				<simple>${exchangeProperty.hasSKU} == true</simple>
+				<to uri="direct:loadInventoryData" />
+				<process ref="updateInventoryDBQuery" />
+				<to uri="direct:publishToMQ" />
+			</when>
 		</route>
 
 		<route id="loadOrderData">
 			<from uri="direct:loadOrderData" />
 			<process ref="prepareOrderIdDBQuery" />
 			<to
-				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=order&amp;operation=findOneByQuery" 
-				pattern="InOut"/>
+				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=order&amp;operation=findOneByQuery"
+				pattern="InOut" />
 			<process ref="processOrderIdDBQuery" />
-		</route>		
-		
+		</route>
+
 		<route id="loadInventoryData">
 			<from uri="direct:loadInventoryData" />
 			<process ref="prepareSKUDBQuery" />
 			<to
-				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findOneByQuery" 
-				pattern="InOut"/>
+				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findOneByQuery"
+				pattern="InOut" />
 			<process ref="processSKUDBQuery" />
 		</route>
-		
+
 		<route id="publishToMQ">
 			<from uri="direct:publishToMQ" />
-			<process ref="prepareSyncPublishMessage"/>
-			<setHeader headerName="rabbitmq.DELIVERY_MODE">	<constant>2</constant>	</setHeader>
+			<process ref="prepareSyncPublishMessage" />
+			<setHeader headerName="rabbitmq.DELIVERY_MODE">
+				<constant>2</constant>
+			</setHeader>
 			<when>
 				<simple>${header.eBay} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY"> <constant>ebaylistingkey</constant> </setHeader>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>ebaylistingkey</constant>
+				</setHeader>
 				<convertBodyTo type="java.lang.String" />
-				<to uri="rabbitmq://{{ebaymq.host}}:{{ebaymq.tx.port}}/ebaylistingexchange?connectionFactory=#eBayTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
-				pattern="InOut"/>
+				<to
+					uri="rabbitmq://{{ebaymq.host}}:{{ebaymq.tx.port}}/ebaylistingexchange?connectionFactory=#eBayTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
 			</when>
 			<when>
 				<simple>${header.amazon} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY"> <constant>amazonListingKey</constant>	</setHeader>	
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>amazonListingKey</constant>
+				</setHeader>
 				<convertBodyTo type="java.lang.String" />
-				<to	uri="rabbitmq://{{amazonmq.host}}:{{amazonmq.tx.port}}/amazonListingExchange?connectionFactory=#amazonTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
-				pattern="InOut" />
-	 		</when>
-	 		<when>
+				<to
+					uri="rabbitmq://{{amazonmq.host}}:{{amazonmq.tx.port}}/amazonListingExchange?connectionFactory=#amazonTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
 				<simple>${header.shopify} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY"> <constant>shopifyListingKey</constant>	</setHeader>	
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>shopifyListingKey</constant>
+				</setHeader>
 				<convertBodyTo type="java.lang.String" />
-				<to	uri="rabbitmq://{{shopifymq.host}}:{{shopifymq.tx.port}}/shopifyListingExchange?connectionFactory=#shopifyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
-				pattern="InOut" />
-	 		</when>
-	 		<when>
+				<to
+					uri="rabbitmq://{{shopifymq.host}}:{{shopifymq.tx.port}}/shopifyListingExchange?connectionFactory=#shopifyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
 				<simple>${header.sellinall} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY"> <constant>sellinallListingKey</constant>	</setHeader>	
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>sellinallListingKey</constant>
+				</setHeader>
 				<convertBodyTo type="java.lang.String" />
-				<to	uri="rabbitmq://{{sellinallmq.host}}:{{sellinallmq.tx.port}}/sellinallListingExchange?connectionFactory=#sellinallTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
-				pattern="InOut" />
-	 		</when>
-	 		<when>
+				<to
+					uri="rabbitmq://{{sellinallmq.host}}:{{sellinallmq.tx.port}}/sellinallListingExchange?connectionFactory=#sellinallTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
 				<simple>${header.flipkart} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY"> <constant>flipkartListingKey</constant>	</setHeader>	
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>flipkartListingKey</constant>
+				</setHeader>
 				<convertBodyTo type="java.lang.String" />
-				<to	uri="rabbitmq://{{flipkartmq.host}}:{{flipkartmq.tx.port}}/flipkartListingExchange?connectionFactory=#flipkartTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
-				pattern="InOut" />
-	 		</when>
+				<to
+					uri="rabbitmq://{{flipkartmq.host}}:{{flipkartmq.tx.port}}/flipkartListingExchange?connectionFactory=#flipkartTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
 			<when>
 				<simple>${header.etsy} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY"> <constant>etsyListingKey</constant>	</setHeader>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>etsyListingKey</constant>
+				</setHeader>
 				<convertBodyTo type="java.lang.String" />
-				<to	uri="rabbitmq://{{etsymq.host}}:{{etsymq.tx.port}}/etsyListingExchange?connectionFactory=#etsyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
-				pattern="InOut" />
+				<to
+					uri="rabbitmq://{{etsymq.host}}:{{etsymq.tx.port}}/etsyListingExchange?connectionFactory=#etsyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
 			</when>
-		</route>	
+		</route>
 	</camelContext>
 </beans>

@@ -52,7 +52,12 @@ public class UpdateOrderDBQuery implements Processor {
 		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
 		orderRecord.put("orderID", orderMessage.getString("orderID"));
-		orderRecord.put("userId", inBody.getString("userID"));
+		//TODO: remove the condition after all publishers start publishing user id.
+		if (orderMessage.containsField("userId")) {
+			orderRecord.put("userId", orderMessage.getString("userId"));
+		} else {
+			orderRecord.put("userId", inBody.getString("userID"));
+		}
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
 		List<String> notificationIDList = new ArrayList<String>();
 		notificationIDList.add(orderMessage.getString("notificationID"));
@@ -95,17 +100,20 @@ public class UpdateOrderDBQuery implements Processor {
 
 	@SuppressWarnings("unchecked")
 	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord) throws JSONException {
-		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange.getProperty("inventoryDetailsMap");
+		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
+				.getProperty("inventoryDetailsMap");
 		List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
-		for (int i = 0 ; i < orderItems.size(); i++) {
+		for (int i = 0; i < orderItems.size(); i++) {
 			BasicDBObject orderItem = orderItems.get(i);
-			String SKU = orderItem.getString("SKU");
-			BasicDBObject inventoryValues = inventoryDetailsMap.get(SKU);
-			orderItem.put("itemTitle", inventoryValues.getString("itemTitle"));
-			if (inventoryValues.containsField("variantDetails")) {
-				orderItem.put("variantDetails", inventoryValues.get("variantDetails"));
+			if (orderItem.containsField("SKU")) {
+				String SKU = orderItem.getString("SKU");
+				BasicDBObject inventoryValues = inventoryDetailsMap.get(SKU);
+				orderItem.put("itemTitle", inventoryValues.getString("itemTitle"));
+				if (inventoryValues.containsField("variantDetails")) {
+					orderItem.put("variantDetails", inventoryValues.get("variantDetails"));
+				}
+				orderItems.set(i, orderItem);
 			}
-			orderItems.set(i, orderItem);
 		}
 		orderRecord.put("orderItems", orderItems);
 	}

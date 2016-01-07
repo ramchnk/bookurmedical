@@ -94,9 +94,9 @@
 		<property name="virtualHost" value="${etsymq.virtualHost}" />
 	</bean>
 	<!-- mongo db bean -->
-	<bean id="mongoInventoryBean" class="com.mongodb.Mongo">
+	<bean id="mongoInventoryBean" class="com.mongodb.MongoClient">
 		<constructor-arg index="0">
-			<bean class="com.mongodb.MongoURI">
+			<bean class="com.mongodb.MongoClientURI">
 				<constructor-arg index="0" value="${mongo.inventory.uri}" />
 			</bean>
 		</constructor-arg>

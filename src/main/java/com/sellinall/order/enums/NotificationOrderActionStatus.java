@@ -1,14 +1,17 @@
 package com.sellinall.order.enums;
 
 public enum NotificationOrderActionStatus {
-	NO_ACTION ("NO_ACTION"), /* No Action */ 
-	PROCESSING ("PROCESSING"), /* "decrement" inventory inStock quantity */
-	COMPLETED ("COMPLETED"), /*  "decrement" inventory inStock quantity  */
-	CANCELLED ("CANCELLED"), /* "increment" inventory inStock quantity */
-	PROCESSING_TO_COMPLETED ("PROCESSING_TO_COMPLETED"), /* No Action */
-	PROCESSING_TO_CANCELLED ("PROCESSING_TO_CANCELLED"); /* "increment" inventory inStock quantity  */
+	NO_ACTION("NO_ACTION"), /* No Action */
+	INITIATED("INITIATED "), /* "decrement" inventory inStock quantity */
+	ACCEPTED("ACCEPTED"), /* "decrement" inventory inStock quantity */
+	PROCESSING("PROCESSING"), /* "decrement" inventory inStock quantity */
+	DISPATCHED("DISPATCHED "), /* "decrement" inventory inStock quantity */
+	COMPLETED("COMPLETED"), /* "decrement" inventory inStock quantity */
+	CANCELLED("CANCELLED"), /* "increment" inventory inStock quantity */
+	PROCESSING_TO_COMPLETED("PROCESSING_TO_COMPLETED"), /* No Action */
+	PROCESSING_TO_CANCELLED("PROCESSING_TO_CANCELLED"); /* "increment" inventory inStock quantity */
 
-	private final String name;       
+	private final String name;
 
 	private NotificationOrderActionStatus(String s) {
 		name = s;

@@ -89,6 +89,7 @@ public class UpdateOrderDBQuery implements Processor {
 	private void fillOrderRecord (NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord, BasicDBObject orderMessage) {
 		fillTransactionKeyValuePair(orderRecord, "buyerDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "paymentMethods", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "paymentType", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderItems", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderStatus", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "paymentStatus", orderMessage);

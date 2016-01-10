@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.sellinall.order.db;
 
 import java.util.ArrayList;
@@ -17,6 +14,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
+import com.sellinall.enums.SIAInventoryStatus;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 
 /**
@@ -26,34 +24,34 @@ import com.sellinall.order.enums.NotificationOrderActionStatus;
 public class UpdateInventoryDBQuery implements Processor {
 	static Logger log = Logger.getLogger(UpdateInventoryDBQuery.class.getName());
 	static String siteNames[] = PostingSites.getConfig().getSitesList() ;
-	@SuppressWarnings("unchecked")
 	public void process(Exchange exchange) throws Exception {
 		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getIn().getBody(String.class));
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange.getProperty("notificationOrderActionStatus");
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("SKU", inventoryDBRecord.getString("SKU"));
 		JSONObject orderItemMessage = new JSONObject(exchange.getProperty("orderItemMessage", String.class));
 		
 		int quantity = orderItemMessage.getInt("quantity");
 		
 		List<String> syncSites = new ArrayList<String>();
-		BasicDBObject quantityModifier = new BasicDBObject();
+		BasicDBObject quantityIncDecModifier = new BasicDBObject();
 		BasicDBObject quantitySetModifier = new BasicDBObject();
 		processQuantityUpdates(notificationOrderActionStatus, orderMessage,
 				inventoryDBRecord, quantity,
-				syncSites, quantityModifier, quantitySetModifier);
+				syncSites, quantityIncDecModifier, quantitySetModifier);
 
-		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
-		log.debug("searchQuery:"+searchQuery);
-		log.debug("updateInventoryRecord: Quantity: "+quantityModifier);
-		if ( quantityModifier.isEmpty()) {
+		log.debug("updateInventoryRecord: Quantity: "+quantityIncDecModifier);
+		if ( quantityIncDecModifier.isEmpty()) {
 			syncSites.clear();
 		} else {
+			DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
+			BasicDBObject searchQuery = new BasicDBObject();
+			searchQuery.put("SKU", inventoryDBRecord.getString("SKU"));
+			log.debug("searchQuery:"+searchQuery);
+
 			BasicDBObject queryToDB = new BasicDBObject();
-			queryToDB.put("$inc", quantityModifier);
+			queryToDB.put("$inc", quantityIncDecModifier);
 			if(!quantitySetModifier.isEmpty()){
 				queryToDB.put("$set", quantitySetModifier);
 			}
@@ -66,7 +64,7 @@ public class UpdateInventoryDBQuery implements Processor {
 	private void processQuantityUpdates(
 			NotificationOrderActionStatus notificationOrderActionStatus,
 			JSONObject orderMessage, BasicDBObject inventoryDBRecord,
-			int quantity, List<String> syncSites, BasicDBObject quantityIncModifier,
+			int quantity, List<String> syncSites, BasicDBObject quantityIncDecModifier,
 			BasicDBObject quantitySetModifier)
 			throws JSONException {
 		for (String siteName : siteNames ) {
@@ -91,33 +89,39 @@ public class UpdateInventoryDBQuery implements Processor {
 						if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ) {
 							if(siteSpecific.containsField("noOfItem") && siteSpecific.getInt("noOfItem") > quantity){
-								incrementSetter(quantityIncModifier, siteName+"."+index+".noOfItem", -quantity);
+								incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", -quantity);
 							} else {
 								incrementSetter(quantitySetModifier, siteName+"."+index+".noOfItem", 0);
 							}
 						} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ) {
-							incrementSetter(quantityIncModifier, siteName+"."+index+".noOfItem", quantity);
+							incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", quantity);
 						}
 					}
-				} else {
+				} else { // notification from this site
+					// For already Bided inventory, the quantity(noOfItem) is updated for the first bid without a order been created.
+					if (SIAInventoryStatus.BIDDING.equalsName(inventoryDBRecord.getString(siteName+"."+siteSpecificIndex+".status"))) {
+						// skip the inventory update
+						quantityIncDecModifier.clear();
+						return;
+					}
 					siteSpecificIndex = index;
 					hasSiteSpecificIndex = true;
 				}
 			}
 			if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ) {
-				incrementSetter(quantityIncModifier, "noOfItem", -quantity);
-				incrementSetter(quantityIncModifier, "noOfItemsold", quantity);
+				incrementSetter(quantityIncDecModifier, "noOfItem", -quantity);
+				incrementSetter(quantityIncDecModifier, "noOfItemsold", quantity);
 				if (hasSiteSpecificIndex) {
-					incrementSetter(quantityIncModifier, siteName+"."+siteSpecificIndex+".noOfItem", -quantity);
-					incrementSetter(quantityIncModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", quantity);
+					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", -quantity);
+					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", quantity);
 				}
 			} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ) {
-				incrementSetter(quantityIncModifier, "noOfItem", quantity);
-				incrementSetter(quantityIncModifier, "noOfItemsold", -quantity);
+				incrementSetter(quantityIncDecModifier, "noOfItem", quantity);
+				incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantity);
 				if (hasSiteSpecificIndex) {
-					incrementSetter(quantityIncModifier, siteName+"."+siteSpecificIndex+".noOfItem", quantity);
-					incrementSetter(quantityIncModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", -quantity);
+					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", quantity);
+					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", -quantity);
 				}
 			}
 		}

@@ -96,6 +96,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "shippingStatus", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "shippingDetails", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord);
 	}
 
@@ -103,20 +104,22 @@ public class UpdateOrderDBQuery implements Processor {
 	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord) throws JSONException {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
-		List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
-		for (int i = 0; i < orderItems.size(); i++) {
-			BasicDBObject orderItem = orderItems.get(i);
-			if (orderItem.containsField("SKU")) {
-				String SKU = orderItem.getString("SKU");
-				BasicDBObject inventoryValues = inventoryDetailsMap.get(SKU);
-				orderItem.put("itemTitle", inventoryValues.getString("itemTitle"));
-				if (inventoryValues.containsField("variantDetails")) {
-					orderItem.put("variantDetails", inventoryValues.get("variantDetails"));
+		if (orderRecord.containsField("orderItems")) {
+			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
+			for (int i = 0; i < orderItems.size(); i++) {
+				BasicDBObject orderItem = orderItems.get(i);
+				if (orderItem.containsField("SKU")) {
+					String SKU = orderItem.getString("SKU");
+					BasicDBObject inventoryValues = inventoryDetailsMap.get(SKU);
+					orderItem.put("itemTitle", inventoryValues.getString("itemTitle"));
+					if (inventoryValues.containsField("variantDetails")) {
+						orderItem.put("variantDetails", inventoryValues.get("variantDetails"));
+					}
+					orderItems.set(i, orderItem);
 				}
-				orderItems.set(i, orderItem);
 			}
+			orderRecord.put("orderItems", orderItems);
 		}
-		orderRecord.put("orderItems", orderItems);
 	}
 
 	private void fillTransactionKeyValuePair (BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {

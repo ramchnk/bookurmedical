@@ -22,14 +22,16 @@ public class SplitterBean {
 	static Logger log = Logger.getLogger(SplitterBean.class.getName());
 
 	public List<Message> splitOrders(@Body JSONObject body) throws JSONException {
-		JSONArray orderItemList = body.getJSONArray("orderItems");
 		List<Message> answer = new ArrayList<Message>();
-		for (int index = 0; index < orderItemList.length() ; index++) {
-			JSONObject splitBody = new JSONObject();
-			splitBody = orderItemList.getJSONObject(index);
-			DefaultMessage message = new DefaultMessage();
-			message.setBody(splitBody);
-			answer.add(message);
+		if (body.has("orderItems")) {
+			JSONArray orderItemList = body.getJSONArray("orderItems");
+			for (int index = 0; index < orderItemList.length(); index++) {
+				JSONObject splitBody = new JSONObject();
+				splitBody = orderItemList.getJSONObject(index);
+				DefaultMessage message = new DefaultMessage();
+				message.setBody(splitBody);
+				answer.add(message);
+			}
 		}
 		return answer;
 	}

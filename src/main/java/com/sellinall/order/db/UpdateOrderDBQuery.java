@@ -129,6 +129,7 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 	
 	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord){
+		// TODO: need to get more insights on how these dates can be used, so as of now ignoring other state transition timestamps
 		if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)) {
 			orderRecord.put("timeProcessing", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||

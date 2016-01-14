@@ -86,14 +86,19 @@ public class UpdateInventoryDBQuery implements Processor {
 							inventoryDBRecord.getInt("noOfItem") > quantity ) {
 							continue;
 						}
-						if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ) {
+						if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED) ||
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED) ||
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)) {
 							if(siteSpecific.containsField("noOfItem") && siteSpecific.getInt("noOfItem") > quantity){
 								incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", -quantity);
 							} else {
 								incrementSetter(quantitySetModifier, siteName+"."+index+".noOfItem", 0);
 							}
-						} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ) {
+						} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED) ||
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED) ||
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)) {
 							incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", quantity);
 						}
 					}
@@ -108,15 +113,20 @@ public class UpdateInventoryDBQuery implements Processor {
 					hasSiteSpecificIndex = true;
 				}
 			}
-			if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ) {
+			if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED) ||
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED) ||
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)) {
 				incrementSetter(quantityIncDecModifier, "noOfItem", -quantity);
 				incrementSetter(quantityIncDecModifier, "noOfItemsold", quantity);
 				if (hasSiteSpecificIndex) {
 					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", -quantity);
 					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", quantity);
 				}
-			} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ) {
+			} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED) ||
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ||
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)) {
 				incrementSetter(quantityIncDecModifier, "noOfItem", quantity);
 				incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantity);
 				if (hasSiteSpecificIndex) {

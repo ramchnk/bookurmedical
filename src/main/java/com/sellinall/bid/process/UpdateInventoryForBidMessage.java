@@ -75,30 +75,28 @@ public class UpdateInventoryForBidMessage implements Processor {
 			for (int index = 0; index < siteSpecificList.size(); index++) {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
 				Boolean isNotificationFromThisNickNameID = false;
-				
+
 				// This case may happen for auction and buy it now sync with different quantity
 				if ( siteSpecific.getInt("noOfItem") <= 0) {
 					continue; 
 				}
-				
+
 				if (siteSpecific.getString("nickNameID").equals(bidMessage.getString("nickNameID"))) {
 					siteSpecificIndex = index;
 					hasSiteSpecificIndex = true;
 					isNotificationFromThisNickNameID = true;
 				}
 
-				if ( inventoryDBRecord.getBoolean("sync")) {  // Update other sites only if sync true
+				if ( inventoryDBRecord.getBoolean("sync") && !hasSiteSpecificIndex) {  // Update other sites only if sync true
 					// skip auction site quantity update, if we have more than one quantity
 					if ( !isNotificationFromThisNickNameID && 
-						 siteSpecific.containsField("isAuction") && siteSpecific.getBoolean("isAuction") &&
-						 inventoryDBRecord.getInt("noOfItem") > siteSpecific.getInt("noOfItem") ) {
-							continue;
+							siteSpecific.containsField("isAuction") && siteSpecific.getBoolean("isAuction") &&
+							inventoryDBRecord.getInt("noOfItem") > siteSpecific.getInt("noOfItem") ) {
+						continue;
 					}
 					incrementSetter(quantityModifier, siteName+"."+index+".noOfItem", -BID_QUANTITY, updateInventoryQuantity);
 				}
 			}
-			incrementSetter(quantityModifier, "noOfItem", -BID_QUANTITY, updateInventoryQuantity);
-			incrementSetter(quantityModifier, "noOfItemsold", BID_QUANTITY, updateInventoryQuantity);			
 			if (hasSiteSpecificIndex) {
 				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItem", -BID_QUANTITY, updateInventoryQuantity);	
 				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", BID_QUANTITY, updateInventoryQuantity);
@@ -108,6 +106,8 @@ public class UpdateInventoryForBidMessage implements Processor {
 				updateFields.put("$set", valuesSet);
 			}
 		}
+		incrementSetter(quantityModifier, "noOfItem", -BID_QUANTITY, updateInventoryQuantity);
+		incrementSetter(quantityModifier, "noOfItemsold", BID_QUANTITY, updateInventoryQuantity);
 	}
 	
 	private void incrementSetter(BasicDBObject modifier, String key, int value, BasicDBObject updateInventoryQuantity) {

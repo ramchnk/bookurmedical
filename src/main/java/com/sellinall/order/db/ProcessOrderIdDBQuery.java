@@ -16,9 +16,9 @@ public class ProcessOrderIdDBQuery implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		exchange.setProperty("hasOrderInDB", false);	
 		BasicDBObject dbResult = exchange.getIn().getBody(BasicDBObject.class);
-		
-		if ( dbResult == null) {
-			log.debug("New Notification Record - not exists in our DB Result: "+dbResult);			
+
+		if (dbResult == null) {
+			log.debug("Order Record - not exists in our DB Result: " + dbResult);
 			return;
 		}
 		exchange.setProperty("hasOrderInDB", true);

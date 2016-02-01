@@ -66,6 +66,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillAdditionDetails(exchange, orderRecord);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);
+		exchange.getOut().setBody(orderRecord);
 	}
 	
 	private void updateOrderRecord(Exchange exchange,

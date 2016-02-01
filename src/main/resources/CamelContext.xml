@@ -15,6 +15,7 @@
 	<bean id="updateInventoryWithBidAmount" class="com.sellinall.bid.process.UpdateInventoryWithBidAmount" />
 
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
+	<bean id="prepareOrderEventPublishMessage" class="com.sellinall.order.message.PrepareOrderEventPublishMessage" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
 	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
 	<bean id="initOrderItemRoute" class="com.sellinall.order.bl.InitOrderItemRoute" />
@@ -51,6 +52,13 @@
 		<property name="username" value="${rabbitmq.username}" />
 		<property name="password" value="${rabbitmq.password}" />
 		<property name="virtualHost" value="${rabbitmq.virtualHost}" />
+	</bean>
+		<bean id="feeManagementTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${feemanagementmq.host}" />
+		<property name="port" value="${feemanagementmq.tx.port}" />
+		<property name="username" value="${feemanagementmq.username}" />
+		<property name="password" value="${feemanagementmq.password}" />
+		<property name="virtualHost" value="${feemanagementmq.virtualHost}" />
 	</bean>
 	<bean id="amazonTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${amazonmq.host}" />
@@ -135,7 +143,6 @@
 			</otherwise>
 			</choice>
 		</route>
-
 		<route id="processOrderNotification">
 			<from uri="direct:processOrderNotification" />
 			<to uri="direct:loadOrderData" />
@@ -145,6 +152,10 @@
 				<to uri="direct:processOrderItem" />
 			</split>
 			<process ref="updateOrderDBQuery" />
+			<when>
+				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
+				<to uri="direct:publishOrderNotificationToMQ" />
+			</when>
 		</route>
 
 		<route id="processOrderItem">
@@ -175,7 +186,23 @@
 				pattern="InOut" />
 			<process ref="processSKUDBQuery" />
 		</route>
-
+		<route id="publishOrderNotificationToMQ">
+			<from uri="direct:publishOrderNotificationToMQ" />
+			<process ref="prepareOrderEventPublishMessage" />
+			<setHeader headerName="rabbitmq.DELIVERY_MODE">
+				<constant>2</constant>
+			</setHeader>
+			<when>
+				<simple>${header.feeManagement} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>feeManagementKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{feemanagementmq.host}}:{{feemanagementmq.tx.port}}/feeManagementExchange?connectionFactory=#feeManagementTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			</route>
 		<route id="publishToMQ">
 			<from uri="direct:publishToMQ" />
 			<process ref="prepareSyncPublishMessage" />

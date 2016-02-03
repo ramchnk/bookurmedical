@@ -48,7 +48,6 @@ public class UpdateInventoryDBQuery implements Processor {
 			DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
 			BasicDBObject searchQuery = new BasicDBObject();
 			searchQuery.put("SKU", inventoryDBRecord.getString("SKU"));
-			log.debug("searchQuery:"+searchQuery);
 
 			BasicDBObject queryToDB = new BasicDBObject();
 			queryToDB.put("$inc", quantityIncDecModifier);
@@ -56,6 +55,7 @@ public class UpdateInventoryDBQuery implements Processor {
 				queryToDB.put("$set", quantitySetModifier);
 			}
 			table.update(searchQuery, queryToDB);
+			log.debug("searchQuery: "+searchQuery+" queryToDB: "+queryToDB);
 		}
 		exchange.getOut().setBody(syncSites);
 	}

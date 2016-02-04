@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.sellinall.bid.process;
 
 import java.util.ArrayList;
@@ -27,48 +24,47 @@ import com.sellinall.enums.SIAInventoryStatus;
 public class UpdateInventoryForBidMessage implements Processor {
 	private static final int BID_QUANTITY = 1;
 	static Logger log = Logger.getLogger(UpdateInventoryForBidMessage.class.getName());
-	static String siteNames[] = PostingSites.getConfig().getSitesList() ;
+	static String siteNames[] = PostingSites.getConfig().getSitesList();
 
 	public void process(Exchange exchange) throws Exception {
-		
-		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getIn().getBody(String.class));	
+
+		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getIn().getBody(String.class));
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		JSONObject bidMessage = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject updateInventoryQuantity = new BasicDBObject();
-		
+
 		List<String> syncSites = new ArrayList<String>();
 		BasicDBObject quantityModifier = new BasicDBObject();
 		BasicDBObject updateFields = new BasicDBObject();
 
-		processQuantityUpdates(inventoryDBRecord, bidMessage,
-				updateInventoryQuantity, syncSites, quantityModifier,
+		processQuantityUpdates(inventoryDBRecord, bidMessage, updateInventoryQuantity, syncSites, quantityModifier,
 				updateFields);
 
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
+		searchQuery.put("userId", bidMessage.getString("userId"));
 		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
-		if ( quantityModifier.isEmpty() ) {
+		if (quantityModifier.isEmpty()) {
 			syncSites.clear();
 		} else {
 			updateFields.put("$inc", quantityModifier);
 			table.update(searchQuery, updateFields);
 		}
-		log.debug("searchQuery:"+searchQuery+" updateFields: "+updateFields);
+		log.debug("searchQuery:" + searchQuery + " updateFields: " + updateFields);
 		exchange.getOut().setBody(syncSites);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void processQuantityUpdates(BasicDBObject inventoryDBRecord,
-			JSONObject bidMessage, BasicDBObject updateInventoryQuantity,
-			List<String> syncSites, BasicDBObject quantityModifier,
+	private void processQuantityUpdates(BasicDBObject inventoryDBRecord, JSONObject bidMessage,
+			BasicDBObject updateInventoryQuantity, List<String> syncSites, BasicDBObject quantityModifier,
 			BasicDBObject updateFields) throws JSONException {
-		for (String siteName : siteNames ) {
+		for (String siteName : siteNames) {
 			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
 			}
-			if ( inventoryDBRecord.getBoolean("sync") ) {
+			if (inventoryDBRecord.getBoolean("sync")) {
 				syncSites.add(siteName);
-			}		
+			}
 			ArrayList<BasicDBObject> siteSpecificList = (ArrayList<BasicDBObject>) inventoryDBRecord.get(siteName);
 			Boolean hasSiteSpecificIndex = false;
 			int siteSpecificIndex = 0;
@@ -76,9 +72,10 @@ public class UpdateInventoryForBidMessage implements Processor {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
 				Boolean isNotificationFromThisNickNameID = false;
 
-				// This case may happen for auction and buy it now sync with different quantity
-				if ( siteSpecific.getInt("noOfItem") <= 0) {
-					continue; 
+				// This case may happen for auction and buy it now sync with
+				// different quantity
+				if (siteSpecific.getInt("noOfItem") <= 0) {
+					continue;
 				}
 
 				if (siteSpecific.getString("nickNameID").equals(bidMessage.getString("nickNameID"))) {
@@ -90,28 +87,35 @@ public class UpdateInventoryForBidMessage implements Processor {
 				if (inventoryDBRecord.getBoolean("sync")
 						&& !siteSpecific.getString("nickNameID").equals(bidMessage.getString("nickNameID"))) {
 					// Update other sites only if sync true
-					// skip auction site quantity update, if we have more than one quantity
+					// skip auction site quantity update, if we have more than
+					// one quantity
 					if (!isNotificationFromThisNickNameID && siteSpecific.containsField("isAuction")
 							&& siteSpecific.getBoolean("isAuction")
-							&&		inventoryDBRecord.getInt("noOfItem") > siteSpecific.getInt("noOfItem") ) {
+							&& inventoryDBRecord.getInt("noOfItem") > siteSpecific.getInt("noOfItem")) {
 						continue;
 					}
-					incrementSetter(quantityModifier, siteName+"."+index+".noOfItem", -BID_QUANTITY, updateInventoryQuantity);
+					incrementSetter(quantityModifier, siteName + "." + index + ".noOfItem", -BID_QUANTITY,
+							updateInventoryQuantity);
 				}
 			}
 			if (hasSiteSpecificIndex) {
-				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItem", -BID_QUANTITY, updateInventoryQuantity);	
-				incrementSetter(quantityModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", BID_QUANTITY, updateInventoryQuantity);
-				BasicDBObject valuesSet = new BasicDBObject(siteName+"."+siteSpecificIndex+".status", SIAInventoryStatus.BIDDING.toString());
-				valuesSet.put(siteName+"."+siteSpecificIndex+".failureReason", "");
-				valuesSet.put(siteName+"."+siteSpecificIndex+".timeLastUpdated", DateUtil.getSIADateFormat());
+				incrementSetter(quantityModifier, siteName + "." + siteSpecificIndex + ".noOfItem", -BID_QUANTITY,
+						updateInventoryQuantity);
+				incrementSetter(quantityModifier, siteName + "." + siteSpecificIndex + ".noOfItemsold", BID_QUANTITY,
+						updateInventoryQuantity);
+				BasicDBObject valuesSet = new BasicDBObject(siteName + "." + siteSpecificIndex + ".status",
+						SIAInventoryStatus.BIDDING.toString());
+				valuesSet.put(siteName + "." + siteSpecificIndex + ".highBidAmount",
+						(BasicDBObject) JSON.parse(bidMessage.getJSONObject("bidAmount").toString()));
+				valuesSet.put(siteName + "." + siteSpecificIndex + ".failureReason", "");
+				valuesSet.put(siteName + "." + siteSpecificIndex + ".timeLastUpdated", DateUtil.getSIADateFormat());
 				updateFields.put("$set", valuesSet);
 			}
 		}
 		incrementSetter(quantityModifier, "noOfItem", -BID_QUANTITY, updateInventoryQuantity);
 		incrementSetter(quantityModifier, "noOfItemsold", BID_QUANTITY, updateInventoryQuantity);
 	}
-	
+
 	private void incrementSetter(BasicDBObject modifier, String key, int value, BasicDBObject updateInventoryQuantity) {
 		modifier.append(key, value);
 		updateInventoryQuantity.put("$inc", modifier);

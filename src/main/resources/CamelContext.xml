@@ -12,6 +12,7 @@
 	<bean id="initBidRoute" class="com.sellinall.bid.bl.InitBidRoute" />
 	<bean id="insertBidNotification" class="com.sellinall.bid.db.InsertBidNotification" />
 	<bean id="updateInventoryForBidMessage" class="com.sellinall.bid.process.UpdateInventoryForBidMessage" />
+	<bean id="updateInventoryWithBidAmount" class="com.sellinall.bid.process.UpdateInventoryWithBidAmount" />
 
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
@@ -123,11 +124,16 @@
 			<process ref="initBidRoute" />
 			<process ref="insertBidNotification" />
 			<to uri="direct:loadInventoryData" />
+			<choice>
 			<when>
 				<simple>${exchangeProperty.isSyncRequired} == true</simple>
 				<process ref="updateInventoryForBidMessage" />
 				<to uri="direct:publishToMQ" />
 			</when>
+			<otherwise>
+				<process ref="updateInventoryWithBidAmount" />
+			</otherwise>
+			</choice>
 		</route>
 
 		<route id="processOrderNotification">

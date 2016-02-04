@@ -53,7 +53,7 @@
 		<property name="password" value="${rabbitmq.password}" />
 		<property name="virtualHost" value="${rabbitmq.virtualHost}" />
 	</bean>
-		<bean id="feeManagementTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+	<bean id="feeManagementTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${feemanagementmq.host}" />
 		<property name="port" value="${feemanagementmq.tx.port}" />
 		<property name="username" value="${feemanagementmq.username}" />
@@ -152,10 +152,7 @@
 				<to uri="direct:processOrderItem" />
 			</split>
 			<process ref="updateOrderDBQuery" />
-			<when>
-				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
-				<to uri="direct:publishOrderNotificationToMQ" />
-			</when>
+			<to uri="direct:publishOrderNotificationToMQ" />
 		</route>
 
 		<route id="processOrderItem">
@@ -194,6 +191,7 @@
 			</setHeader>
 			<when>
 				<simple>${header.feeManagement} == true</simple>
+				<process ref="myPrint" />
 				<setHeader headerName="rabbitmq.ROUTING_KEY">
 					<constant>feeManagementKey</constant>
 				</setHeader>
@@ -201,8 +199,9 @@
 				<to
 					uri="rabbitmq://{{feemanagementmq.host}}:{{feemanagementmq.tx.port}}/feeManagementExchange?connectionFactory=#feeManagementTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
+				<process ref="myPrint" />
 			</when>
-			</route>
+		</route>
 		<route id="publishToMQ">
 			<from uri="direct:publishToMQ" />
 			<process ref="prepareSyncPublishMessage" />

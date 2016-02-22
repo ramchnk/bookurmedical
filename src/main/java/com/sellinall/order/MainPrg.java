@@ -11,6 +11,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.mudra.sellinall.config.Config;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.order.services.PartnerNotification;
+import com.sellinall.order.util.ActivityLogging;
 
 /**
  * 
@@ -27,8 +28,7 @@ public class MainPrg {
 	public static void main(String[] args) throws Exception {
 		String webappDirLocation = "src/main/webapp/";
 		Config.context = new ClassPathXmlApplicationContext("Propertycfg.xml");
-		PostingSites.context = new ClassPathXmlApplicationContext(
-				"PostingSitescfg.xml");
+		PostingSites.context = new ClassPathXmlApplicationContext("PostingSitescfg.xml");
 		// The port that we should run on can be set into an environment
 		// variable
 		// Look for that variable and default to 8081 if it isn't there.
@@ -59,6 +59,7 @@ public class MainPrg {
 		CamelContext camelContext = SpringCamelContext.springCamelContext(appContext, false);
 		camelContext.start();
 		PartnerNotification.setCamelContext(camelContext);
+		ActivityLogging.setCamelContext(camelContext);
 
 		server.start();
 		server.join();

@@ -29,6 +29,7 @@
 	<bean id="myPrint" class="com.sellinall.order.LoggingProcessor" />
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
+	<bean id="activityLogging" class="com.sellinall.order.util.ActivityLogging" />
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -102,6 +103,13 @@
 		<property name="password" value="${etsymq.password}" />
 		<property name="virtualHost" value="${etsymq.virtualHost}" />
 	</bean>
+	<bean id="loggingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${activity.host}" />
+		<property name="port" value="${activity.port}" />
+		<property name="username" value="${activity.username}" />
+		<property name="password" value="${activity.password}" />
+		<property name="virtualHost" value="${activity.virtualHost}" />
+	</bean>
 	<!-- mongo db bean -->
 	<bean id="mongoInventoryBean" class="com.mongodb.MongoClient">
 		<constructor-arg index="0">
@@ -117,6 +125,10 @@
 			<from
 				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
 			<process ref="initMessageListenerRoute" />
+			<setHeader headerName="activityLogMethod">
+				<constant>start</constant>
+			</setHeader>
+			<process ref="activityLogging" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>
 				<to uri="direct:processOrderNotification" />
@@ -125,6 +137,10 @@
 				<simple>${exchangeProperty.messageType} == 'bid'</simple>
 				<to uri="direct:processBidNotification" />
 			</when>
+			<setHeader headerName="activityLogMethod">
+				<constant>end</constant>
+			</setHeader>
+			<process ref="activityLogging" />
 		</route>
 
 		<route id="processBidNotification">
@@ -268,6 +284,16 @@
 					uri="rabbitmq://{{etsymq.host}}:{{etsymq.tx.port}}/etsyListingExchange?connectionFactory=#etsyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
+		</route>
+		<route id="publishMessageToLogging">
+			<from uri="direct:publishMessageToLogging" />
+			<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<constant>activityloggingkey</constant>
+			</setHeader>
+			<convertBodyTo type="java.lang.String" />
+			<to
+				uri="rabbitmq://{{activity.host}}:{{activity.port}}/activitylogging?connectionFactory=#loggingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+				pattern="InOnly" />
 		</route>
 	</camelContext>
 </beans>

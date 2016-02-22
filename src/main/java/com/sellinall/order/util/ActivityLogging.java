@@ -40,15 +40,13 @@ public class ActivityLogging implements Processor {
 	 * @return void
 	 */
 	public static void start(Exchange exchange) throws Exception {
-		JSONObject inBody = exchange.getProperty("message", JSONObject.class);
-		// In initMessageListenerRoute userId doesn't set to exchange so here its
-		//get from inBody.
-		if (!inBody.has("userId")) {
+		String userId = exchange.getProperty("userId", String.class);
+		if (userId == null) {
 			return;
 		}
 		JSONObject activityLog = new JSONObject();
 		ProducerTemplate template = context.createProducerTemplate();
-		activityLog.put("accountNumber", inBody.getString("userId"));
+		activityLog.put("accountNumber", userId);
 		activityLog.put("serverName", "partnernotifserv");
 		activityLog.put("operationName", exchange.getProperty("messageType"));
 		activityLog.put("httpMethod", "Message");
@@ -73,9 +71,13 @@ public class ActivityLogging implements Processor {
 	 * @return void
 	 */
 	public static void end(Exchange exchange) throws Exception {
+		String userId = exchange.getProperty("userId", String.class);
+		if (userId == null) {
+			return;
+		}
 		ProducerTemplate template = context.createProducerTemplate();
 		JSONObject activityLog = new JSONObject();
-		activityLog.put("accountNumber", exchange.getProperty("userId"));
+		activityLog.put("accountNumber", userId);
 		activityLog.put("serverName", "partnernotifserv");
 		activityLog.put("operationName", exchange.getProperty("messageType"));
 		activityLog.put("httpMethod", "Message");

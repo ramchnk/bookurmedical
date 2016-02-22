@@ -73,9 +73,13 @@ public class ActivityLogging implements Processor {
 	 * @return void
 	 */
 	public static void end(Exchange exchange) throws Exception {
+		JSONObject message = exchange.getProperty("message", JSONObject.class);
+		if (!message.has("userId")) {
+			return;
+		}
 		ProducerTemplate template = context.createProducerTemplate();
 		JSONObject activityLog = new JSONObject();
-		activityLog.put("accountNumber", exchange.getProperty("userId"));
+		activityLog.put("accountNumber", message.getString("userId"));
 		activityLog.put("serverName", "partnernotifserv");
 		activityLog.put("operationName", exchange.getProperty("messageType"));
 		activityLog.put("httpMethod", "Message");

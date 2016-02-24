@@ -7,14 +7,17 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mudra.sellinall.util.DateUtil;
 import com.sellinall.enums.SIAActivityLogStatus;
-import com.sellinall.order.bl.InitMessageListenerRoute;
 
 public class ActivityLogging implements Processor {
-	static Logger log = Logger.getLogger(InitMessageListenerRoute.class.getName());
+	static Logger log = Logger.getLogger(ActivityLogging.class.getName());
+	static final String SERVER_NAME = "parternotifserv";
+	static final String REQUEST_TYPE_MESSAGE = "message";
+	static final int EIGHT_DIGIT_RANDOM_NUMBER = 100000000;
 	private static CamelContext context;
 
 	public static void setCamelContext(CamelContext context1) {
@@ -35,74 +38,80 @@ public class ActivityLogging implements Processor {
 	}
 
 	/**
-	 * @desc  publish message for start of user's activity
-	 * @param exchange : Exchange
+	 * @desc publish message for start of user's activity
+	 * @param exchange
+	 *            Exchange
 	 * @return void
 	 */
 	public static void start(Exchange exchange) throws Exception {
-		String userId = exchange.getProperty("userId", String.class);
-		if (userId == null) {
+		String accountNumber = exchange.getProperty("accountNumber", String.class);
+		if (accountNumber == null) {
 			return;
 		}
 		JSONObject activityLog = new JSONObject();
-		ProducerTemplate template = context.createProducerTemplate();
-		activityLog.put("accountNumber", userId);
-		activityLog.put("serverName", "partnernotifserv");
-		activityLog.put("operationName", exchange.getProperty("messageType"));
-		activityLog.put("httpMethod", "Message");
+		initMessage(exchange, accountNumber, activityLog);
 		activityLog.put("status", SIAActivityLogStatus.STARTED.toString());
 		String messageId = getMessageId();
 		activityLog.put("messageId", messageId);
 		exchange.setProperty("messageId", messageId);
-		String description = (exchange.getProperty("message")).toString();
+		activityLog.put("timeStamp", DateUtil.getSIADateFormat().toString());
+		String description = exchange.getProperty("message", JSONObject.class).toString();
 		if (description.length() > 100) {
 			description = description.substring(0, 100);
 		}
 		activityLog.put("description", description);
-		activityLog.put("timeStamp", DateUtil.getSIADateFormat().toString());
 		log.debug(activityLog);
-		template.asyncSendBody("direct:publishMessageToLogging", activityLog);
+		sendMessage(activityLog);
+	}
 
+	private static void initMessage(Exchange exchange, String accountNumber, JSONObject activityLog)
+			throws JSONException {
+		activityLog.put("accountNumber", accountNumber);
+		activityLog.put("serverName", SERVER_NAME);
+		activityLog.put("operationName", exchange.getProperty("requestType"));
+		activityLog.put("httpMethod", REQUEST_TYPE_MESSAGE);
 	}
 
 	/**
-	 * @desc  publish message for end of user's activity
-	 * @param exchange : Exchange
+	 * @desc publish message for end of user's activity
+	 * @param exchange
+	 *            Exchange
 	 * @return void
 	 */
 	public static void end(Exchange exchange) throws Exception {
-		String userId = exchange.getProperty("userId", String.class);
-		if (userId == null) {
+		String accountNumber = exchange.getProperty("accountNumber", String.class);
+		if (accountNumber == null) {
 			return;
 		}
-		ProducerTemplate template = context.createProducerTemplate();
 		JSONObject activityLog = new JSONObject();
-		activityLog.put("accountNumber", userId);
-		activityLog.put("serverName", "partnernotifserv");
-		activityLog.put("operationName", exchange.getProperty("messageType"));
-		activityLog.put("httpMethod", "Message");
-		activityLog.put("status", SIAActivityLogStatus.COMPLETED.toString());
-		activityLog.put("timeStamp", DateUtil.getSIADateFormat().toString());
+		initMessage(exchange, accountNumber, activityLog);
 		activityLog.put("messageId", exchange.getProperty("messageId"));
+		activityLog.put("timeStamp", DateUtil.getSIADateFormat().toString());
 		activityLog.put("description", "");
+		activityLog.put("status", SIAActivityLogStatus.COMPLETED.toString());
 		log.debug(activityLog);
-		template.asyncSendBody("direct:publishMessageToLogging", activityLog);
-
+		sendMessage(activityLog);
 	}
 
-	/**@desc method will be used in future
+	private static void sendMessage(JSONObject activityLog) {
+		ProducerTemplate template = context.createProducerTemplate();
+		template.asyncSendBody("direct:publishMessageToLogging", activityLog);
+	}
+
+	/**
+	 * @desc method will be used in future
 	 * @return void
 	 */
 	public static void add() {
 		// This method will be used in future
 	}
 
-	/**@desc method will generate the random number
+	/**
+	 * @desc method will generate the random number
 	 * @return String
 	 */
 	public static String getMessageId() {
 		Random randomNumber = new Random();
-		return "" + randomNumber.nextInt(100000000);// having 100000000 will give 8-digit Random number.
+		return "" + randomNumber.nextInt(EIGHT_DIGIT_RANDOM_NUMBER);
 	}
-
 }

@@ -18,6 +18,7 @@ public class ActivityLogging implements Processor {
 	static final String SERVER_NAME = "partnernotifserv";
 	static final String REQUEST_TYPE_MESSAGE = "message";
 	static final int EIGHT_DIGIT_RANDOM_NUMBER = 100000000;
+	static final String END_PROCESS_DESCRIPTION = "message";
 	private static CamelContext context;
 
 	public static void setCamelContext(CamelContext context1) {
@@ -87,7 +88,7 @@ public class ActivityLogging implements Processor {
 		initMessage(exchange, accountNumber, activityLog);
 		activityLog.put("messageId", exchange.getProperty("messageId"));
 		activityLog.put("timeStamp", DateUtil.getSIADateFormat().toString());
-		activityLog.put("description", "");
+		activityLog.put("description", END_PROCESS_DESCRIPTION);
 		activityLog.put("status", SIAActivityLogStatus.COMPLETED.toString());
 		log.debug(activityLog);
 		sendMessage(activityLog);

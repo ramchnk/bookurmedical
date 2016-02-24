@@ -26,14 +26,18 @@ public class ActivityLogging implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		exchange.getOut().setBody(exchange.getIn().getBody());
-		String activityLogMethod = exchange.getIn().getHeader("activityLogMethod", String.class);
-		if (activityLogMethod != null && activityLogMethod.equals("start")) {
-			start(exchange);
-			return;
-		}
-		if (activityLogMethod != null && activityLogMethod.equals("end")) {
-			end(exchange);
-			return;
+		try {
+			String activityLogMethod = exchange.getIn().getHeader("activityLogMethod", String.class);
+			if (activityLogMethod != null && activityLogMethod.equals("start")) {
+				start(exchange);
+				return;
+			}
+			if (activityLogMethod != null && activityLogMethod.equals("end")) {
+				end(exchange);
+				return;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

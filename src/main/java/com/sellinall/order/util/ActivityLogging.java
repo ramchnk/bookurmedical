@@ -15,7 +15,7 @@ import com.sellinall.enums.SIAActivityLogStatus;
 
 public class ActivityLogging implements Processor {
 	static Logger log = Logger.getLogger(ActivityLogging.class.getName());
-	static final String SERVER_NAME = "parternotifserv";
+	static final String SERVER_NAME = "partnernotifserv";
 	static final String REQUEST_TYPE_MESSAGE = "message";
 	static final int EIGHT_DIGIT_RANDOM_NUMBER = 100000000;
 	private static CamelContext context;
@@ -68,7 +68,7 @@ public class ActivityLogging implements Processor {
 			throws JSONException {
 		activityLog.put("accountNumber", accountNumber);
 		activityLog.put("serverName", SERVER_NAME);
-		activityLog.put("operationName", exchange.getProperty("requestType"));
+		activityLog.put("operationName", exchange.getProperty("messageType"));
 		activityLog.put("httpMethod", REQUEST_TYPE_MESSAGE);
 	}
 

@@ -44,6 +44,6 @@
 		<property name="InventoryCollectionHostName" value="${InventoryCollectionHostName}" />
 		<property name="InventoryCollectionPort" value="${InventoryCollectionPort}" />
 		<property name="InventoryCollectionDBName" value="${InventoryCollectionDBName}" />
-
+		<property name="uploadImageUri" value="${uploadImageUri}" />
 	</bean>
 </beans>

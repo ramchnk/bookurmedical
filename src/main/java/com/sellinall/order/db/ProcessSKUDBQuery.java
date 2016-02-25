@@ -12,6 +12,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.util.JSON;
 
 public class ProcessSKUDBQuery implements Processor {
 
@@ -35,8 +36,12 @@ public class ProcessSKUDBQuery implements Processor {
 		if (exchange.getProperties().containsKey("inventoryDetailsMap")) {
 			inventoryDetailsMap = (Map<String, BasicDBObject>) exchange.getProperty("inventoryDetailsMap");
 		}
+		String siteName = exchange.getProperty("siteName", String.class);
 		BasicDBObject inventoryValues = new BasicDBObject();
 		inventoryValues.put("itemTitle", inventory.getString("itemTitle"));
+		inventoryValues.put("imageURL", inventory.getString("imageURL"));
+		BasicDBObject site = (BasicDBObject) JSON.parse(inventory.getJSONArray(siteName).getJSONObject(0).toString());
+		inventoryValues.put(siteName, site);
 		if ( inventory.has("variantDetails") ) {
 			BasicDBList variants = new BasicDBList();
 			JSONArray invVariants = inventory.getJSONArray("variantDetails");

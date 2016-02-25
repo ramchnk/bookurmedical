@@ -23,7 +23,16 @@ public class PrepareSKUDBQuery implements Processor {
 		JSONObject inBody = exchange.getIn().getBody(JSONObject.class);
 		String SKU = inBody.getString("SKU");
 		exchange.setProperty("SKU", SKU);
-		DBObject outBody = new BasicDBObject("SKU", SKU);
-		exchange.getOut().setBody(outBody);
+		DBObject searchQuery = new BasicDBObject("SKU", SKU);
+		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
+		if (orderMessage.has("userId")) {
+			searchQuery.put("userId", orderMessage.getString("userId"));
+		}
+		String nickNameID = exchange.getProperty("nickNameID", String.class);
+		String siteName = exchange.getProperty("siteName", String.class);
+		BasicDBObject elemMatch = new BasicDBObject("nickNameID", nickNameID);
+		BasicDBObject searchSite = new BasicDBObject("$elemMatch", elemMatch);
+		searchQuery.put(siteName, searchSite);
+		exchange.getOut().setBody(searchQuery);
 	}
 }

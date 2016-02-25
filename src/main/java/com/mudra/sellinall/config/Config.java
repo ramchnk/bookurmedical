@@ -15,6 +15,7 @@ public class Config {
 	private String InventoryCollectionHostName;
 	private String InventoryCollectionPort;
 	private String InventoryCollectionDBName;
+	private String uploadImageUri;
 
 	public String getFbTokenExchangeUri() {
 		return FbTokenExchangeUri;
@@ -87,6 +88,14 @@ public class Config {
 
 	public void setInventoryCollectionDBName(String inventoryCollectionDBName) {
 		InventoryCollectionDBName = inventoryCollectionDBName;
+	}
+
+	public String getUploadImageUri() {
+		return uploadImageUri;
+	}
+
+	public void setUploadImageUri(String uploadImageUri) {
+		this.uploadImageUri = uploadImageUri;
 	}
 
 	public static Config getConfig() {

@@ -16,6 +16,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
+import com.mudra.sellinall.config.Config;
 import com.mudra.sellinall.util.DateUtil;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
@@ -47,7 +48,8 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderMessage, 
 			JSONObject inBody) throws JSONException {
 		BasicDBObject site = new BasicDBObject();
-		site.put("name", orderMessage.getString("site"));
+		String siteName = orderMessage.getString("site");
+		site.put("name", siteName);
 		site.put("nickNameID", orderMessage.getString("nickNameID"));
 		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
@@ -63,7 +65,7 @@ public class UpdateOrderDBQuery implements Processor {
 		notificationIDList.add(orderMessage.getString("notificationID"));
 		orderRecord.put("notificationID", notificationIDList);
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
-		fillAdditionDetails(exchange, orderRecord);
+		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);
 		exchange.getOut().setBody(orderRecord);
@@ -75,14 +77,15 @@ public class UpdateOrderDBQuery implements Processor {
 		BasicDBObject orderRecord = new BasicDBObject();
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
-		searchQuery.put("site.name", orderMessage.getString("site"));
+		String siteName = orderMessage.getString("site");
+		searchQuery.put("site.name", siteName);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 		
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		// Append the OrderNotificationID to the database
 		table.update(searchQuery, new BasicDBObject("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
-		fillAdditionDetails(exchange, orderRecord);
+		fillAdditionDetails(exchange, orderRecord, siteName);
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
 	}
@@ -102,7 +105,8 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord) throws JSONException {
+	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord, String siteName)
+			throws JSONException {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
 		if (orderRecord.containsField("orderItems")) {
@@ -113,14 +117,26 @@ public class UpdateOrderDBQuery implements Processor {
 					String SKU = orderItem.getString("SKU");
 					BasicDBObject inventoryValues = inventoryDetailsMap.get(SKU);
 					orderItem.put("itemTitle", inventoryValues.getString("itemTitle"));
+					orderItem.put("imageURL", getImageURL(inventoryValues, siteName));
 					if (inventoryValues.containsField("variantDetails")) {
 						orderItem.put("variantDetails", inventoryValues.get("variantDetails"));
 					}
 					orderItems.set(i, orderItem);
 				}
+				if (!orderItem.containsField("imageURL")) {
+					orderItem.put("imageURL", Config.getConfig().getUploadImageUri() + "no_image.jpg");
+				}
 			}
 			orderRecord.put("orderItems", orderItems);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private String getImageURL(BasicDBObject inventoryValues, String siteName) {
+		String imageURL = inventoryValues.getString("imageURL");
+		BasicDBObject site = (BasicDBObject) inventoryValues.get(siteName);
+		List<String> imageURI = (List<String>) site.get("imageURI");
+		return imageURL + imageURI.get(0);
 	}
 
 	private void fillTransactionKeyValuePair (BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {

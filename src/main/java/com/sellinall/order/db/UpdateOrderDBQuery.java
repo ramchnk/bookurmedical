@@ -88,6 +88,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
+		exchange.getOut().setBody(orderMessage);
 	}
 	
 	private void fillOrderRecord (NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord, BasicDBObject orderMessage) {

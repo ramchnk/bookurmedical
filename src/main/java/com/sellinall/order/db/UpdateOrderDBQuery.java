@@ -123,9 +123,6 @@ public class UpdateOrderDBQuery implements Processor {
 					}
 					orderItems.set(i, orderItem);
 				}
-				if (!orderItem.containsField("imageURL")) {
-					orderItem.put("imageURL", Config.getConfig().getUploadImageUri() + "thumbnail/no_image.jpg");
-				}
 			}
 			orderRecord.put("orderItems", orderItems);
 		}

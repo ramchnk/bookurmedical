@@ -124,7 +124,7 @@ public class UpdateOrderDBQuery implements Processor {
 					orderItems.set(i, orderItem);
 				}
 				if (!orderItem.containsField("imageURL")) {
-					orderItem.put("imageURL", Config.getConfig().getUploadImageUri() + "no_image.jpg");
+					orderItem.put("imageURL", Config.getConfig().getUploadImageUri() + "thumbnail/no_image.jpg");
 				}
 			}
 			orderRecord.put("orderItems", orderItems);
@@ -135,8 +135,10 @@ public class UpdateOrderDBQuery implements Processor {
 	private String getImageURL(BasicDBObject inventoryValues, String siteName) {
 		String imageURL = inventoryValues.getString("imageURL");
 		BasicDBObject site = (BasicDBObject) inventoryValues.get(siteName);
-		List<String> imageURI = (List<String>) site.get("imageURI");
-		return imageURL + imageURI.get(0);
+		List<String> imageURIs = (List<String>) site.get("imageURI");
+		String imageURI = imageURIs.get(0);
+		String[] splitImageURI = imageURI.split("/");
+		return imageURL + splitImageURI[0] + "/thumbnail/" + splitImageURI[1];
 	}
 
 	private void fillTransactionKeyValuePair (BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {

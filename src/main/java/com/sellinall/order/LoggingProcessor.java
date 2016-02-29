@@ -2,26 +2,29 @@ package com.sellinall.order;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.log4j.Logger;
 
 public class LoggingProcessor implements Processor {
+	static Logger log = Logger.getLogger(LoggingProcessor.class.getName());
 	static int si = 0;
+
 	public void process(Exchange exchange) throws Exception {
 
-		System.out.println("LoggingProcessor " + ++si + " {");
-		System.out.println("Received Bodyr: " +
+		log.debug("LoggingProcessor " + ++si + " {");
+		log.debug("Received Bodyr: " +
 
-		exchange.getIn().getBody(String.class));
+		exchange.getIn().getBody().toString());
 
-		System.out.println("Received header: " +
+		log.debug("Received header: " +
 
 		exchange.getIn().getHeaders().toString());
-try{
-	System.out.println("Received Exception: " + exchange.getException()!=null?exchange.getException().getMessage():"no exception" );
-	
-}catch(Exception e){
-	System.out.println("Exception"+e);
-}
-		System.out.println(si + "} done.");
+		try {
+			log.debug("Received Exception: " + exchange.getException() != null ? (exchange.getException().getMessage() != null ? exchange
+					.getException().getMessage() : "")
+					: "no exception");
+		} catch (Exception e) {
+			log.debug("Exception" + e);
+		}
+		log.debug(si + "} done.");
 	}
-
 }

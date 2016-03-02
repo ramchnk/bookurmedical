@@ -40,7 +40,16 @@ public class ProcessSKUDBQuery implements Processor {
 		BasicDBObject inventoryValues = new BasicDBObject();
 		inventoryValues.put("itemTitle", inventory.getString("itemTitle"));
 		inventoryValues.put("imageURL", inventory.getString("imageURL"));
-		BasicDBObject site = (BasicDBObject) JSON.parse(inventory.getJSONArray(siteName).getJSONObject(0).toString());
+		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
+		JSONArray siteSpecificList = inventory.getJSONArray(siteName);
+		BasicDBObject site = null;
+		for (int index = 0; index < siteSpecificList.length(); index++) {
+			JSONObject siteJSON = siteSpecificList.getJSONObject(index);
+			if (siteJSON.getString("nickNameID").equals(orderMessage.getString("nickNameID"))){
+				site = (BasicDBObject) JSON.parse(siteJSON.toString());
+				break;
+			}
+		}
 		inventoryValues.put(siteName, site);
 		if ( inventory.has("variantDetails") ) {
 			BasicDBList variants = new BasicDBList();

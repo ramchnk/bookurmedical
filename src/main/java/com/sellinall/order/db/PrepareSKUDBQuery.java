@@ -5,7 +5,6 @@ package com.sellinall.order.db;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.component.mongodb.MongoDbConstants;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -35,14 +34,5 @@ public class PrepareSKUDBQuery implements Processor {
 		BasicDBObject searchSite = new BasicDBObject("$elemMatch", elemMatch);
 		searchQuery.put(siteName, searchSite);
 		exchange.getOut().setBody(searchQuery);
-
-		BasicDBObject fieldsFilter = new BasicDBObject(siteName + ".$", 1);
-		fieldsFilter.put("SKU", 1);
-		fieldsFilter.put("userId", 1);
-		fieldsFilter.put("imageURL", 1);
-		fieldsFilter.put("itemTitle", 1);
-		fieldsFilter.put("variantDetails", 1);
-
-		exchange.getOut().setHeader(MongoDbConstants.FIELDS_FILTER, fieldsFilter);
 	}
 }

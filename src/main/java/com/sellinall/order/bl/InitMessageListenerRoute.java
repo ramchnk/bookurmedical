@@ -11,6 +11,7 @@ public class InitMessageListenerRoute implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject message = new JSONObject(exchange.getIn().getBody(String.class));
+		log.info(message);
 		String messageType = ORDER;
 		if (message.has("type")) {
 			messageType = message.getString("type");

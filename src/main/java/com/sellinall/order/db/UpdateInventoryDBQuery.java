@@ -25,7 +25,7 @@ public class UpdateInventoryDBQuery implements Processor {
 	static Logger log = Logger.getLogger(UpdateInventoryDBQuery.class.getName());
 	static String siteNames[] = PostingSites.getConfig().getSitesList() ;
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getIn().getBody(String.class));
+		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getProperty("inventory", String.class));
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange.getProperty("notificationOrderActionStatus");
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());

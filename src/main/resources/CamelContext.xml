@@ -125,10 +125,10 @@
 			<from
 				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
 			<process ref="initMessageListenerRoute" />
-			<setHeader headerName="activityLogMethod">
+			<!-- <setHeader headerName="activityLogMethod">
 				<constant>start</constant>
 			</setHeader>
-			<process ref="activityLogging" />
+			<process ref="activityLogging" /> -->
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>
 				<to uri="direct:processOrderNotification" />
@@ -137,10 +137,10 @@
 				<simple>${exchangeProperty.messageType} == 'bid'</simple>
 				<to uri="direct:processBidNotification" />
 			</when>
-			<setHeader headerName="activityLogMethod">
+			<!-- <setHeader headerName="activityLogMethod">
 				<constant>end</constant>
 			</setHeader>
-			<process ref="activityLogging" />
+			<process ref="activityLogging" /> -->
 		</route>
 
 		<route id="processBidNotification">

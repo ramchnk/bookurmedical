@@ -17,8 +17,11 @@ public class InventoryCfg {
 
 	public @Bean DB db() throws Exception {
 		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
-		seeds.add(new ServerAddress(Config.getConfig().getInventoryCollectionHostName(), Integer.parseInt(Config
-				.getConfig().getInventoryCollectionPort())));
+		String[] hostNames = Config.getConfig().getInventoryCollectionHostName().split(",");
+		String[] ports = Config.getConfig().getInventoryCollectionPort().split(",");
+		for (int i = 0; i < hostNames.length; i++) {
+			seeds.add(new ServerAddress(hostNames[i], Integer.parseInt(ports[i])));
+		}
 
 		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
 		credentials.add(MongoCredential.createScramSha1Credential(Config.getConfig().getDbUserName(), Config

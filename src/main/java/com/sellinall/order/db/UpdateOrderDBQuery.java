@@ -16,7 +16,6 @@ import org.codehaus.jettison.json.JSONObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
-import com.mudra.sellinall.config.Config;
 import com.mudra.sellinall.util.DateUtil;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
@@ -118,7 +117,9 @@ public class UpdateOrderDBQuery implements Processor {
 					String SKU = orderItem.getString("SKU");
 					BasicDBObject inventoryValues = inventoryDetailsMap.get(SKU);
 					orderItem.put("itemTitle", inventoryValues.getString("itemTitle"));
-					orderItem.put("imageURL", getImageURL(inventoryValues, siteName));
+					if (!getImageURL(inventoryValues, siteName).isEmpty()) {
+						orderItem.put("imageURL", getImageURL(inventoryValues, siteName));
+					}
 					if (inventoryValues.containsField("variantDetails")) {
 						orderItem.put("variantDetails", inventoryValues.get("variantDetails"));
 					}
@@ -134,9 +135,15 @@ public class UpdateOrderDBQuery implements Processor {
 		String imageURL = inventoryValues.getString("imageURL");
 		BasicDBObject site = (BasicDBObject) inventoryValues.get(siteName);
 		List<String> imageURIs = (List<String>) site.get("imageURI");
-		String imageURI = imageURIs.get(0);
-		String[] splitImageURI = imageURI.split("/");
-		return imageURL + splitImageURI[0] + "/thumbnail/" + splitImageURI[1];
+		// TODO if variant record has no image, get the parent image.
+		// For quick fix, returning empty string
+		if (imageURIs != null && imageURIs.size() > 0) {
+			String imageURI = imageURIs.get(0);
+			String[] splitImageURI = imageURI.split("/");
+			return imageURL + splitImageURI[0] + "/thumbnail/" + splitImageURI[1];
+		} else {
+			return "";
+		}
 	}
 
 	private void fillTransactionKeyValuePair (BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {

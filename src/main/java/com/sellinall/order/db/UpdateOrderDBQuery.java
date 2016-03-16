@@ -86,12 +86,15 @@ public class UpdateOrderDBQuery implements Processor {
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
+		String updateStatus = "success";
 		if (orderMessage.containsField("updateStatus")) {
-			orderRecord.put("updateStatus", orderMessage.getString("updateStatus"));
-		} else {
-			orderRecord.put("updateStatus", "success");
+			updateStatus = orderMessage.getString("updateStatus");
 		}
-		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
+		orderRecord.put("updateStatus", updateStatus);
+		if (!updateStatus.equals("failure")) {
+			//If update status failure then no need to update order table 
+			table.update(searchQuery, new BasicDBObject("$set", orderRecord));
+		}
 		exchange.getOut().setBody(orderMessage);
 	}
 	

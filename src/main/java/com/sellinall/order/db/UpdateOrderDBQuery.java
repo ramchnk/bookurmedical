@@ -86,6 +86,11 @@ public class UpdateOrderDBQuery implements Processor {
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
+		if (orderMessage.containsField("updateStatus")) {
+			orderRecord.put("updateStatus", orderMessage.getString("updateStatus"));
+		} else {
+			orderRecord.put("updateStatus", "success");
+		}
 		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
 		exchange.getOut().setBody(orderMessage);
 	}

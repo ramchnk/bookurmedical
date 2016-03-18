@@ -18,6 +18,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.util.DateUtil;
 import com.sellinall.database.DbUtilities;
+import com.sellinall.enums.OrderUpdateStatus;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 
 /**
@@ -70,8 +71,7 @@ public class UpdateOrderDBQuery implements Processor {
 		exchange.getOut().setBody(orderRecord);
 	}
 	
-	private void updateOrderRecord(Exchange exchange,
-			NotificationOrderActionStatus notificationOrderActionStatus,
+	private void updateOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
 			BasicDBObject orderMessage) throws JSONException {
 		BasicDBObject orderRecord = new BasicDBObject();
 		BasicDBObject searchQuery = new BasicDBObject();
@@ -79,22 +79,25 @@ public class UpdateOrderDBQuery implements Processor {
 		String siteName = orderMessage.getString("site");
 		searchQuery.put("site.name", siteName);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
-		
+
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		// Append the OrderNotificationID to the database
-		table.update(searchQuery, new BasicDBObject("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
-		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
-		fillAdditionDetails(exchange, orderRecord, siteName);
-		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
-		String updateStatus = "success";
+		table.update(searchQuery,
+				new BasicDBObject("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
+
+		String updateStatus = OrderUpdateStatus.COMPLETE.toString();
 		if (orderMessage.containsField("updateStatus")) {
 			updateStatus = orderMessage.getString("updateStatus");
 		}
-		orderRecord.put("updateStatus", updateStatus);
-		if (!updateStatus.equals("failure")) {
-			//If update status failure then no need to update order table 
-			table.update(searchQuery, new BasicDBObject("$set", orderRecord));
+
+		//update order data only when the update is complete
+		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
+			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
+			fillAdditionDetails(exchange, orderRecord, siteName);
 		}
+		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
+		orderRecord.put("updateStatus", updateStatus);
+		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
 		exchange.getOut().setBody(orderMessage);
 	}
 	

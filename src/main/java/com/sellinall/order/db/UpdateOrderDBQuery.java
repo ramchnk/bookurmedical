@@ -97,6 +97,7 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		orderRecord.put("updateStatus", updateStatus);
+		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
 		exchange.getOut().setBody(orderMessage);
 	}

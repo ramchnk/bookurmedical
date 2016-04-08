@@ -84,17 +84,17 @@ public class UpdateInventoryForBidMessage implements Processor {
 					isNotificationFromThisNickNameID = true;
 				}
 
-				if (inventoryDBRecord.getBoolean("sync")
-						&& !siteSpecific.getString("nickNameID").equals(bidMessage.getString("nickNameID"))) {
-					// Update other sites only if sync true
-					// skip auction site quantity update, if we have more than
-					// one quantity
-					if (!isNotificationFromThisNickNameID && siteSpecific.containsField("isAuction")
-							&& siteSpecific.getBoolean("isAuction")
-							&& inventoryDBRecord.getInt("noOfItem") > siteSpecific.getInt("noOfItem")) {
+				if (inventoryDBRecord.getBoolean("sync") && !isNotificationFromThisNickNameID) {
+					// Update other sites only if sync is true. Skip if the site
+					// specific quantity is lesser than (overall quantity - bid
+					// quantity).
+					int invNoOfItem = inventoryDBRecord.getInt("noOfItem");
+					int siteNoOfItem = siteSpecific.getInt("noOfItem");
+					if ((invNoOfItem - BID_QUANTITY) >= siteNoOfItem) {
 						continue;
 					}
-					incrementSetter(quantityModifier, siteName + "." + index + ".noOfItem", -BID_QUANTITY,
+					int quantityDiff = BID_QUANTITY - (invNoOfItem - siteNoOfItem);
+					incrementSetter(quantityModifier, siteName + "." + index + ".noOfItem", -quantityDiff,
 							updateInventoryQuantity);
 				}
 			}

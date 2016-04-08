@@ -64,7 +64,7 @@ public class UpdateInventoryDBQuery implements Processor {
 	private void processQuantityUpdates(
 			NotificationOrderActionStatus notificationOrderActionStatus,
 			JSONObject orderMessage, BasicDBObject inventoryDBRecord,
-			int quantity, List<String> syncSites, BasicDBObject quantityIncDecModifier,
+			int quantitySold, List<String> syncSites, BasicDBObject quantityIncDecModifier,
 			BasicDBObject quantitySetModifier)
 			throws JSONException {
 		for (String siteName : siteNames ) {
@@ -80,26 +80,33 @@ public class UpdateInventoryDBQuery implements Processor {
 			for (int index = 0; index < siteSpecificList.size(); index++) {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
 				if (!siteSpecific.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
-					if ( inventoryDBRecord.getBoolean("sync")) {  // Update other sites only if sync true
-						// skip auction site quantity update, if we have more than one quantity
-						if (siteSpecific.containsField("auction") && siteSpecific.getBoolean("auction") &&
-							inventoryDBRecord.getInt("noOfItem") > quantity ) {
+					if (inventoryDBRecord.getBoolean("sync")) {
+						// Update other sites only if sync is true. Skip if the
+						// site specific quantity is lesser than (overall
+						// quantity - quantity sold).
+						int invNoOfItem = inventoryDBRecord.getInt("noOfItem");
+						int siteNoOfItem = siteSpecific.getInt("noOfItem");
+						if ((invNoOfItem - quantitySold) >= siteNoOfItem) {
 							continue;
 						}
+						int quantityDiff = quantitySold - (invNoOfItem - siteNoOfItem);
 						if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)) {
-							if(siteSpecific.containsField("noOfItem") && siteSpecific.getInt("noOfItem") > quantity){
-								incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", -quantity);
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)) {							
+							if(siteSpecific.containsField("noOfItem") && siteNoOfItem > quantityDiff){
+								incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", -quantityDiff);
 							} else {
 								incrementSetter(quantitySetModifier, siteName+"."+index+".noOfItem", 0);
 							}
 						} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)) {
-							incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", quantity);
+							// in case of cancel, ideally we should compare with
+							// max allolwed quantity and decide whether to
+							// increment or not. To be done in future.
+							incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", quantitySold);
 						}
 					}
 				} else { // notification from this site
@@ -119,20 +126,20 @@ public class UpdateInventoryDBQuery implements Processor {
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)) {
-				incrementSetter(quantityIncDecModifier, "noOfItem", -quantity);
-				incrementSetter(quantityIncDecModifier, "noOfItemsold", quantity);
+				incrementSetter(quantityIncDecModifier, "noOfItem", -quantitySold);
+				incrementSetter(quantityIncDecModifier, "noOfItemsold", quantitySold);
 				if (hasSiteSpecificIndex) {
-					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", -quantity);
-					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", quantity);
+					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", -quantitySold);
+					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", quantitySold);
 				}
 			} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)) {
-				incrementSetter(quantityIncDecModifier, "noOfItem", quantity);
-				incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantity);
+				incrementSetter(quantityIncDecModifier, "noOfItem", quantitySold);
+				incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantitySold);
 				if (hasSiteSpecificIndex) {
-					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", quantity);
-					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", -quantity);
+					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", quantitySold);
+					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", -quantitySold);
 				}
 			}
 		}

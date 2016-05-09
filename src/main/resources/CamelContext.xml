@@ -103,6 +103,13 @@
 		<property name="password" value="${etsymq.password}" />
 		<property name="virtualHost" value="${etsymq.virtualHost}" />
 	</bean>
+	<bean id="shopcluesTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${shopcluesmq.host}" />
+		<property name="port" value="${shopcluesmq.tx.port}" />
+		<property name="username" value="${shopcluesmq.username}" />
+		<property name="password" value="${shopcluesmq.password}" />
+		<property name="virtualHost" value="${shopcluesmq.virtualHost}" />
+	</bean>
 	<bean id="loggingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${activity.host}" />
 		<property name="port" value="${activity.port}" />
@@ -232,6 +239,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{ebaymq.host}}:{{ebaymq.tx.port}}/ebaylistingexchange?connectionFactory=#eBayTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.shopclues} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>shopcluesListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{shopcluesmq.host}}:{{shopcluesmq.tx.port}}/shopcluesListingExchange?connectionFactory=#shopcluesTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
 					pattern="InOut" />
 			</when>
 			<when>

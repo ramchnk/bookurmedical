@@ -244,11 +244,11 @@
 			<when>
 				<simple>${header.shopclues} == true</simple>
 				<setHeader headerName="rabbitmq.ROUTING_KEY">
-					<constant>shopcluesListingKey</constant>
+					<constant>shopcluesKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{shopcluesmq.host}}:{{shopcluesmq.tx.port}}/shopcluesListingExchange?connectionFactory=#shopcluesTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
+					uri="rabbitmq://{{shopcluesmq.host}}:{{shopcluesmq.tx.port}}/shopcluesExchange?connectionFactory=#shopcluesTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
 					pattern="InOut" />
 			</when>
 			<when>

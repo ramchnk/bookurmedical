@@ -113,8 +113,7 @@ public class UpdateInventoryDBQuery implements Processor {
 					}
 				} else { // notification from this site
 					// For already Bided inventory, the quantity(noOfItem) is updated for the first bid without a order been created.
-					if (SIAInventoryStatus.BIDDING.equalsName(siteSpecific.getString("status"))
-							|| SIAInventoryStatus.SOLDOUT.equalsName(siteSpecific.getString("status"))) {
+					if (SIAInventoryStatus.BIDDING.equalsName(siteSpecific.getString("status"))) {
 						// skip the inventory update
 						quantityIncDecModifier.clear();
 						return;

@@ -16,8 +16,11 @@ import com.mudra.sellinall.config.Config;
 public class UserAndAuthCfg {
 	public @Bean DB db() throws Exception {
 		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
-		seeds.add(new ServerAddress(Config.getConfig().getUserCollectionHostName(), Integer.parseInt(Config.getConfig()
-				.getUserCollectionPort())));
+		String[] hostNames = Config.getConfig().getUserCollectionHostName().split(",");
+		String[] ports = Config.getConfig().getUserCollectionPort().split(",");
+		for(int i = 0; i < hostNames.length; i++) {
+			seeds.add(new ServerAddress(hostNames[i], Integer.parseInt(ports[i])));
+		}
 
 		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
 		credentials.add(MongoCredential.createScramSha1Credential(Config.getConfig().getDbUserName(), Config

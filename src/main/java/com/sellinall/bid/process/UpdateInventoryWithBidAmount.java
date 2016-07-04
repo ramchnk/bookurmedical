@@ -30,7 +30,6 @@ public class UpdateInventoryWithBidAmount implements Processor {
 	private void processBidAmountUpdateQuery(Exchange exchange, BasicDBObject inventoryDBRecord, JSONObject bidMessage)
 			throws JSONException {
 		BasicDBObject searchQuery = new BasicDBObject();
-		String bidderUserID = "";
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
 		searchQuery.put("userId", bidMessage.getString("userId"));
 		String siteName = bidMessage.getString("site");
@@ -39,10 +38,13 @@ public class UpdateInventoryWithBidAmount implements Processor {
 		BasicDBObject updateFields = new BasicDBObject(siteName + ".$.highBidAmount",
 				(BasicDBObject) JSON.parse(bidMessage.getJSONObject("bidAmount").toString()));
 		if (bidMessage.has("bidder")) {
+			String highBidderUserId = "";
 			JSONObject getUserId = bidMessage.getJSONObject("bidder");
-			bidderUserID = getUserId.getString("UserID");
+			if (bidMessage.has("UserID")) {
+				highBidderUserId = getUserId.getString("UserID");
+				updateFields.put(siteName + ".$.highBidderUserId", highBidderUserId);
+			}
 		}
-		updateFields.put(siteName + ".$.buyerBidderId", bidderUserID);
 		updateFields.put(siteName + ".$.failureReason", "");
 		updateFields.put(siteName + ".$.timeLastUpdated", DateUtil.getSIADateFormat());
 		table.update(searchQuery, new BasicDBObject("$set", updateFields));

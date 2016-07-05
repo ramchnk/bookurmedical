@@ -107,6 +107,19 @@ public class UpdateInventoryForBidMessage implements Processor {
 						SIAInventoryStatus.BIDDING.toString());
 				valuesSet.put(siteName + "." + siteSpecificIndex + ".highBidAmount",
 						(BasicDBObject) JSON.parse(bidMessage.getJSONObject("bidAmount").toString()));
+				if (bidMessage.has("bidder")) {
+					String highBidderEmailId = "";
+					String highBidderUserId = "";
+					JSONObject bidder = bidMessage.getJSONObject("bidder");
+					if (bidder.has("Email")) {
+						highBidderEmailId = bidder.getString("Email");
+						valuesSet.put(siteName + "." + siteSpecificIndex + ".highBidderEmailId", highBidderEmailId);
+					}
+					if (bidder.has("UserID")) {
+						highBidderUserId = bidder.getString("UserID");
+						valuesSet.put(siteName + "." + siteSpecificIndex + ".highBidderUserId", highBidderUserId);
+					}
+				}
 				valuesSet.put(siteName + "." + siteSpecificIndex + ".failureReason", "");
 				valuesSet.put(siteName + "." + siteSpecificIndex + ".timeLastUpdated", DateUtil.getSIADateFormat());
 				updateFields.put("$set", valuesSet);

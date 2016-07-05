@@ -26,6 +26,7 @@
 	<bean id="processOrderStatus" class="com.sellinall.order.bl.ProcessOrderStatus" />
 	<bean id="updateOrderDBQuery" class="com.sellinall.order.db.UpdateOrderDBQuery" />
 	<bean id="updateInventoryDBQuery" class="com.sellinall.order.db.UpdateInventoryDBQuery" />
+	<bean id="loadUserDataByNicknameId" class="com.sellinall.order.db.LoadUserDataByNicknameId" />
 	<bean id="myPrint" class="com.sellinall.order.LoggingProcessor" />
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
@@ -132,10 +133,6 @@
 			<from
 				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
 			<process ref="initMessageListenerRoute" />
-			<!-- <setHeader headerName="activityLogMethod">
-				<constant>start</constant>
-			</setHeader>
-			<process ref="activityLogging" /> -->
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>
 				<to uri="direct:processOrderNotification" />
@@ -155,9 +152,12 @@
 			<process ref="initBidRoute" />
 			<process ref="insertBidNotification" />
 			<to uri="direct:loadInventoryData" />
+			<process ref="loadUserDataByNicknameId" />
 			<choice>
 			<when>
-				<simple>${exchangeProperty.isSyncRequired} == true</simple>
+				<simple>${exchangeProperty.isSyncRequired} == true and
+				        ${exchangeProperty.ignoreSoldEvent} == false
+				</simple>
 				<process ref="updateInventoryForBidMessage" />
 				<to uri="direct:publishToMQ" />
 			</when>
@@ -169,6 +169,7 @@
 		<route id="processOrderNotification">
 			<from uri="direct:processOrderNotification" />
 			<to uri="direct:loadOrderData" />
+			<process ref="loadUserDataByNicknameId" />
 			<process ref="processOrderStatus" />
 			<split parallelProcessing="true" strategyRef="aggregatorStrategy">
 				<method ref="splitterBean" method="splitOrders" />
@@ -184,8 +185,11 @@
 			<when>
 				<simple>${exchangeProperty.hasSKU} == true</simple>
 				<to uri="direct:loadInventoryData" />
-				<process ref="updateInventoryDBQuery" />
-				<to uri="direct:publishToMQ" />
+				<when>
+					<simple>${exchangeProperty.ignoreSoldEvent} == false</simple>
+						<process ref="updateInventoryDBQuery" />
+						<to uri="direct:publishToMQ" />
+				</when>
 			</when>
 		</route>
 

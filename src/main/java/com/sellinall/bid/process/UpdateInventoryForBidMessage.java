@@ -28,7 +28,7 @@ public class UpdateInventoryForBidMessage implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 
-		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getIn().getBody(String.class));
+		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getProperty("inventory", String.class));
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		JSONObject bidMessage = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject updateInventoryQuantity = new BasicDBObject();

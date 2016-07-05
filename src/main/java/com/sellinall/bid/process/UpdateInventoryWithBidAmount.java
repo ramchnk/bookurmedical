@@ -11,6 +11,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.util.DateUtil;
 import com.sellinall.database.DbUtilities;
+import com.sellinall.enums.SIAInventoryStatus;
 
 /**
  * @author Mallikarjun
@@ -20,7 +21,7 @@ public class UpdateInventoryWithBidAmount implements Processor {
 	static Logger log = Logger.getLogger(UpdateInventoryWithBidAmount.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getIn().getBody(String.class));
+		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getProperty("inventory", String.class));
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		JSONObject bidMessage = exchange.getProperty("message", JSONObject.class);
 		processBidAmountUpdateQuery(exchange, inventoryDBRecord, bidMessage);
@@ -49,6 +50,7 @@ public class UpdateInventoryWithBidAmount implements Processor {
 				updateFields.put(siteName + ".$.highBidderUserId", highBidderUserId);
 			}
 		}
+		updateFields.put(siteName + ".$.status", SIAInventoryStatus.BIDDING.toString());
 		updateFields.put(siteName + ".$.failureReason", "");
 		updateFields.put(siteName + ".$.timeLastUpdated", DateUtil.getSIADateFormat());
 		table.update(searchQuery, new BasicDBObject("$set", updateFields));

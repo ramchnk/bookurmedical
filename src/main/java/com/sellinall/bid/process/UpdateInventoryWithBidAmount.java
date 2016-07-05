@@ -5,6 +5,7 @@ import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.eclipse.jetty.server.Authentication.User;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -36,8 +37,21 @@ public class UpdateInventoryWithBidAmount implements Processor {
 		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
 		BasicDBObject updateFields = new BasicDBObject(siteName + ".$.highBidAmount",
 				(BasicDBObject) JSON.parse(bidMessage.getJSONObject("bidAmount").toString()));
+		if (bidMessage.has("bidder")) {
+			String highBidderEmailId = "";
+			String highBidderUserId = "";
+			JSONObject bidder = bidMessage.getJSONObject("bidder");
+			if (bidder.has("Email")) {
+				highBidderEmailId = bidder.getString("Email");
+				updateFields.put(siteName + ".$.highBidderEmailId", highBidderEmailId);
+			}
+			if (bidder.has("UserID")) {
+				highBidderUserId = bidder.getString("UserID");
+				updateFields.put(siteName + ".$.highBidderUserId", highBidderUserId);
+			}
+		}
 		updateFields.put(siteName + ".$.failureReason", "");
 		updateFields.put(siteName + ".$.timeLastUpdated", DateUtil.getSIADateFormat());
-		table.update(searchQuery, new BasicDBObject("$set",updateFields));
+		table.update(searchQuery, new BasicDBObject("$set", updateFields));
 	}
 }

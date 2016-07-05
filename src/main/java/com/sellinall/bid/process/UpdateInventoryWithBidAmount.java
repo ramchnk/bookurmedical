@@ -38,8 +38,13 @@ public class UpdateInventoryWithBidAmount implements Processor {
 		BasicDBObject updateFields = new BasicDBObject(siteName + ".$.highBidAmount",
 				(BasicDBObject) JSON.parse(bidMessage.getJSONObject("bidAmount").toString()));
 		if (bidMessage.has("bidder")) {
+			String highBidderEmailId = "";
 			String highBidderUserId = "";
 			JSONObject bidder = bidMessage.getJSONObject("bidder");
+			if (bidder.has("Email")) {
+				highBidderEmailId = bidder.getString("Email");
+				updateFields.put(siteName + ".$.highBidderEmailId", highBidderEmailId);
+			}
 			if (bidder.has("UserID")) {
 				highBidderUserId = bidder.getString("UserID");
 				updateFields.put(siteName + ".$.highBidderUserId", highBidderUserId);

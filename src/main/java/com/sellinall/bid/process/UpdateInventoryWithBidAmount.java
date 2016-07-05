@@ -5,7 +5,6 @@ import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.eclipse.jetty.server.Authentication.User;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;

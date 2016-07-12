@@ -46,6 +46,7 @@ public class ConstructOrderNotification implements Processor {
 			outBody.put("userMessageName", "ORDER_CREATED");
 			outBody.put("message", message);
 		} catch (Exception exception) {
+			log.error("Error occured while constructing the email-notification payload");
 			exception.printStackTrace();
 		}
 		exchange.getOut().setBody(outBody);

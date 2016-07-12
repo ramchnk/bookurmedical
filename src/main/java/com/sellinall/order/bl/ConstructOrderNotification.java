@@ -15,7 +15,9 @@ public class ConstructOrderNotification implements Processor {
 
 	static Logger log = Logger.getLogger(ConstructOrderNotification.class.getName());
 
-	public void process(Exchange exchange) throws Exception {
+	public void process(Exchange exchange){
+		try
+		{
 		JSONObject inBody = new JSONObject(exchange.getIn().getBody(String.class));
 		JSONObject outputdata = new JSONObject();
 		JSONObject itemAmount = new JSONObject();
@@ -44,5 +46,14 @@ public class ConstructOrderNotification implements Processor {
 		outputdata.put("userMessageName", "ORDER_CREATED");
 		outputdata.put("message", messageData);
 		exchange.getOut().setBody(outputdata);
+		}
+		catch(org.json.JSONException Jsonexception)
+		{
+			log.error(Jsonexception.toString());
+		}
+		catch(Exception Exception)
+		{
+			log.error(Exception.toString());
+		}
 	}
 }

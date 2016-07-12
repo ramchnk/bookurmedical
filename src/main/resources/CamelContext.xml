@@ -31,7 +31,7 @@
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
 	<bean id="activityLogging" class="com.sellinall.order.util.ActivityLogging" />
-	<bean id="initOrderNotification" class="com.sellinall.order.bl.constructOrderNotification"/>
+	<bean id="constructOrderNotification" class="com.sellinall.order.bl.ConstructOrderNotification"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -333,7 +333,7 @@
 		</route>
 		<route id="notificationToUser">
             <from uri="direct:notificationToUser"/>
-            <process ref="initOrderNotification"/>
+            <process ref="constructOrderNotification"/>
 			<setHeader headerName="rabbitmq.ROUTING_KEY">
 				<constant>userMessagingKey</constant>
 			</setHeader>

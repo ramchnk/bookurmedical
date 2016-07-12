@@ -31,7 +31,7 @@
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
 	<bean id="activityLogging" class="com.sellinall.order.util.ActivityLogging" />
-	<bean id="InitOrderNotification" class="com.sellinall.order.bl.InitOrderNotification"/>
+	<bean id="initOrderNotification" class="com.sellinall.order.bl.constructOrderNotification"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -142,7 +142,6 @@
 
 			<from
 			uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
-
 			<process ref="initMessageListenerRoute" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>
@@ -332,9 +331,9 @@
 				uri="rabbitmq://{{activity.host}}:{{activity.port}}/activitylogging?connectionFactory=#loggingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 				pattern="InOnly" />
 		</route>
-		  <route id="notificationToUser">
+		<route id="notificationToUser">
             <from uri="direct:notificationToUser"/>
-            <process ref="InitOrderNotification"/>
+            <process ref="initOrderNotification"/>
 			<setHeader headerName="rabbitmq.ROUTING_KEY">
 				<constant>userMessagingKey</constant>
 			</setHeader>

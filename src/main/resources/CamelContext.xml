@@ -31,6 +31,7 @@
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
 	<bean id="activityLogging" class="com.sellinall.order.util.ActivityLogging" />
+	<bean id="InitOrderNotification" class="com.sellinall.order.bl.InitOrderNotification"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -118,6 +119,15 @@
 		<property name="password" value="${activity.password}" />
 		<property name="virtualHost" value="${activity.virtualHost}" />
 	</bean>
+
+	<!-- user-messaging server -->
+	<bean id="txuserMessagingFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${userMessaging.host}" />
+		<property name="port" value="${userMessaging.tx.port}" />
+		<property name="username" value="${userMessaging.username}" />
+		<property name="password" value="${userMessaging.password}" />
+		<property name="virtualHost" value="${userMessaging.virtualHost}" />
+	</bean>
 	<!-- mongo db bean -->
 	<bean id="mongoInventoryBean" class="com.mongodb.MongoClient">
 		<constructor-arg index="0">
@@ -126,12 +136,13 @@
 			</bean>
 		</constructor-arg>
 	</bean>
-
 	<!-- The camel route context -->
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 		<route id="messageListner">
+
 			<from
-				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
+			uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
+
 			<process ref="initMessageListenerRoute" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>
@@ -141,6 +152,7 @@
 				<simple>${exchangeProperty.messageType} == 'bid'</simple>
 				<to uri="direct:processBidNotification" />
 			</when>
+
 			<!-- <setHeader headerName="activityLogMethod">
 				<constant>end</constant>
 			</setHeader>
@@ -175,8 +187,12 @@
 				<method ref="splitterBean" method="splitOrders" />
 				<to uri="direct:processOrderItem" />
 			</split>
-			<process ref="updateOrderDBQuery" />
+			<process ref="updateOrderDBQuery" />			
 			<to uri="direct:publishOrderNotificationToMQ" />
+			<when>
+				<simple>${exchangeProperty.isNewOrder} == true</simple>
+				<to uri="direct:notificationToUser"/>
+			</when>
 		</route>
 
 		<route id="processOrderItem">
@@ -316,5 +332,18 @@
 				uri="rabbitmq://{{activity.host}}:{{activity.port}}/activitylogging?connectionFactory=#loggingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 				pattern="InOnly" />
 		</route>
+		  <route id="notificationToUser">
+            <from uri="direct:notificationToUser"/>
+            <process ref="InitOrderNotification"/>
+			<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<constant>userMessagingKey</constant>
+			</setHeader>
+			<setHeader headerName="rabbitmq.DELIVERY_MODE">
+				<constant>2</constant>
+			</setHeader>
+			<convertBodyTo type="java.lang.String" />
+			<to
+				uri="rabbitmq://{{userMessaging.host}}:{{userMessaging.tx.port}}/userMessagingExchange?connectionFactory=#txuserMessagingFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" />
+        </route>
 	</camelContext>
 </beans>

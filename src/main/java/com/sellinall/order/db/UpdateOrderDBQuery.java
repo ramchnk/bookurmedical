@@ -35,10 +35,8 @@ public class UpdateOrderDBQuery implements Processor {
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		JSONObject orderMessageJSON = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
-		exchange.setProperty("isNewOrder",false);//initially set false value
 		if (!hasOrderInDB) {
 			insertOrderRecord(exchange, notificationOrderActionStatus, orderMessage, inBody);
-			exchange.setProperty("isNewOrder",true);
 			return;
 		}
 		updateOrderRecord(exchange, notificationOrderActionStatus, orderMessage);

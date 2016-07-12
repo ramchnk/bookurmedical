@@ -189,7 +189,7 @@
 			<process ref="updateOrderDBQuery" />			
 			<to uri="direct:publishOrderNotificationToMQ" />
 			<when>
-				<simple>${exchangeProperty.isNewOrder} == true</simple>
+				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
 				<to uri="direct:notificationToUser"/>
 			</when>
 		</route>

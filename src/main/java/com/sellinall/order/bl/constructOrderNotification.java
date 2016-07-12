@@ -29,7 +29,14 @@ public class constructOrderNotification implements Processor {
 					+ ((orderDetails.length() == (i + 1)) ? "" : ",");			
 		}
 		messageData.put("itemTitle", itemTitle);
+		if(((JSONObject) inBody.get("buyerDetails")).has("buyerID"))
+		{
 		messageData.put("buyerId", ((JSONObject) inBody.get("buyerDetails")).get("buyerID"));
+		}
+		else
+		{
+			messageData.put("buyerId","-");
+		}
 		messageData.put("orderPageUrl",orderPageUrl);
 		itemAmount = (JSONObject) inBody.get("orderAmount");
 		messageData.put("itemAmount", itemAmount);

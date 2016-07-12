@@ -15,45 +15,39 @@ public class ConstructOrderNotification implements Processor {
 
 	static Logger log = Logger.getLogger(ConstructOrderNotification.class.getName());
 
-	public void process(Exchange exchange){
-		try
-		{
+	public void process(Exchange exchange) {
+
 		JSONObject inBody = new JSONObject(exchange.getIn().getBody(String.class));
-		JSONObject outputdata = new JSONObject();
-		JSONObject itemAmount = new JSONObject();
-		JSONObject messageData = new JSONObject();
-		String itemTitle = "";
-		String orderPageUrl = Config.getConfig().getSIAOrderPageURL() + inBody.get("orderID") + "&site="
-				+ inBody.get("nickNameID");
-		messageData.put("siteNickname", inBody.get("nickNameID"));
-		org.json.JSONArray orderDetails = inBody.getJSONArray("orderItems");
-		for (int i = 0; i < orderDetails.length(); i++) {
-			itemTitle += ((JSONObject) orderDetails.get(i)).get("itemTitle")
-					+ ((orderDetails.length() == (i + 1)) ? "" : ",");
+		JSONObject outBody = new JSONObject();
+
+		try {
+			JSONObject message = new JSONObject();
+			String itemTitle = "";
+			String orderPageUrl = Config.getConfig().getSIAOrderPageURL() + inBody.get("orderID") + "&site="
+					+ inBody.get("nickNameID");
+			message.put("siteNickname", inBody.get("nickNameID"));
+			org.json.JSONArray orderDetails = inBody.getJSONArray("orderItems");
+			for (int i = 0; i < orderDetails.length(); i++) {
+				itemTitle += ((JSONObject) orderDetails.get(i)).get("itemTitle")
+						+ ((orderDetails.length() == (i + 1)) ? "" : ",");
+			}
+			message.put("itemTitle", itemTitle);
+			JSONObject buyerDetails = inBody.getJSONObject("buyerDetails");
+			if (buyerDetails.has("buyerID")) {
+				message.put("buyerId", buyerDetails.getString("buyerID"));
+			} else {
+				message.put("buyerId", "-");
+			}
+			message.put("orderPageUrl", orderPageUrl);
+			message.put("itemAmount", inBody.getJSONObject("orderAmount"));
+			message.put("orderId", inBody.get("orderID"));
+			message.put("orderNumber", inBody.get("orderID"));
+			outBody.put("accountNumber", inBody.get("userId"));
+			outBody.put("userMessageName", "ORDER_CREATED");
+			outBody.put("message", message);
+		} catch (Exception exception) {
+			exception.printStackTrace();
 		}
-		messageData.put("itemTitle", itemTitle);
-		if (((JSONObject) inBody.get("buyerDetails")).has("buyerID")) {
-			messageData.put("buyerId", ((JSONObject) inBody.get("buyerDetails")).get("buyerID"));
-		} else {
-			messageData.put("buyerId", "-");
-		}
-		messageData.put("orderPageUrl", orderPageUrl);
-		itemAmount = (JSONObject) inBody.get("orderAmount");
-		messageData.put("itemAmount", itemAmount);
-		messageData.put("orderId", inBody.get("orderID"));
-		messageData.put("orderNumber", inBody.get("orderID"));
-		outputdata.put("accountNumber", inBody.get("userId"));
-		outputdata.put("userMessageName", "ORDER_CREATED");
-		outputdata.put("message", messageData);
-		exchange.getOut().setBody(outputdata);
-		}
-		catch(org.json.JSONException Jsonexception)
-		{
-			log.error(Jsonexception.toString());
-		}
-		catch(Exception Exception)
-		{
-			log.error(Exception.toString());
-		}
+		exchange.getOut().setBody(outBody);
 	}
 }

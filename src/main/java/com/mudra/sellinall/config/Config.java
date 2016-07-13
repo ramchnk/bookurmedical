@@ -16,6 +16,7 @@ public class Config {
 	private String InventoryCollectionPort;
 	private String InventoryCollectionDBName;
 	private String uploadImageUri;
+	private String SIAOrderPageURL;
 
 	public String getFbTokenExchangeUri() {
 		return FbTokenExchangeUri;
@@ -101,4 +102,13 @@ public class Config {
 	public static Config getConfig() {
 		return (Config) context.getBean("Config");
 	}
+
+	public String getSIAOrderPageURL() {
+		return SIAOrderPageURL;
+	}
+
+	public void setSIAOrderPageURL(String sIAOrderPageURL) {
+		SIAOrderPageURL = sIAOrderPageURL;
+	}
+
 }

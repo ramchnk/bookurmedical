@@ -35,7 +35,6 @@ public class UpdateOrderDBQuery implements Processor {
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		JSONObject orderMessageJSON = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
-		
 		if (!hasOrderInDB) {
 			insertOrderRecord(exchange, notificationOrderActionStatus, orderMessage, inBody);
 			return;
@@ -177,4 +176,5 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());			
 		}
 	}
+
 }

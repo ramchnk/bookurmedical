@@ -190,6 +190,9 @@
 			<to uri="direct:publishOrderNotificationToMQ" />
 			<when>
 				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
+				 <setHeader headerName="rabbitmq.userMessageName">
+					<constant>ORDER_CREATED</constant>
+				 </setHeader>
 				<to uri="direct:notificationToUser"/>
 			</when>
 		</route>

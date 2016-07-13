@@ -43,7 +43,7 @@ public class ConstructOrderNotification implements Processor {
 			message.put("orderId", inBody.get("orderID"));
 			message.put("orderNumber", inBody.get("orderID"));
 			outBody.put("accountNumber", inBody.get("userId"));
-			outBody.put("userMessageName", "ORDER_CREATED");
+			outBody.put("userMessageName",(String) exchange.getIn().getHeader("rabbitmq.userMessageName"));
 			outBody.put("message", message);
 		} catch (Exception exception) {
 			log.error("Error occured while constructing the email-notification payload");

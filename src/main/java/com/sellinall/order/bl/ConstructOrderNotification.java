@@ -3,12 +3,8 @@ package com.sellinall.order.bl;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
 
 public class ConstructOrderNotification implements Processor {
@@ -19,13 +15,13 @@ public class ConstructOrderNotification implements Processor {
 
 		JSONObject inBody = new JSONObject(exchange.getIn().getBody(String.class));
 		JSONObject outBody = new JSONObject();
-
 		try {
 			JSONObject message = new JSONObject();
 			String itemTitle = "";
+			JSONObject site = inBody.getJSONObject("site");
 			String orderPageUrl = Config.getConfig().getSIAOrderPageURL() + inBody.get("orderID") + "&site="
-					+ inBody.get("nickNameID");
-			message.put("siteNickname", inBody.get("nickNameID"));
+					+ site.get("nickNameID");
+			message.put("siteNickname", site.get("nickNameID"));
 			org.json.JSONArray orderDetails = inBody.getJSONArray("orderItems");
 			for (int i = 0; i < orderDetails.length(); i++) {
 				itemTitle += ((JSONObject) orderDetails.get(i)).get("itemTitle")

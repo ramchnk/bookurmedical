@@ -188,13 +188,6 @@
 			</split>
 			<process ref="updateOrderDBQuery" />			
 			<to uri="direct:publishOrderNotificationToMQ" />
-			<when>
-				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
-				 <setHeader headerName="userMessageName">
-					<constant>ORDER_CREATED</constant>
-				 </setHeader>
-				<to uri="direct:notificationToUser"/>
-			</when>
 		</route>
 
 		<route id="processOrderItem">
@@ -245,6 +238,13 @@
 					uri="rabbitmq://{{feemanagementmq.host}}:{{feemanagementmq.tx.port}}/feeManagementExchange?connectionFactory=#feeManagementTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 				<process ref="myPrint" />
+			</when>
+			<when>
+				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
+				 <setHeader headerName="userMessageName">
+					<constant>ORDER_CREATED</constant>
+				 </setHeader>
+				<to uri="direct:notificationToUser"/>
 			</when>
 		</route>
 		<route id="publishToMQ">

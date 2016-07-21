@@ -20,7 +20,7 @@ import com.mudra.sellinall.util.DateUtil;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.enums.OrderUpdateStatus;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
-
+import com.sellinall.order.util.InvoiceSequence;
 /**
  * @author Mallikarjun
  * 
@@ -53,6 +53,9 @@ public class UpdateOrderDBQuery implements Processor {
 		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
 		orderRecord.put("orderID", orderMessage.getString("orderID"));
+		String ProfileId = exchange.getProperty("invoiceProfile", String.class);
+		String merchantID = exchange.getProperty("merchantID", String.class);
+		String invoiceSeq = InvoiceSequence.getInvoiceSequence(merchantID, ProfileId);
 		//TODO: remove the condition after all publishers start publishing user id.
 		if (orderMessage.containsField("userId")) {
 			orderRecord.put("userId", orderMessage.getString("userId"));
@@ -64,6 +67,7 @@ public class UpdateOrderDBQuery implements Processor {
 		notificationIDList.add(orderMessage.getString("notificationID"));
 		orderRecord.put("notificationID", notificationIDList);
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
+		orderRecord.put("invoiceNo", invoiceSeq);
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);

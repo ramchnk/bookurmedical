@@ -28,9 +28,19 @@ public class LoadUserDataByNicknameId implements Processor {
 		String siteName = exchange.getProperty("siteName", String.class);
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		DBObject queryResult = runQuery(accountNumber, nickNameID, siteName);
+		exchange.setProperty("merchantID", queryResult.get("merchantID"));
 		List<BasicDBObject> userSiteSpecificObjectList = (List<BasicDBObject>) queryResult.get(siteName);
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
+
+		/*Currently invoiceProfile property is only with eBay,
+		so that I have hard coded profile-1 as default invoiceProfile for all other channels*/
+		String invoiceProfile = "profile-1";
+		if (userSiteSpecificObject.containsField("invoiceProfile")) {
+			invoiceProfile = userSiteSpecificObject.getString("invoiceProfile");
+		}
+
+		exchange.setProperty("invoiceProfile", invoiceProfile);
 		exchange.setProperty("userSiteSpecificObject", userSiteSpecificObject);
 		Boolean ignoreSoldEvent = false;
 		if (userSiteSpecificObject.containsField("ignoreSoldEvent")) {

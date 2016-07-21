@@ -37,15 +37,15 @@ public class InvoiceSequence {
 	}
 
 
-	public static String getInvoiceSequence(String merchantId, String invoiceProfile) {
-		return getInvoice(merchantId, "invoiceSeq", invoiceProfile);
+	public static String getInvoiceSequence(String merchantId, String invoiceProfileName) {
+		return getInvoice(merchantId, "invoiceSeq", invoiceProfileName);
 	}
 
-	public static String getInvoice(String merchantId, String seqName, String invoiceProfile) {
+	public static String getInvoice(String merchantId, String seqName, String invoiceProfileName) {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("_id", merchantId);
 		BasicDBObject elemMatch = new BasicDBObject();
-		elemMatch.put("profileid", invoiceProfile);
+		elemMatch.put("profileid", invoiceProfileName);
 		BasicDBObject invoiceSeqQuery = new BasicDBObject("$elemMatch", elemMatch);
 		searchQuery.put(seqName, invoiceSeqQuery);
 		BasicDBObject increase = new BasicDBObject("invoiceSeq.$.inv", 1);
@@ -54,7 +54,7 @@ public class InvoiceSequence {
 		List<BasicDBObject> resultProcess = (List<BasicDBObject>) result.get(seqName);
 		int seq = 0;
 		for (BasicDBObject searchInv : resultProcess) {
-			if (searchInv.getString("profileid").equals(invoiceProfile)) {
+			if (searchInv.getString("profileid").equals(invoiceProfileName)) {
 				seq = (Integer) searchInv.get("inv");
 			}
 		}

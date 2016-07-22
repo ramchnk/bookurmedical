@@ -32,9 +32,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
 
-		/*Currently invoiceProfile property is only with eBay,
-		so that I have hard coded profile-1 as default invoiceProfile for all other channels*/
-		String invoiceProfile = "profile-1";
+		String invoiceProfile = "";
 		if (userSiteSpecificObject.containsField("invoiceProfile")) {
 			invoiceProfile = userSiteSpecificObject.getString("invoiceProfile");
 		}

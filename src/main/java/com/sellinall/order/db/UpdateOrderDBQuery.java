@@ -17,10 +17,10 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.util.DateUtil;
+import com.mudra.sellinall.util.InvoiceSequence;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.enums.OrderUpdateStatus;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
-import com.sellinall.order.util.InvoiceSequence;
 /**
  * @author Mallikarjun
  * 
@@ -55,7 +55,10 @@ public class UpdateOrderDBQuery implements Processor {
 		orderRecord.put("orderID", orderMessage.getString("orderID"));
 		String profileID = exchange.getProperty("profileID", String.class);
 		String merchantID = exchange.getProperty("merchantID", String.class);
-		String invoiceNo = InvoiceSequence.getNextInvoiceSequence(merchantID, profileID);
+		if (profileID != "") {
+			String invoiceNo = InvoiceSequence.getNextInvoiceSequence(merchantID, profileID);
+			orderRecord.put("invoiceNo", invoiceNo);
+		}
 		//TODO: remove the condition after all publishers start publishing user id.
 		if (orderMessage.containsField("userId")) {
 			orderRecord.put("userId", orderMessage.getString("userId"));
@@ -67,7 +70,6 @@ public class UpdateOrderDBQuery implements Processor {
 		notificationIDList.add(orderMessage.getString("notificationID"));
 		orderRecord.put("notificationID", notificationIDList);
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
-		orderRecord.put("invoiceNo", invoiceNo);
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);

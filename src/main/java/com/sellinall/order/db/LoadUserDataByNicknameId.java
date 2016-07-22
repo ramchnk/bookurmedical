@@ -32,13 +32,11 @@ public class LoadUserDataByNicknameId implements Processor {
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
 
-		String invoiceProfile = "";
 		if (userSiteSpecificObject.containsField("invoiceProfile")) {
-			invoiceProfile = userSiteSpecificObject.getString("invoiceProfile");
+			exchange.setProperty("profileID", userSiteSpecificObject.getString("invoiceProfile"));
 		}
 
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
-		exchange.setProperty("profileID", invoiceProfile);
 		exchange.setProperty("userSiteSpecificObject", userSiteSpecificObject);
 		Boolean ignoreSoldEvent = false;
 		if (userSiteSpecificObject.containsField("ignoreSoldEvent")) {

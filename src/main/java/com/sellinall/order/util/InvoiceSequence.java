@@ -16,8 +16,9 @@ import com.mongodb.ServerAddress;
 public class InvoiceSequence {
 
 	private final static String SEQUENCE = "sequence";
+	private final static String INVOICE_KEY_SUFFIX = "InvoiceNumber";
 	private static DBCollection sequence;
-	
+
 	public static void init(String dbName, String hostName, String port, String userName, String password)
 			throws Exception {
 		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
@@ -36,33 +37,18 @@ public class InvoiceSequence {
 		sequence = db.getCollection(SEQUENCE);
 	}
 
-
 	public static String getInvoiceSequence(String merchantId, String invoiceProfileName) {
-		return getInvoice(merchantId, "invoiceSeq", invoiceProfileName);
+		return getInvoice(merchantId, invoiceProfileName);
 	}
 
-	public static String getInvoice(String merchantId, String seqName, String invoiceProfileName) {
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("_id", merchantId);
-		BasicDBObject elemMatch = new BasicDBObject();
-		elemMatch.put("profileid", invoiceProfileName);
-		BasicDBObject invoiceSeqQuery = new BasicDBObject("$elemMatch", elemMatch);
-		searchQuery.put(seqName, invoiceSeqQuery);
-		BasicDBObject increase = new BasicDBObject("invoiceSeq.$.inv", 1);
+	public static String getInvoice(String merchantId, String profileID) {
+		BasicDBObject searchQuery = new BasicDBObject("_id", merchantId);
+		BasicDBObject increase = new BasicDBObject(profileID + INVOICE_KEY_SUFFIX, 1);
 		BasicDBObject updateQuery = new BasicDBObject("$inc", increase);
 		DBObject result = sequence.findAndModify(searchQuery, null, null, false, updateQuery, true, true);
-		List<BasicDBObject> resultProcess = (List<BasicDBObject>) result.get(seqName);
-		int seq = 0;
-		for (BasicDBObject searchInv : resultProcess) {
-			if (searchInv.getString("profileid").equals(invoiceProfileName)) {
-				seq = (Integer) searchInv.get("inv");
-			}
-		}
-
+		int seq = (Integer) result.get(profileID + INVOICE_KEY_SUFFIX);
 		NumberFormat numberFormat = new DecimalFormat("00000000");
-		String seqString = numberFormat.format(seq).toString();
-		System.out.println(seqString);
-		return seqString;
+		return numberFormat.format(seq).toString();
 	}
 
 }

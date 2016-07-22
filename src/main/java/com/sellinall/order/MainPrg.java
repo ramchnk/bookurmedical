@@ -10,6 +10,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.mudra.sellinall.config.Config;
 import com.mudra.sellinall.config.PostingSites;
+import com.mudra.sellinall.util.InvoiceSequence;
 import com.sellinall.order.services.PartnerNotification;
 import com.sellinall.order.util.ActivityLogging;
 
@@ -61,6 +62,9 @@ public class MainPrg {
 		PartnerNotification.setCamelContext(camelContext);
 		ActivityLogging.setCamelContext(camelContext);
 
+		Config config = Config.getConfig();
+		InvoiceSequence.init(config.getInventoryCollectionDBName(), config.getInventoryCollectionHostName(),
+				config.getInventoryCollectionPort(), config.getDbUserName(), config.getDbPassword());
 		server.start();
 		server.join();
 	}

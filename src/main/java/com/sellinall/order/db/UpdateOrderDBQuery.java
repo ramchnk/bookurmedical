@@ -17,10 +17,10 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.util.DateUtil;
+import com.mudra.sellinall.util.InvoiceSequence;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.enums.OrderUpdateStatus;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
-
 /**
  * @author Mallikarjun
  * 
@@ -53,6 +53,11 @@ public class UpdateOrderDBQuery implements Processor {
 		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
 		orderRecord.put("orderID", orderMessage.getString("orderID"));
+		if (exchange.getProperties().containsKey("profileID")) {
+			String profileID = exchange.getProperty("profileID", String.class);
+			String merchantID = exchange.getProperty("merchantID", String.class);
+			orderRecord.put("invoiceNumber", InvoiceSequence.getNextInvoiceSequence(merchantID, profileID));
+		}
 		//TODO: remove the condition after all publishers start publishing user id.
 		if (orderMessage.containsField("userId")) {
 			orderRecord.put("userId", orderMessage.getString("userId"));

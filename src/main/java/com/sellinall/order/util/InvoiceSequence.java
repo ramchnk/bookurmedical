@@ -37,15 +37,16 @@ public class InvoiceSequence {
 		sequence = db.getCollection(SEQUENCE);
 	}
 
-	public static String getInvoiceSequence(String merchantId, String invoiceProfileName) {
-		return getInvoice(merchantId, invoiceProfileName);
+	public static String getNextInvoiceSequence(String merchantId, String invoiceProfileName) {
+		return getInvoiceNo(merchantId, invoiceProfileName);
 	}
 
-	public static String getInvoice(String merchantId, String profileID) {
+	public static String getInvoiceNo(String merchantId, String profileID) {
 		BasicDBObject searchQuery = new BasicDBObject("_id", merchantId);
 		BasicDBObject increase = new BasicDBObject(profileID + INVOICE_KEY_SUFFIX, 1);
 		BasicDBObject updateQuery = new BasicDBObject("$inc", increase);
 		DBObject result = sequence.findAndModify(searchQuery, null, null, false, updateQuery, true, true);
+		// eg., "profile-2InvoiceNumber": 29
 		int seq = (Integer) result.get(profileID + INVOICE_KEY_SUFFIX);
 		NumberFormat numberFormat = new DecimalFormat("00000000");
 		return numberFormat.format(seq).toString();

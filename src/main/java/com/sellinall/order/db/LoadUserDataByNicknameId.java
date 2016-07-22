@@ -28,7 +28,6 @@ public class LoadUserDataByNicknameId implements Processor {
 		String siteName = exchange.getProperty("siteName", String.class);
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		DBObject queryResult = runQuery(accountNumber, nickNameID, siteName);
-		exchange.setProperty("merchantID", queryResult.get("merchantID"));
 		List<BasicDBObject> userSiteSpecificObjectList = (List<BasicDBObject>) queryResult.get(siteName);
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
@@ -40,6 +39,7 @@ public class LoadUserDataByNicknameId implements Processor {
 			invoiceProfile = userSiteSpecificObject.getString("invoiceProfile");
 		}
 
+		exchange.setProperty("merchantID", queryResult.get("merchantID"));
 		exchange.setProperty("invoiceProfile", invoiceProfile);
 		exchange.setProperty("userSiteSpecificObject", userSiteSpecificObject);
 		Boolean ignoreSoldEvent = false;

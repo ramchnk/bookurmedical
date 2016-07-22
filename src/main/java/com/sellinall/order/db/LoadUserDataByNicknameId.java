@@ -40,7 +40,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
-		exchange.setProperty("invoiceProfile", invoiceProfile);
+		exchange.setProperty("profileID", invoiceProfile);
 		exchange.setProperty("userSiteSpecificObject", userSiteSpecificObject);
 		Boolean ignoreSoldEvent = false;
 		if (userSiteSpecificObject.containsField("ignoreSoldEvent")) {

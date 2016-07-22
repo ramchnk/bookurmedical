@@ -37,8 +37,8 @@ public class InvoiceSequence {
 		sequence = db.getCollection(SEQUENCE);
 	}
 
-	public static String getNextInvoiceSequence(String merchantId, String invoiceProfileName) {
-		return getInvoiceNo(merchantId, invoiceProfileName);
+	public static String getNextInvoiceSequence(String merchantId, String profileID) {
+		return getInvoiceNo(merchantId, profileID);
 	}
 
 	public static String getInvoiceNo(String merchantId, String profileID) {

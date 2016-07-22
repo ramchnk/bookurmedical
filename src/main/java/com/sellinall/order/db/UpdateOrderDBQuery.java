@@ -53,9 +53,9 @@ public class UpdateOrderDBQuery implements Processor {
 		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
 		orderRecord.put("orderID", orderMessage.getString("orderID"));
-		String invoiceProfileName = exchange.getProperty("invoiceProfile", String.class);
+		String profileID = exchange.getProperty("profileID", String.class);
 		String merchantID = exchange.getProperty("merchantID", String.class);
-		String invoiceNo = InvoiceSequence.getNextInvoiceSequence(merchantID, invoiceProfileName);
+		String invoiceNo = InvoiceSequence.getNextInvoiceSequence(merchantID, profileID);
 		//TODO: remove the condition after all publishers start publishing user id.
 		if (orderMessage.containsField("userId")) {
 			orderRecord.put("userId", orderMessage.getString("userId"));

@@ -57,7 +57,7 @@ public class UpdateOrderDBQuery implements Processor {
 			String profileID = exchange.getProperty("profileID", String.class);
 			String merchantID = exchange.getProperty("merchantID", String.class);
 			String invoiceNumberPrefix = exchange.getProperty("invoiceNumberPrefix", String.class);
-			String invoiceNumber = invoiceNumberPrefix + InvoiceSequence.getNextInvoiceSequence(merchantID, profileID, invoiceNumberPrefix);
+			String invoiceNumber = invoiceNumberPrefix + InvoiceSequence.getNextInvoiceSequence(merchantID, profileID);
 			orderRecord.put("invoiceNumber", invoiceNumber);
 		}
 		//TODO: remove the condition after all publishers start publishing user id.

@@ -33,7 +33,13 @@ public class LoadUserDataByNicknameId implements Processor {
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
 
 		if (userSiteSpecificObject.containsField("invoiceProfile")) {
-			exchange.setProperty("profileID", userSiteSpecificObject.getString("invoiceProfile"));
+			List<BasicDBObject> invoiceObjectList = (List<BasicDBObject>) queryResult.get("profile");
+			int i = Integer.parseInt(userSiteSpecificObject.getString("invoiceProfile").split("-")[1]) - 1;
+			BasicDBObject userInvoiceSpecificObject = invoiceObjectList.get(i);
+			if (userInvoiceSpecificObject.containsField("invoiceNumberPrefix")) {
+				exchange.setProperty("invoiceNumberPrefix", userInvoiceSpecificObject.getString("invoiceNumberPrefix"));
+				exchange.setProperty("profileID", userSiteSpecificObject.getString("invoiceProfile"));
+			}
 		}
 
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
@@ -53,7 +59,7 @@ public class LoadUserDataByNicknameId implements Processor {
 
 		BasicDBObject fields = new BasicDBObject(siteName + ".$", 1);
 		fields.put("merchantID", 1);
-
+		fields.put("profile", 1);
 		DBCollection table = DbUtilities.getDBCollection("user");
 		DBObject object = table.findOne(searchQuery, fields);
 		return object;

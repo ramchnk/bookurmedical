@@ -34,10 +34,9 @@ public class LoadUserDataByNicknameId implements Processor {
 
 		if (userSiteSpecificObject.containsField("invoiceProfile")) {
 			List<BasicDBObject> invoiceObjectList = (List<BasicDBObject>) queryResult.get("profile");
-			int i = Integer.parseInt(userSiteSpecificObject.getString("invoiceProfile").split("-")[1]) - 1;
-			BasicDBObject userInvoiceSpecificObject = invoiceObjectList.get(i);
-			if (userInvoiceSpecificObject.containsField("invoiceNumberPrefix")) {
-				exchange.setProperty("invoiceNumberPrefix", userInvoiceSpecificObject.getString("invoiceNumberPrefix"));
+			String invoiceNumberPrefix = getProfileNickName( invoiceObjectList ,userSiteSpecificObject.getString("invoiceProfile"));
+			if (invoiceNumberPrefix != "") {
+				exchange.setProperty("invoiceNumberPrefix", invoiceNumberPrefix);
 				exchange.setProperty("profileID", userSiteSpecificObject.getString("invoiceProfile"));
 			}
 		}
@@ -63,5 +62,15 @@ public class LoadUserDataByNicknameId implements Processor {
 		DBCollection table = DbUtilities.getDBCollection("user");
 		DBObject object = table.findOne(searchQuery, fields);
 		return object;
+	}
+
+	private static String getProfileNickName(List<BasicDBObject> proflieList,String profileID){
+		for(BasicDBObject profile: proflieList){
+			BasicDBObject nickName = (BasicDBObject) profile.get("nickName");
+			if(nickName.getString("id").equals(profileID) && profile.containsField("invoiceNumberPrefix")){
+				return profile.getString("invoiceNumberPrefix");
+			}
+		}
+		return "";
 	}
 }

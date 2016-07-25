@@ -35,7 +35,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		if (userSiteSpecificObject.containsField("invoiceProfile")) {
 			List<BasicDBObject> userProfileList  = (List<BasicDBObject>) queryResult.get("profile");
 			String invoiceNumberPrefix = getProfileNickName(userProfileList ,userSiteSpecificObject.getString("invoiceProfile"));
-			if (invoiceNumberPrefix != "") {
+			if (!invoiceNumberPrefix.isEmpty()) {
 				exchange.setProperty("invoiceNumberPrefix", invoiceNumberPrefix);
 				exchange.setProperty("profileID", userSiteSpecificObject.getString("invoiceProfile"));
 			}

@@ -105,7 +105,7 @@ public class UpdateOrderDBQuery implements Processor {
 		orderRecord.put("updateStatus", updateStatus);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
-		exchange.getOut().setBody(orderMessage);
+		exchange.getOut().setBody(orderRecord);
 	}
 	
 	private void fillOrderRecord (NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord, BasicDBObject orderMessage) {

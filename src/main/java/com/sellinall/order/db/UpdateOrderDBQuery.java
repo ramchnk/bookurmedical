@@ -74,7 +74,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);
-		exchange.getOut().setBody(orderRecord);
+		exchange.getOut().setBody(orderMessage);
 	}
 	
 	private void updateOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
@@ -105,7 +105,7 @@ public class UpdateOrderDBQuery implements Processor {
 		orderRecord.put("updateStatus", updateStatus);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
-		exchange.getOut().setBody(orderRecord);
+		exchange.getOut().setBody(orderMessage);
 	}
 	
 	private void fillOrderRecord (NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord, BasicDBObject orderMessage) {

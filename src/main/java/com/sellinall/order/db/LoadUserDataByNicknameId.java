@@ -32,9 +32,12 @@ public class LoadUserDataByNicknameId implements Processor {
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
 
-		if (userSiteSpecificObject.containsField("invoiceProfile") && userSiteSpecificObject.get("invoiceProfile") != null) {
-			List<BasicDBObject> userProfileList  = (List<BasicDBObject>) queryResult.get("profile");
-			String invoiceNumberPrefix = getinvoiceNumberPrefix(userProfileList ,userSiteSpecificObject.getString("invoiceProfile"));
+		if (userSiteSpecificObject.containsField("invoiceProfile")
+				&& userSiteSpecificObject.get("invoiceProfile") != null
+				&& !userSiteSpecificObject.get("invoiceProfile").equals("null")) {
+			List<BasicDBObject> userProfileList = (List<BasicDBObject>) queryResult.get("profile");
+			String invoiceNumberPrefix = getinvoiceNumberPrefix(userProfileList,
+					userSiteSpecificObject.getString("invoiceProfile"));
 			exchange.setProperty("invoiceNumberPrefix", invoiceNumberPrefix);
 			exchange.setProperty("profileID", userSiteSpecificObject.getString("invoiceProfile"));
 		}
@@ -62,10 +65,10 @@ public class LoadUserDataByNicknameId implements Processor {
 		return object;
 	}
 
-	private static String getinvoiceNumberPrefix(List<BasicDBObject> proflieList,String profileID){
-		for(BasicDBObject profile: proflieList){
+	private static String getinvoiceNumberPrefix(List<BasicDBObject> proflieList, String profileID) {
+		for (BasicDBObject profile : proflieList) {
 			BasicDBObject nickName = (BasicDBObject) profile.get("nickName");
-			if(nickName.getString("id").equals(profileID) && profile.containsField("invoiceNumberPrefix")){
+			if (nickName.getString("id").equals(profileID) && profile.containsField("invoiceNumberPrefix")) {
 				return profile.getString("invoiceNumberPrefix");
 			}
 		}

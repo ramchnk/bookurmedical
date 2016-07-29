@@ -32,7 +32,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
 
-		if (userSiteSpecificObject.containsField("invoiceProfile")) {
+		if (userSiteSpecificObject.containsField("invoiceProfile") && userSiteSpecificObject.get("invoiceProfile") != null) {
 			List<BasicDBObject> userProfileList  = (List<BasicDBObject>) queryResult.get("profile");
 			String invoiceNumberPrefix = getinvoiceNumberPrefix(userProfileList ,userSiteSpecificObject.getString("invoiceProfile"));
 			exchange.setProperty("invoiceNumberPrefix", invoiceNumberPrefix);

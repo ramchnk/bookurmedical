@@ -36,12 +36,14 @@ public class ConstructOrderNotification implements Processor {
 				items.put(itemDetails);
 			}
 			message.put("items", items);
-			JSONObject buyerDetails = inBody.getJSONObject("buyerDetails");
-			if (buyerDetails.has("buyerID")) {
-				message.put("buyerId", buyerDetails.getString("buyerID"));
-			} else {
-				message.put("buyerId", "-");
+			String buyerId = "-";
+			if (inBody.has("buyerDetails")) {
+				JSONObject buyerDetails = inBody.getJSONObject("buyerDetails");
+				if (buyerDetails.has("buyerID")) {
+					message.put("buyerId", buyerDetails.getString("buyerID"));
+				}
 			}
+			message.put("buyerId", buyerId);
 			message.put("orderPageUrl", orderPageUrl);
 			message.put("orderAmount", inBody.getJSONObject("orderAmount"));
 			message.put("orderId", inBody.get("orderID"));

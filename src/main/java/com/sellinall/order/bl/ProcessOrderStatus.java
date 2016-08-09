@@ -9,8 +9,8 @@ import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
-import com.sellinall.enums.SIAOrderStatus;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.util.enums.SIAOrderStatus;
 
 public class ProcessOrderStatus implements Processor {
 	static Logger log = Logger.getLogger(ProcessOrderStatus.class.getName());

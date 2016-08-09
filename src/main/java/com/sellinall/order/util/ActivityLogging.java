@@ -10,8 +10,8 @@ import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mudra.sellinall.util.DateUtil;
-import com.sellinall.enums.SIAActivityLogStatus;
+import com.sellinall.util.DateUtil;
+import com.sellinall.util.enums.SIAActivityLogStatus;
 
 public class ActivityLogging implements Processor {
 	static Logger log = Logger.getLogger(ActivityLogging.class.getName());

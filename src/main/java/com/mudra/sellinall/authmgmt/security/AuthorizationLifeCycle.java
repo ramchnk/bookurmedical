@@ -12,8 +12,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mudra.sellinall.config.Config;
-import com.mudra.sellinall.util.HttpURLConnectionUtil;
 import com.sellinall.database.DbUtilities;
+import com.sellinall.util.HttpURLConnectionUtil;
 
 public class AuthorizationLifeCycle {
 	static Logger log = Logger

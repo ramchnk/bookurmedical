@@ -10,9 +10,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.mudra.sellinall.config.Config;
 import com.mudra.sellinall.config.PostingSites;
-import com.mudra.sellinall.util.InvoiceSequence;
 import com.sellinall.order.services.PartnerNotification;
 import com.sellinall.order.util.ActivityLogging;
+import com.sellinall.util.InvoiceSequence;
 
 /**
  * 

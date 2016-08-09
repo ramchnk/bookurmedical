@@ -13,9 +13,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
-import com.mudra.sellinall.util.DateUtil;
 import com.sellinall.database.DbUtilities;
-import com.sellinall.enums.SIAInventoryStatus;
+import com.sellinall.util.DateUtil;
+import com.sellinall.util.enums.SIAInventoryStatus;
 
 /**
  * @author Mallikarjun

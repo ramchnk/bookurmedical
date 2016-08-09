@@ -124,9 +124,9 @@
 		</dependency>
 		<!-- Mudra Util -->
 		<dependency>
-			<groupId>com.mudra.sellinall.util</groupId>
+			<groupId>com.sellinall.util</groupId>
 			<artifactId>sellinall-util</artifactId>
-			<version>0.0.72-SNAPSHOT</version>
+			<version>1.1.1-RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.fusesource.commonman</groupId>

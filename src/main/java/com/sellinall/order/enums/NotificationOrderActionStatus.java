@@ -7,6 +7,7 @@ public enum NotificationOrderActionStatus {
 	PROCESSING("PROCESSING"), /* "decrement" inventory inStock quantity */
 	DISPATCHED("DISPATCHED "), /* "decrement" inventory inStock quantity */
 	COMPLETED("COMPLETED"), /* "decrement" inventory inStock quantity */
+	DELIVERED("DELIVERED"), /* "decrement" inventory inStock quantity */
 	CANCELLED("CANCELLED"), /* "increment" inventory inStock quantity */
 
 	INITIATED_TO_ACCEPTED("INITIATED_TO_ACCEPTED"), /* No Action */
@@ -16,6 +17,7 @@ public enum NotificationOrderActionStatus {
 	ACCEPTED_TO_DISPATCHED("ACCEPTED_TO_DISPATCHED"), /* No Action */
 	PROCESSING_TO_DISPATCHED("PROCESSING_TO_DISPATCHED"), /* No Action */
 	PROCESSING_TO_COMPLETED("PROCESSING_TO_COMPLETED"), /* No Action */
+	DISPATCHED_TO_DELIVERED("DISPATCHED_TO_DELIVERED"), /* No Action */
 
 	INITIATED_TO_CANCELLED("INITIATED_TO_CANCELLED"), /* "increment" inventory inStock quantity */
 	ACCEPTED_TO_CANCELLED("ACCEPTED_TO_CANCELLED"), /* "increment" inventory inStock quantity */

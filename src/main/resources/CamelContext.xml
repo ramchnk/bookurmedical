@@ -240,7 +240,7 @@
 				<process ref="myPrint" />
 			</when>
 			<when>
-				 <simple>${exchangeProperty.hasOrderInDB} == false</simple>
+				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
 				 <setHeader headerName="userMessageName">
 					<constant>ORDER_CREATED</constant>
 				 </setHeader>

@@ -51,11 +51,12 @@ public class ConstructOrderNotification implements Processor {
 			outBody.put("accountNumber", inBody.get("userId"));
 			outBody.put("userMessageName", (String) exchange.getIn().getHeader("userMessageName"));
 			outBody.put("message", message);
+			exchange.getOut().setBody(outBody);
 		} catch (Exception exception) {
 			log.error("Error occured while constructing the email-notification payload");
 			exception.printStackTrace();
+			exchange.getOut().setBody(null);
 		}
 
-		exchange.getOut().setBody(outBody);
 	}
 }

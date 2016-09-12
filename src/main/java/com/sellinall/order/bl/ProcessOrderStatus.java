@@ -24,6 +24,7 @@ public class ProcessOrderStatus implements Processor {
 			log.warn("Notification Order Status : " + notificationOrderStatus);
 			throw new Exception("Unknown Notification Order Status"); 
 		}
+		exchange.setProperty("notificationOrderStatus", notificationOrderStatus);
 		notificationOrderActionStatus = NotificationOrderActionStatus.valueOf(orderMessage.getString("orderStatus"));
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		if (hasOrderInDB) {

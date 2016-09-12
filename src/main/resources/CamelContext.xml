@@ -348,5 +348,4 @@
 				uri="rabbitmq://{{userMessaging.host}}:{{userMessaging.tx.port}}/userMessagingExchange?connectionFactory=#txuserMessagingFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" />
         </route>
 	</camelContext>
-
 </beans>

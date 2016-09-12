@@ -240,7 +240,7 @@
 				<process ref="myPrint" />
 			</when>
 			<when>
-				  <simple>${exchangeProperty.notificationOrderStatus} != 'CANCELLED' </simple>
+				  <simple>${exchangeProperty.hasOrderInDB} == false and ${exchangeProperty.notificationOrderStatus} != 'CANCELLED' </simple>
 				 <setHeader headerName="userMessageName">
 					<constant>ORDER_CREATED</constant>
 				 </setHeader>

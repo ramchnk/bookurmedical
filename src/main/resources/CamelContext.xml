@@ -24,6 +24,7 @@
 	<bean id="prepareSKUDBQuery" class="com.sellinall.order.db.PrepareSKUDBQuery" />
 	<bean id="processSKUDBQuery" class="com.sellinall.order.db.ProcessSKUDBQuery" />
 	<bean id="processOrderStatus" class="com.sellinall.order.bl.ProcessOrderStatus" />
+	<bean id="updateCombineOrderStatus" class="com.sellinall.order.db.UpdateCombineOrderStatus" />
 	<bean id="updateOrderDBQuery" class="com.sellinall.order.db.UpdateOrderDBQuery" />
 	<bean id="updateInventoryDBQuery" class="com.sellinall.order.db.UpdateInventoryDBQuery" />
 	<bean id="loadUserDataByNicknameId" class="com.sellinall.order.db.LoadUserDataByNicknameId" />
@@ -31,7 +32,7 @@
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
 	<bean id="activityLogging" class="com.sellinall.order.util.ActivityLogging" />
-	<bean id="constructOrderNotification" class="com.sellinall.order.bl.ConstructOrderNotification"/>
+	<bean id="constructOrderNotification" class="com.sellinall.order.bl.ConstructOrderNotification" />
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -141,7 +142,7 @@
 		<route id="messageListner">
 
 			<from
-			uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
+				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
 			<process ref="initMessageListenerRoute" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>
@@ -152,10 +153,7 @@
 				<to uri="direct:processBidNotification" />
 			</when>
 
-			<!-- <setHeader headerName="activityLogMethod">
-				<constant>end</constant>
-			</setHeader>
-			<process ref="activityLogging" /> -->
+			<!-- <setHeader headerName="activityLogMethod"> <constant>end</constant> </setHeader> <process ref="activityLogging" /> -->
 		</route>
 
 		<route id="processBidNotification">
@@ -165,16 +163,16 @@
 			<to uri="direct:loadInventoryData" />
 			<process ref="loadUserDataByNicknameId" />
 			<choice>
-			<when>
-				<simple>${exchangeProperty.isSyncRequired} == true and
-				        ${exchangeProperty.ignoreSoldEvent} == false
-				</simple>
-				<process ref="updateInventoryForBidMessage" />
-				<to uri="direct:publishToMQ" />
-			</when>
-			<otherwise>
-				<process ref="updateInventoryWithBidAmount" />
-			</otherwise>
+				<when>
+					<simple>${exchangeProperty.isSyncRequired} == true and
+						${exchangeProperty.ignoreSoldEvent} == false
+					</simple>
+					<process ref="updateInventoryForBidMessage" />
+					<to uri="direct:publishToMQ" />
+				</when>
+				<otherwise>
+					<process ref="updateInventoryWithBidAmount" />
+				</otherwise>
 			</choice>
 		</route>
 		<route id="processOrderNotification">
@@ -186,8 +184,18 @@
 				<method ref="splitterBean" method="splitOrders" />
 				<to uri="direct:processOrderItem" />
 			</split>
-			<process ref="updateOrderDBQuery" />			
+			<process ref="updateOrderDBQuery" />
 			<to uri="direct:publishOrderNotificationToMQ" />
+			<when>
+				<simple>${exchangeProperty.hasCombinedOrderIds} == true</simple>
+				<to uri="direct:updateCombineOrderIds" />
+			</when>
+		</route>
+
+		<route id="updateCombineOrderIds">
+			<from uri="direct:updateCombineOrderIds" />
+			<!-- TODO update feeManagement about this combined invoice -->
+			<process ref="updateCombineOrderStatus" />
 		</route>
 
 		<route id="processOrderItem">
@@ -197,9 +205,10 @@
 				<simple>${exchangeProperty.hasSKU} == true</simple>
 				<to uri="direct:loadInventoryData" />
 				<when>
-					<simple>${exchangeProperty.ignoreSoldEvent} == false</simple>
-						<process ref="updateInventoryDBQuery" />
-						<to uri="direct:publishToMQ" />
+					<simple>${exchangeProperty.ignoreSoldEvent} == false and ${exchangeProperty.hasCombinedOrderIds} == false
+					</simple>
+					<process ref="updateInventoryDBQuery" />
+					<to uri="direct:publishToMQ" />
 				</when>
 			</when>
 		</route>
@@ -241,10 +250,10 @@
 			</when>
 			<when>
 				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
-				 <setHeader headerName="userMessageName">
+				<setHeader headerName="userMessageName">
 					<constant>ORDER_CREATED</constant>
-				 </setHeader>
-				<to uri="direct:notificationToUser"/>
+				</setHeader>
+				<to uri="direct:notificationToUser" />
 			</when>
 		</route>
 		<route id="publishToMQ">
@@ -270,7 +279,7 @@
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{shopcluesmq.host}}:{{shopcluesmq.tx.port}}/shopcluesExchange?connectionFactory=#shopcluesTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" 
+					uri="rabbitmq://{{shopcluesmq.host}}:{{shopcluesmq.tx.port}}/shopcluesExchange?connectionFactory=#shopcluesTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>
@@ -334,9 +343,9 @@
 				uri="rabbitmq://{{activity.host}}:{{activity.port}}/activitylogging?connectionFactory=#loggingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 				pattern="InOnly" />
 		</route>
-		<route id="notificationToUser" >
-			<from uri="direct:notificationToUser"/>
-			<process ref="constructOrderNotification"/>
+		<route id="notificationToUser">
+			<from uri="direct:notificationToUser" />
+			<process ref="constructOrderNotification" />
 			<when>
 				<simple>${body} != null</simple>
 				<setHeader headerName="rabbitmq.ROUTING_KEY">
@@ -345,10 +354,10 @@
 				<setHeader headerName="rabbitmq.DELIVERY_MODE">
 					<constant>2</constant>
 				</setHeader>
-				<convertBodyTo type="java.lang.String"/>
+				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{userMessaging.host}}:{{userMessaging.tx.port}}/userMessagingExchange?connectionFactory=#txuserMessagingFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" />
 			</when>
-        </route>
+		</route>
 	</camelContext>
 </beans>

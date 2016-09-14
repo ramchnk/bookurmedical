@@ -94,7 +94,8 @@ public class UpdateInventoryDBQuery implements Processor {
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)) {							
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED) ||
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED)) {
 							if(siteSpecific.containsField("noOfItem") && siteNoOfItem > quantityDiff){
 								incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", -quantityDiff);
 							} else {
@@ -126,7 +127,8 @@ public class UpdateInventoryDBQuery implements Processor {
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)) {
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED) ||
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED)) {
 				incrementSetter(quantityIncDecModifier, "noOfItem", -quantitySold);
 				incrementSetter(quantityIncDecModifier, "noOfItemsold", quantitySold);
 				if (hasSiteSpecificIndex) {

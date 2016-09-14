@@ -43,6 +43,7 @@ public class UpdateCombineOrderStatus implements Processor {
 		updateSet.put("orderStatus", SIAOrderStatus.COMBINED.toString());
 		updateSet.put("paymentStatus", SIAPaymentStatus.UNSUPPORTED.toString());
 		updateSet.put("shippingStatus", SIAShippingStatus.UNSUPPORTED.toString());
+		updateSet.put("combinedOrderId", orderMessage.getString("orderID"));
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.update(searchQuery, new BasicDBObject("$set", updateSet));
 	}

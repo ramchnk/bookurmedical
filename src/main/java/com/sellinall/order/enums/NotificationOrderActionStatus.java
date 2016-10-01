@@ -10,6 +10,7 @@ public enum NotificationOrderActionStatus {
 	DELIVERED("DELIVERED"), /* "decrement" inventory inStock quantity */
 	DELIVERY_FAILED("DELIVERY_FAILED"), /* "decrement" inventory inStock quantity */
 	CANCELLED("CANCELLED"), /* "increment" inventory inStock quantity */
+	RETURNED("RETURNED"),
 
 	INITIATED_TO_ACCEPTED("INITIATED_TO_ACCEPTED"), /* No Action */
 	INITIATED_TO_PROCESSING("INITIATED_TO_PROCESSING"), /* No Action */

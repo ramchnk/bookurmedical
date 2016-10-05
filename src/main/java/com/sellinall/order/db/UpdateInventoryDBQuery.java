@@ -104,9 +104,8 @@ public class UpdateInventoryDBQuery implements Processor {
 						} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED) ||
 								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELEIVERED_TO_RETURNED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)) {
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED) ||
+								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)) {
 							// in case of cancel, ideally we should compare with
 							// max allolwed quantity and decide whether to
 							// increment or not. To be done in future.
@@ -139,9 +138,8 @@ public class UpdateInventoryDBQuery implements Processor {
 			} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ||
 					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELEIVERED_TO_RETURNED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)) {
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED) ||
+					notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)) {
 				incrementSetter(quantityIncDecModifier, "noOfItem", quantitySold);
 				incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantitySold);
 				if (hasSiteSpecificIndex) {

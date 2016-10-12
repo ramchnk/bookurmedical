@@ -17,6 +17,15 @@ public class Config {
 	private String InventoryCollectionDBName;
 	private String uploadImageUri;
 	private String SIAOrderPageURL;
+	private String Ragasiyam;
+
+	public String getRagasiyam() {
+		return Ragasiyam;
+	}
+
+	public void setRagasiyam(String ragasiyam) {
+		Ragasiyam = ragasiyam;
+	}
 
 	public String getFbTokenExchangeUri() {
 		return FbTokenExchangeUri;

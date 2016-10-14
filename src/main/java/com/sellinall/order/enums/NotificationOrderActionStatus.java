@@ -8,7 +8,9 @@ public enum NotificationOrderActionStatus {
 	DISPATCHED("DISPATCHED "), /* "decrement" inventory inStock quantity */
 	COMPLETED("COMPLETED"), /* "decrement" inventory inStock quantity */
 	DELIVERED("DELIVERED"), /* "decrement" inventory inStock quantity */
+	DELIVERY_FAILED("DELIVERY_FAILED"), /* "decrement" inventory inStock quantity */
 	CANCELLED("CANCELLED"), /* "increment" inventory inStock quantity */
+	RETURNED("RETURNED"),
 
 	INITIATED_TO_ACCEPTED("INITIATED_TO_ACCEPTED"), /* No Action */
 	INITIATED_TO_PROCESSING("INITIATED_TO_PROCESSING"), /* No Action */
@@ -16,13 +18,15 @@ public enum NotificationOrderActionStatus {
 	ACCEPTED_TO_PROCESSING("ACCEPTED_TO_PROCESSING"), /* No Action */
 	ACCEPTED_TO_DISPATCHED("ACCEPTED_TO_DISPATCHED"), /* No Action */
 	PROCESSING_TO_DISPATCHED("PROCESSING_TO_DISPATCHED"), /* No Action */
+	PROCESSING_TO_DELIVERED("PROCESSING_TO_DELIVERED"), /* No Action */
 	PROCESSING_TO_COMPLETED("PROCESSING_TO_COMPLETED"), /* No Action */
 	DISPATCHED_TO_DELIVERED("DISPATCHED_TO_DELIVERED"), /* No Action */
+	DISPATCHED_TO_DELIVERY_FAILED("DISPATCHED_TO_DELIVERY_FAILED"), /* No Action */
 
 	INITIATED_TO_CANCELLED("INITIATED_TO_CANCELLED"), /* "increment" inventory inStock quantity */
 	ACCEPTED_TO_CANCELLED("ACCEPTED_TO_CANCELLED"), /* "increment" inventory inStock quantity */
 	DISPATCHED_TO_RETURNED("PROCESSING_TO_RETURNED"), /* "increment" inventory inStock quantity */
-	DELEIVERED_TO_RETURNED("PROCESSING_TO_RETURNED"), /* "increment" inventory inStock quantity */
+	DELIVERED_TO_RETURNED("DELIVERED_TO_RETURNED"), /* "increment" inventory inStock quantity */
 	PROCESSING_TO_CANCELLED("PROCESSING_TO_CANCELLED"); /* "increment" inventory inStock quantity */
 
 	private final String name;

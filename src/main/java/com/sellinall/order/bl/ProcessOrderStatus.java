@@ -19,6 +19,10 @@ public class ProcessOrderStatus implements Processor {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		SIAOrderStatus notificationOrderStatus = SIAOrderStatus.valueOf(orderMessage.getString("orderStatus"));
 		NotificationOrderActionStatus notificationOrderActionStatus = NotificationOrderActionStatus.NO_ACTION;
+		exchange.setProperty("hasCombinedOrderIds", false);
+		if ( orderMessage.has("combinedOrderIds") && !orderMessage.isNull("combinedOrderIds")) {
+			exchange.setProperty("hasCombinedOrderIds", true);
+		}
 		if ( ( SIAOrderStatus.UNKNOWN.equals(notificationOrderStatus) ||
 			  SIAOrderStatus.UNSUPPORTED.equals(notificationOrderStatus) ) ) {
 			log.warn("Notification Order Status : " + notificationOrderStatus);

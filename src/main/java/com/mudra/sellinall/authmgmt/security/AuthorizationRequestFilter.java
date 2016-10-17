@@ -31,32 +31,6 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 			log.debug("no need to authorize this url becauseAuth");
 			return arg0;
 		}
-		if (arg0.getPath().equals("linkedAccount")
-				&& (arg0.getMethod().equals("POST"))) {
-			System.out
-					.println("no need to authorize this url because linkedaccount");
-			return arg0;
-		}
-		if (arg0.getPath().equals("linkedAccount")
-				&& (arg0.getMethod().equals("OPTIONS"))) {
-			System.out
-					.println("no need to authorize this url because linkedaccount");
-			throw new WebApplicationException(Status.OK);
-		}
-		if ((arg0.getPath().equals("linkAccount/complete/payPal") || arg0
-				.getPath().equals("linkAccount/complete/eBay"))
-				&& arg0.getMethod().equals("GET")) {
-			System.out
-					.println("NO Need To authorize this url because ebay or Paypal");
-			return arg0;
-		}
-		if (arg0.getPath().contains("receivenotification")
-				&& arg0.getMethod().equals("POST")) {
-			System.out
-					.println("NO Need To authorize this url because ebay or Paypal");
-			log.debug("Method=" + arg0.getMethod());
-			return arg0;
-		}
 
 		/*
 		 * if (arg0.getAbsolutePath().getHost().equals("localhost")) { return
@@ -77,28 +51,6 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 				headers.add("Content-Type", "application/json");
 				arg0.setHeaders(headers);
 				return arg0;
-			} else {
-				// To Do: remove these after putting ragasiyam key in all server
-				AuthorizationLifeCycle authLifeCycle = new AuthorizationLifeCycle();
-				String mudraToken = arg0.getHeaderValue("Mudra");
-				String userID = null;
-				AuthorizationResponseEnum authResponse = AuthorizationResponseEnum.UNKNOWN;
-				String[] splitMudraToken = authLifeCycle.splitMudraToken(mudraToken);
-				userID = splitMudraToken[0];
-				log.debug("Test User id\t" + userID);
-				authResponse = (AuthorizationResponseEnum) AuthorizationLifeCycle.isValidOAuthToken(userID,
-						splitMudraToken[1]);
-				if (authResponse == AuthorizationResponseEnum.VALID) {
-					InBoundHeaders headers = new InBoundHeaders();
-					headers.add("InternalFaceBookID", userID);
-					DBObject authDetails = AuthorizationLifeCycle.getAuth(userID);
-					headers.add("userID", authDetails.get("userID").toString());
-					headers.add("mudraToken", mudraToken);
-					headers.add("Content-Type", "application/json");
-					log.debug("Add header to Account Number");
-					arg0.setHeaders(headers);
-					return arg0;
-				}
 			}
 		} catch (Exception e) {
 			log.error(arg0.getAbsolutePath().getHost());

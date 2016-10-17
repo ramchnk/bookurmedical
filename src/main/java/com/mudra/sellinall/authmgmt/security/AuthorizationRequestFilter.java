@@ -27,11 +27,6 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 		if (arg0.getMethod().equals("OPTIONS")) {
 			throw new WebApplicationException(Status.ACCEPTED);
 		}
-		if (arg0.getPath().equals("auth")) {
-			log.debug("no need to authorize this url becauseAuth");
-			return arg0;
-		}
-
 		/*
 		 * if (arg0.getAbsolutePath().getHost().equals("localhost")) { return
 		 * arg0; }

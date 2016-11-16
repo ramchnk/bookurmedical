@@ -36,15 +36,16 @@ public class UpdateCombineOrderStatus implements Processor {
 		for (int index = 0; index < combineOrderIds.length(); index++) {
 			combineOrderIdsList.add(combineOrderIds.getString(index));
 		}
-		BasicDBObject searchQuery = new BasicDBObject("userId", exchange.getProperty("accountNumber", String.class));
-		searchQuery.put("orderID", new BasicDBObject("$in", combineOrderIdsList));
-		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
+		BasicDBObject query = new BasicDBObject("userId", exchange.getProperty("accountNumber", String.class));
+		query.put("orderID", new BasicDBObject("$in", combineOrderIdsList));
+		query.put("site.nickNameID", orderMessage.getString("nickNameID"));
 		BasicDBObject updateSet = new BasicDBObject();
 		updateSet.put("orderStatus", SIAOrderStatus.COMBINED.toString());
 		updateSet.put("paymentStatus", SIAPaymentStatus.UNSUPPORTED.toString());
 		updateSet.put("shippingStatus", SIAShippingStatus.UNSUPPORTED.toString());
 		updateSet.put("combinedOrderId", orderMessage.getString("orderID"));
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
-		table.update(searchQuery, new BasicDBObject("$set", updateSet));
+		BasicDBObject update = new BasicDBObject("$set", updateSet);
+		table.update(query, update, false, true);
 	}
 }

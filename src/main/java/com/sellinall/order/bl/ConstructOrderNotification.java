@@ -45,7 +45,10 @@ public class ConstructOrderNotification implements Processor {
 			}
 			message.put("buyerId", buyerId);
 			message.put("orderPageUrl", orderPageUrl);
-			message.put("orderAmount", inBody.getJSONObject("orderAmount"));
+			// For amazon cancel orders, orderAmount is not returned
+			if (inBody.has("orderAmount")) {
+				message.put("orderAmount", inBody.getJSONObject("orderAmount"));
+			}
 			message.put("orderId", inBody.get("orderID"));
 			message.put("orderNumber", inBody.get("orderID"));
 			outBody.put("accountNumber", inBody.get("userId"));

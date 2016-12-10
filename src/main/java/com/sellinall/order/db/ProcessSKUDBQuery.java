@@ -22,7 +22,7 @@ public class ProcessSKUDBQuery implements Processor {
 		String inventoryString = exchange.getIn().getBody(String.class);
 		exchange.setProperty("hasInventoryInDB", false);
 		if (inventoryString == null) {
-			log.debug("Order Record - not exists in our DB Result: " + inventoryString);
+			log.debug("Inventory Record - may be deleted in our DB : " + inventoryString);
 			return;
 		}
 		JSONObject inventory = new JSONObject(inventoryString);

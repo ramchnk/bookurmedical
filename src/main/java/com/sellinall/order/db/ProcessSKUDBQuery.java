@@ -20,11 +20,17 @@ public class ProcessSKUDBQuery implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		String inventoryString = exchange.getIn().getBody(String.class);
+		exchange.setProperty("hasInventoryInDB", false);
+		if (inventoryString == null) {
+			log.debug("Inventory Record - may be deleted in our DB : " + inventoryString);
+			return;
+		}
 		JSONObject inventory = new JSONObject(inventoryString);
 		if (inventory.isNull("SKU")) {
 			throw new Exception("Inventory record doesn't exists for this SKU : "+ 
 				exchange.getProperty("SKU", String.class));
 		}
+		exchange.setProperty("hasInventoryInDB", true);
 		exchange.setProperty("inventory", inventoryString);
 		extractInventoryValues(exchange, inventory);
 	}

@@ -205,7 +205,7 @@
 				<simple>${exchangeProperty.hasSKU} == true</simple>
 				<to uri="direct:loadInventoryData" />
 				<when>
-					<simple>${exchangeProperty.ignoreSoldEvent} == false and ${exchangeProperty.hasCombinedOrderIds} == false
+					<simple>${exchangeProperty.ignoreSoldEvent} == false and ${exchangeProperty.hasCombinedOrderIds} == false and ${exchangeProperty.hasInventoryInDB} == true
 					</simple>
 					<process ref="updateInventoryDBQuery" />
 					<to uri="direct:publishToMQ" />

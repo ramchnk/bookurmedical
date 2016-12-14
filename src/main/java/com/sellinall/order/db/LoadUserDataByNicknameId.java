@@ -60,7 +60,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		BasicDBObject fields = new BasicDBObject(siteName + ".$", 1);
 		fields.put("merchantID", 1);
 		fields.put("profile", 1);
-		DBCollection table = DbUtilities.getDBCollection("user");
+		DBCollection table = DbUtilities.getDBCollection("accounts");
 		DBObject object = table.findOne(searchQuery, fields);
 		return object;
 	}

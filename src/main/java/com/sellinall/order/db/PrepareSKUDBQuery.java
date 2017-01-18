@@ -31,7 +31,9 @@ public class PrepareSKUDBQuery implements Processor {
 		exchange.setProperty("SKU", SKU);
 		ArrayList<String> in = new ArrayList<String>();
 		in.add(SKU);
-		in.add(SKU.split("-")[0]);
+		if (SKU.split("-").length > 1) {
+			in.add(SKU.split("-")[0]);
+		}
 		DBObject searchQuery = new BasicDBObject("SKU", new BasicDBObject("$in", in));
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		if (orderMessage.has("userId")) {

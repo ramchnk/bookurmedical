@@ -28,14 +28,22 @@ public class ProcessSKUDBQuery implements Processor {
 		JSONArray inventoryList = new JSONArray(inventoryString);
 		String SKU = exchange.getProperty("SKU", String.class);
 		JSONObject inventory = getInventoryBySKU(inventoryList, SKU);
-		JSONObject parentInventory = getParentInventory(inventoryList, SKU);
+		String itemTitle = "";
+		if (inventory.has("itemTitle")) {
+			itemTitle = inventory.getString("itemTitle");
+		} else if (inventoryList.length() > 1) {
+			JSONObject parentInventory = getInventoryBySKU(inventoryList, SKU.split("-")[0]);
+			itemTitle = parentInventory.getString("itemTitle");
+		}
+
 		exchange.setProperty("hasInventoryInDB", true);
 		exchange.setProperty("inventory", inventory.toString());
-		extractInventoryValues(exchange, inventory, parentInventory.getString("itemTitle"));
+		extractInventoryValues(exchange, inventory, itemTitle);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle) throws JSONException {
+	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle)
+			throws JSONException {
 		Map<String, BasicDBObject> inventoryDetailsMap = new HashMap<String, BasicDBObject>();
 		if (exchange.getProperties().containsKey("inventoryDetailsMap")) {
 			inventoryDetailsMap = (Map<String, BasicDBObject>) exchange.getProperty("inventoryDetailsMap");
@@ -82,20 +90,6 @@ public class ProcessSKUDBQuery implements Processor {
 				throw new Exception("Inventory record doesn't exists for this SKU : " + SKU);
 			}
 			if (inventory.getString("SKU").equals(SKU)) {
-				return inventory;
-			}
-		}
-		return null;
-	}
-	
-	private JSONObject getParentInventory(JSONArray inventoryList, String SKU) throws Exception {
-		String parentSKU = SKU.split("-")[0];
-		for (int i = 0; i < inventoryList.length(); i++) {
-			JSONObject inventory = inventoryList.getJSONObject(i);
-			if (inventory.isNull("SKU")) {
-				throw new Exception("Inventory record doesn't exists for this SKU : " + SKU);
-			}
-			if (inventory.getString("SKU").equals(parentSKU)) {
 				return inventory;
 			}
 		}

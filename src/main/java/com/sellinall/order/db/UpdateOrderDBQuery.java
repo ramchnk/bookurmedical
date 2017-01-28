@@ -70,8 +70,10 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
 		List<String> notificationIDList = new ArrayList<String>();
-		notificationIDList.add(orderMessage.getString("notificationID"));
-		orderRecord.put("notificationID", notificationIDList);
+		if(orderMessage.containsKey("notificationID")){
+			notificationIDList.add(orderMessage.getString("notificationID"));
+			orderRecord.put("notificationID", notificationIDList);
+		}
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
@@ -89,13 +91,18 @@ public class UpdateOrderDBQuery implements Processor {
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
-		// Append the OrderNotificationID to the database
-		table.update(searchQuery,
+		if(orderMessage.containsKey("notificationID")){
+			// Append the OrderNotificationID to the database
+			table.update(searchQuery,
 				new BasicDBObject("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
+		}
 
 		String updateStatus = OrderUpdateStatus.COMPLETE.toString();
 		if (orderMessage.containsField("updateStatus")) {
 			updateStatus = orderMessage.getString("updateStatus");
+		}
+		if(orderMessage.containsKey("settlementStatus")){
+			orderRecord.put("settlementStatus", orderMessage.getString("settlementStatus"));
 		}
 
 		//update order data only when the update is complete

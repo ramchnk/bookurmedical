@@ -85,6 +85,7 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderMessage) throws JSONException {
 		BasicDBObject orderRecord = new BasicDBObject();
 		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("userId", orderMessage.getString("userId"));
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
 		String siteName = orderMessage.getString("site");
 		searchQuery.put("site.name", siteName);

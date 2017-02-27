@@ -108,6 +108,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if(orderMessage.containsField("settlementStatus")){
 			orderRecord.put("settlementStatus", orderMessage.getString("settlementStatus"));
 		}
+		if(orderMessage.containsField("transactionPeriod")){
+			orderRecord.put("transactionPeriod", orderMessage.getString("transactionPeriod"));
+		}
 
 		//update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {

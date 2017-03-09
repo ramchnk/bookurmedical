@@ -42,8 +42,7 @@ public class ProcessSKUDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle)
-			throws JSONException {
+	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle) throws JSONException {
 		Map<String, BasicDBObject> inventoryDetailsMap = new HashMap<String, BasicDBObject>();
 		if (exchange.getProperties().containsKey("inventoryDetailsMap")) {
 			inventoryDetailsMap = (Map<String, BasicDBObject>) exchange.getProperty("inventoryDetailsMap");
@@ -51,7 +50,9 @@ public class ProcessSKUDBQuery implements Processor {
 		String siteName = exchange.getProperty("siteName", String.class);
 		BasicDBObject inventoryValues = new BasicDBObject();
 		inventoryValues.put("itemTitle", itemTitle);
-		inventoryValues.put("imageURL", inventory.getString("imageURL"));
+		if (inventory.has("imageURL")) {
+			inventoryValues.put("imageURL", inventory.getString("imageURL"));
+		}
 
 		if (inventory.has("customSKU")) {
 			inventoryValues.put("customSKU", inventory.getString("customSKU"));

@@ -55,7 +55,9 @@ public class ProcessSKUDBQuery implements Processor {
 		}
 
 		if (inventory.has("customSKU")) {
-			inventoryValues.put("customSKU", inventory.getString("customSKU"));
+			String customSKU = inventory.getString("customSKU");
+			inventoryValues.put("customSKU", customSKU);
+			exchange.setProperty("customSKU", customSKU);
 		}
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		JSONArray siteSpecificList = inventory.getJSONArray(siteName);

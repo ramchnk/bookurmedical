@@ -23,6 +23,7 @@
 	<bean id="processOrderIdDBQuery" class="com.sellinall.order.db.ProcessOrderIdDBQuery" />
 	<bean id="prepareSKUDBQuery" class="com.sellinall.order.db.PrepareSKUDBQuery" />
 	<bean id="processSKUDBQuery" class="com.sellinall.order.db.ProcessSKUDBQuery" />
+	<bean id="prepareDuplicateSKUsDBQuery" class="com.sellinall.order.db.PrepareDuplicateSKUsDBQuery" />
 	<bean id="processOrderStatus" class="com.sellinall.order.bl.ProcessOrderStatus" />
 	<bean id="updateCombineOrderStatus" class="com.sellinall.order.db.UpdateCombineOrderStatus" />
 	<bean id="updateOrderDBQuery" class="com.sellinall.order.db.UpdateOrderDBQuery" />
@@ -175,6 +176,7 @@
 				</otherwise>
 			</choice>
 		</route>
+
 		<route id="processOrderNotification">
 			<from uri="direct:processOrderNotification" />
 			<to uri="direct:loadOrderData" />
@@ -207,10 +209,26 @@
 				<when>
 					<simple>${exchangeProperty.ignoreSoldEvent} == false and ${exchangeProperty.hasCombinedOrderIds} == false and ${exchangeProperty.hasInventoryInDB} == true
 					</simple>
-					<process ref="updateInventoryDBQuery" />
-					<to uri="direct:publishToMQ" />
+					<to uri="direct:updateAndPublish" />
+					<when>
+						<simple>${exchangeProperty.customSKU} != null</simple>
+						<to uri="direct:loadDuplicateSKUs" />
+						<split parallelProcessing="false">
+							<simple>${body}</simple>
+							<setProperty propertyName="inventory">
+								<simple>${body}</simple>
+							</setProperty>
+							<to uri="direct:updateAndPublish" />
+						</split>
+					</when>
 				</when>
 			</when>
+		</route>
+
+		<route id="updateAndPublish">
+			<from uri="direct:updateAndPublish" />
+			<process ref="updateInventoryDBQuery" />
+			<to uri="direct:publishToMQ" />
 		</route>
 
 		<route id="loadOrderData">
@@ -230,6 +248,15 @@
 				pattern="InOut" />
 			<process ref="processSKUDBQuery" />
 		</route>
+
+		<route id="loadDuplicateSKUs">
+			<from uri="direct:loadDuplicateSKUs" />
+			<process ref="prepareDuplicateSKUsDBQuery" />
+			<to
+				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findAll"
+				pattern="InOut" />
+		</route>
+
 		<route id="publishOrderNotificationToMQ">
 			<from uri="direct:publishOrderNotificationToMQ" />
 			<process ref="prepareOrderEventPublishMessage" />

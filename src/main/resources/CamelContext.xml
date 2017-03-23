@@ -211,7 +211,7 @@
 					</simple>
 					<to uri="direct:updateAndPublish" />
 					<when>
-						<simple>${exchangeProperty.customSKU} != null</simple>
+						<simple>${exchangeProperty.syncDuplicateSKUs} == true and ${exchangeProperty.customSKU} != null</simple>
 						<to uri="direct:loadDuplicateSKUs" />
 						<split parallelProcessing="false">
 							<simple>${body}</simple>

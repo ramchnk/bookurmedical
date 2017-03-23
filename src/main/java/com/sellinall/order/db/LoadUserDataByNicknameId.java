@@ -49,6 +49,12 @@ public class LoadUserDataByNicknameId implements Processor {
 			ignoreSoldEvent = userSiteSpecificObject.getBoolean("ignoreSoldEvent");
 		}
 		exchange.setProperty("ignoreSoldEvent", ignoreSoldEvent);
+
+		boolean syncDuplicateSKUs = false;
+		if (queryResult.containsField("syncDuplicateSKUs")) {
+			syncDuplicateSKUs = (Boolean) queryResult.get("syncDuplicateSKUs");
+		}
+		exchange.setProperty("syncDuplicateSKUs", syncDuplicateSKUs);
 	}
 
 	private DBObject runQuery(String accountNumber, String nickNameID, String siteName) {
@@ -60,6 +66,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		BasicDBObject fields = new BasicDBObject(siteName + ".$", 1);
 		fields.put("merchantID", 1);
 		fields.put("profile", 1);
+		fields.put("syncDuplicateSKUs", 1);
 		DBCollection table = DbUtilities.getDBCollection("accounts");
 		DBObject object = table.findOne(searchQuery, fields);
 		return object;

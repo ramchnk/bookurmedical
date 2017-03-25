@@ -27,6 +27,9 @@ public class PrepareSyncPublishMessage implements Processor {
 		publishMessage.put("SKU", inventoryDBRecord.getString("SKU"));
 		publishMessage.put("UserID", inventoryDBRecord.getString("userId"));
 		exchange.setProperty("userID", inventoryDBRecord.getString("userId"));
+		exchange.getOut().setHeader("batchMessage", true);
+		exchange.setProperty("batchDelayKey", "batchDelay0secKey");
+		exchange.setProperty("batchMessage", publishMessage);
 		exchange.getOut().setBody(publishMessage);
 	}
 }

@@ -368,22 +368,22 @@
 					uri="rabbitmq://{{etsymq.host}}:{{etsymq.tx.port}}/etsyListingExchange?connectionFactory=#etsyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
-		    <when>
-			    <simple>${header.batchMessage} == true</simple>
-			     <setHeader headerName="rabbitmq.DELIVERY_MODE">
-			           <constant>2</constant>
-			      </setHeader>
-			      <setHeader headerName="rabbitmq.ROUTING_KEY">
-				       <simple>${exchangeProperty.batchDelayKey}</simple>
-			       </setHeader>
-                       <setBody>
-                           <simple>${exchangeProperty.batchMessage}</simple>
-                        </setBody>
-                     <convertBodyTo type="java.lang.String" />			        
-			        <to
-				      uri="rabbitmq://{{batchProcessor.host}}:{{batchProcessor.tx.port}}/batchProcessorExchange?connectionFactory=#batchProcessorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					  pattern="InOut" />
-			 </when>
+            <when>
+                 <simple>${header.batchMessage} == true</simple>
+                    <setHeader headerName="rabbitmq.DELIVERY_MODE">
+                      <constant>2</constant>
+                    </setHeader>
+                    <setHeader headerName="rabbitmq.ROUTING_KEY">
+                        <simple>${exchangeProperty.batchDelayKey}</simple>
+                    </setHeader>
+                     <setBody>
+                        <simple>${exchangeProperty.batchMessage}</simple>
+                      </setBody>
+                      <convertBodyTo type="java.lang.String" />			        
+                      <to
+                           uri="rabbitmq://{{batchProcessor.host}}:{{batchProcessor.tx.port}}/batchProcessorExchange?connectionFactory=#batchProcessorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+                           pattern="InOut" />
+            </when>
 		</route>
 		<route id="publishMessageToLogging">
 			<from uri="direct:publishMessageToLogging" />

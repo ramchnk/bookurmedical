@@ -162,8 +162,10 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.put("customSKU", inventoryValue.get("customSKU"));
 					}
 					BasicDBObject site = (BasicDBObject) inventoryValue.get(siteName);
-					if(site.containsKey("isOption")){
+					if (site.containsKey("isOption")) {
 						orderItem.put("isOption", site.getBoolean("isOption"));
+					} else {
+						orderItem.put("isOption", false);
 					}
 					orderItems.set(i, orderItem);
 				}

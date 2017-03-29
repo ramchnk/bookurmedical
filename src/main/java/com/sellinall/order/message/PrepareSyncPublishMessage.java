@@ -27,7 +27,11 @@ public class PrepareSyncPublishMessage implements Processor {
 		publishMessage.put("SKU", inventoryDBRecord.getString("SKU"));
 		publishMessage.put("UserID", inventoryDBRecord.getString("userId"));
 		exchange.setProperty("userID", inventoryDBRecord.getString("userId"));
-  		exchange.setProperty("batchDelayKey", "batchDelay0secKey");
+		exchange.setProperty("batchDelayKey", null);
+		//set the batch delay key only when sites need to be synced (that is, only for new orders)
+		if (syncSites.size() > 0) {
+			exchange.setProperty("batchDelayKey", "batchDelay0secKey");
+		}
 		exchange.getOut().setBody(publishMessage);
 	}
 }

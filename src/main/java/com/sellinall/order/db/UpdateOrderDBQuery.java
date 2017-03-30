@@ -169,7 +169,7 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.put("isOption", false);
 					}
 					if (siteName.equals("eBay") && !addItemLocation) {
-						addItemLocation = getItemLocation(inventoryValue, siteName, orderItem);
+						addItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
 					}
 					orderItems.set(i, orderItem);
 				}
@@ -195,10 +195,10 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private boolean getItemLocation(BasicDBObject inventoryValues, String siteName, BasicDBObject orderItem) {
+	private boolean getItemLocation(BasicDBObject inventoryValues, String siteName, BasicDBObject orderRecord) {
 		BasicDBObject site = (BasicDBObject) inventoryValues.get(siteName);
 		if (site.containsField("itemLocation") && site.get("itemLocation") != null) {
-			orderItem.put("itemLocation", site.get("itemLocation"));
+			orderRecord.put("itemLocation", site.get("itemLocation"));
 			return true;
 		}
 		return false;

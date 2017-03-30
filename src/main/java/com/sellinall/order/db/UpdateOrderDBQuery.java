@@ -168,6 +168,7 @@ public class UpdateOrderDBQuery implements Processor {
 					} else {
 						orderItem.put("isOption", false);
 					}
+
 					if (siteName.equals("eBay") && !addOrderItemLocation) {
 						addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
 					}

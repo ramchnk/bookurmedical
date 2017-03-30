@@ -144,6 +144,7 @@ public class UpdateOrderDBQuery implements Processor {
 			throws JSONException {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
+		boolean addOrderItemLocation = false;
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
@@ -166,6 +167,10 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.put("isOption", site.getBoolean("isOption"));
 					} else {
 						orderItem.put("isOption", false);
+					}
+
+					if (siteName.equals("eBay") && !addOrderItemLocation) {
+						addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
 					}
 					orderItems.set(i, orderItem);
 				}
@@ -190,6 +195,16 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	private boolean getItemLocation(BasicDBObject inventoryValues, String siteName, BasicDBObject orderRecord) {
+		BasicDBObject site = (BasicDBObject) inventoryValues.get(siteName);
+		if (site.containsField("itemLocation") && site.get("itemLocation") != null) {
+			orderRecord.put("itemLocation", site.get("itemLocation"));
+			return true;
+		}
+		return false;
+	}
+	
 	private void fillTransactionKeyValuePair (BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {
 		if (orderMessage.containsField(key)) {
 			orderRecord.put(key, orderMessage.get(key));

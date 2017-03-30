@@ -122,7 +122,7 @@
 		<property name="virtualHost" value="${activity.virtualHost}" />
 	</bean>
 
-	<!-- batchprocessor  -->
+	<!-- batchprocessor -->
 	<bean id="batchProcessorTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${batchProcessor.host}" />
 		<property name="port" value="${batchProcessor.tx.port}" />
@@ -216,11 +216,15 @@
 				<simple>${exchangeProperty.hasSKU} == true</simple>
 				<to uri="direct:loadInventoryData" />
 				<when>
-					<simple>${exchangeProperty.ignoreSoldEvent} == false and ${exchangeProperty.hasCombinedOrderIds} == false and ${exchangeProperty.hasInventoryInDB} == true
+					<simple>${exchangeProperty.ignoreSoldEvent} == false and
+						${exchangeProperty.hasCombinedOrderIds} == false and
+						${exchangeProperty.hasInventoryInDB} == true
 					</simple>
 					<to uri="direct:updateAndPublish" />
 					<when>
-						<simple>${exchangeProperty.syncDuplicateSKUs} == true and ${exchangeProperty.customSKU} != null</simple>
+						<simple>${exchangeProperty.syncDuplicateSKUs} == true and
+							${exchangeProperty.customSKU} != null
+						</simple>
 						<to uri="direct:loadDuplicateSKUs" />
 						<split parallelProcessing="false">
 							<simple>${body}</simple>
@@ -252,8 +256,7 @@
 		<route id="loadInventoryData">
 			<from uri="direct:loadInventoryData" />
 			<process ref="prepareSKUDBQuery" />
-			<to
-				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findAll"
+			<to uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findAll"
 				pattern="InOut" />
 			<process ref="processSKUDBQuery" />
 		</route>
@@ -261,8 +264,7 @@
 		<route id="loadDuplicateSKUs">
 			<from uri="direct:loadDuplicateSKUs" />
 			<process ref="prepareDuplicateSKUsDBQuery" />
-			<to
-				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findAll"
+			<to uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findAll"
 				pattern="InOut" />
 		</route>
 
@@ -292,6 +294,7 @@
 				<to uri="direct:notificationToUser" />
 			</when>
 		</route>
+
 		<route id="publishToMQ">
 			<from uri="direct:publishToMQ" />
 			<process ref="prepareSyncPublishMessage" />
@@ -370,15 +373,16 @@
 			</when>
 			<when>
 				<simple>${exchangeProperty.batchDelayKey} != null</simple>
-                  <setHeader headerName="rabbitmq.ROUTING_KEY">
-                     <simple>${exchangeProperty.batchDelayKey}</simple>
-                  </setHeader>
-                 <convertBodyTo type="java.lang.String" />			        
-                 <to
-                     uri="rabbitmq://{{batchProcessor.host}}:{{batchProcessor.tx.port}}/batchProcessorExchange?connectionFactory=#batchProcessorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-                     pattern="InOut" />
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<simple>${exchangeProperty.batchDelayKey}</simple>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{batchProcessor.host}}:{{batchProcessor.tx.port}}/batchProcessorExchange?connectionFactory=#batchProcessorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
 			</when>
 		</route>
+
 		<route id="publishMessageToLogging">
 			<from uri="direct:publishMessageToLogging" />
 			<setHeader headerName="rabbitmq.ROUTING_KEY">
@@ -389,6 +393,7 @@
 				uri="rabbitmq://{{activity.host}}:{{activity.port}}/activitylogging?connectionFactory=#loggingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 				pattern="InOnly" />
 		</route>
+
 		<route id="notificationToUser">
 			<from uri="direct:notificationToUser" />
 			<process ref="constructOrderNotification" />

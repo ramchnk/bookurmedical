@@ -144,7 +144,7 @@ public class UpdateOrderDBQuery implements Processor {
 			throws JSONException {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
-		boolean addItemLocation = false;
+		boolean addOrderItemLocation = false;
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
@@ -168,8 +168,8 @@ public class UpdateOrderDBQuery implements Processor {
 					} else {
 						orderItem.put("isOption", false);
 					}
-					if (siteName.equals("eBay") && !addItemLocation) {
-						addItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
+					if (siteName.equals("eBay") && !addOrderItemLocation) {
+						addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
 					}
 					orderItems.set(i, orderItem);
 				}

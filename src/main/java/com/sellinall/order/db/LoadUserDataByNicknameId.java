@@ -55,6 +55,11 @@ public class LoadUserDataByNicknameId implements Processor {
 			syncDuplicateSKUs = (Boolean) queryResult.get("syncDuplicateSKUs");
 		}
 		exchange.setProperty("syncDuplicateSKUs", syncDuplicateSKUs);
+		boolean syncMultipleUnitSKUs = false;
+		if (queryResult.containsField("syncMultipleUnitSKUs")) {
+			syncMultipleUnitSKUs = (Boolean) queryResult.get("syncMultipleUnitSKUs");
+		}
+		exchange.setProperty("syncMultipleUnitSKUs", syncMultipleUnitSKUs);
 	}
 
 	private DBObject runQuery(String accountNumber, String nickNameID, String siteName) {
@@ -67,6 +72,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		fields.put("merchantID", 1);
 		fields.put("profile", 1);
 		fields.put("syncDuplicateSKUs", 1);
+		fields.put("syncMultipleUnitSKUs", 1);
 		DBCollection table = DbUtilities.getDBCollection("accounts");
 		DBObject object = table.findOne(searchQuery, fields);
 		return object;

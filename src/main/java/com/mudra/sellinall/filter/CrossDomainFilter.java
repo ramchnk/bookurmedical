@@ -1,5 +1,7 @@
 package com.mudra.sellinall.filter;
 
+import org.apache.log4j.Logger;
+
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
@@ -9,6 +11,7 @@ import com.sun.jersey.spi.container.ContainerResponseFilter;
  * Deisss (LGPLv3)  * @version 0.1  
  */
 public class CrossDomainFilter implements ContainerResponseFilter {
+	static Logger log = Logger.getLogger(CrossDomainFilter.class.getName());
 
 	/**
 	 *      * Add the cross domain data to the output if needed      *      * @param
@@ -18,7 +21,7 @@ public class CrossDomainFilter implements ContainerResponseFilter {
 	 */
 	public ContainerResponse filter(ContainerRequest creq,
 			ContainerResponse cres) {
-		System.out.println("Inside Cross Domain same origin Response FIlter ");
+		log.debug("Inside Cross Domain same origin Response FIlter ");
 		cres.getHttpHeaders().add("Access-Control-Allow-Origin", "*");
 		cres.getHttpHeaders().add("Access-Control-Allow-Headers",
 				"origin, content-type, accept, authorization, Mudra");

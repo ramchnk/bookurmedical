@@ -29,10 +29,10 @@ public class UpdateInventoryDBQuery implements Processor {
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange.getProperty("notificationOrderActionStatus");
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
+		String SKU = inventoryDBRecord.getString("SKU");
+		exchange.setProperty("SKU", SKU);
 		
-		JSONObject orderItemMessage = new JSONObject(exchange.getProperty("orderItemMessage", String.class));
-		
-		int quantity = orderItemMessage.getInt("quantity");
+		int quantity = exchange.getProperty("quantity", Integer.class);
 		
 		List<String> syncSites = new ArrayList<String>();
 		BasicDBObject quantityIncDecModifier = new BasicDBObject();
@@ -47,15 +47,20 @@ public class UpdateInventoryDBQuery implements Processor {
 		} else {
 			DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
 			BasicDBObject searchQuery = new BasicDBObject();
-			searchQuery.put("SKU", inventoryDBRecord.getString("SKU"));
+			searchQuery.put("SKU", SKU);
 
 			BasicDBObject queryToDB = new BasicDBObject();
 			queryToDB.put("$inc", quantityIncDecModifier);
 			if(!quantitySetModifier.isEmpty()){
 				queryToDB.put("$set", quantitySetModifier);
 			}
-			table.update(searchQuery, queryToDB);
-			log.debug("searchQuery: "+searchQuery+" queryToDB: "+queryToDB);
+			log.debug("searchQuery: " + searchQuery + " queryToDB: " + queryToDB);
+			BasicDBObject result = (BasicDBObject) table.findAndModify(searchQuery, new BasicDBObject("noOfItem", 1),
+					null, false, queryToDB, true, false);
+			if (exchange.getProperties().containsKey("processBasicUnitSKU")
+					&& exchange.getProperty("processBasicUnitSKU", Boolean.class) && result != null) {
+				exchange.setProperty("basicUnitQuantity", result.getInt("noOfItem"));
+			}
 		}
 		exchange.getOut().setBody(syncSites);
 	}

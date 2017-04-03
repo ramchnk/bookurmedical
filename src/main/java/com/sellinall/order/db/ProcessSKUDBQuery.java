@@ -39,6 +39,11 @@ public class ProcessSKUDBQuery implements Processor {
 		exchange.setProperty("hasInventoryInDB", true);
 		exchange.setProperty("inventory", inventory.toString());
 		extractInventoryValues(exchange, inventory, itemTitle);
+
+		if (exchange.getProperty("messageType", String.class).equals("order")) {
+			JSONObject orderItemMessage = new JSONObject(exchange.getProperty("orderItemMessage", String.class));
+			exchange.setProperty("quantity", orderItemMessage.getInt("quantity"));
+		}
 	}
 
 	@SuppressWarnings("unchecked")

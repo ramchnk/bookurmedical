@@ -225,7 +225,9 @@
 					</simple>
 					<choice>
 						<when>
-							<simple>${exchangeProperty.syncMultipleUnitSKUs} == true</simple>
+							<simple>${exchangeProperty.syncMultipleUnitSKUs} == true and
+								${exchangeProperty.customSKU} != null
+							</simple>
 							<to uri="direct:loadBasicUnitSKU" />
 							<to uri="direct:updateAndPublish" />
 							<to uri="direct:syncDuplicateSKUs" />
@@ -234,7 +236,7 @@
 								<simple>${body}</simple>
 								<process ref="setMultipleUnitQuantity" />
 								<to uri="direct:updateAndPublish" />
-								<!-- <to uri="direct:syncDuplicateSKUs" /> -->
+								<to uri="direct:syncDuplicateSKUs" />
 							</split>
 						</when>
 						<otherwise>

@@ -227,7 +227,7 @@
 						<when>
 							<simple>${exchangeProperty.syncMultipleUnitSKUs} == true and
 								${exchangeProperty.customSKU} != null and
-								${exchangeProperty.customSKU} regex '.+x[1-9]+[0-9]*'
+								${exchangeProperty.customSKU} regex '.+x[1-9]+[0-9]*$'
 							</simple>
 							<to uri="direct:loadBasicUnitSKU" />
 							<to uri="direct:updateAndPublish" />
@@ -299,15 +299,12 @@
 		<route id="loadBasicUnitSKU">
 			<from uri="direct:loadBasicUnitSKU" />
 			<process ref="prepareBasicUnitSKUQuery" />
-			<when>
-				<simple>${body} != null</simple>
-				<to
-					uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findOneByQuery"
-					pattern="InOut" />
-				<setProperty propertyName="inventory">
-					<simple>${body}</simple>
-				</setProperty>
-			</when>
+			<to
+				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findOneByQuery"
+				pattern="InOut" />
+			<setProperty propertyName="inventory">
+				<simple>${body}</simple>
+			</setProperty>
 		</route>
 
 		<route id="loadMultipleUnitSKUs">

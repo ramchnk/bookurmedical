@@ -153,7 +153,6 @@
 	<!-- The camel route context -->
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 		<route id="messageListner">
-
 			<from
 				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
 			<process ref="initMessageListenerRoute" />
@@ -230,26 +229,42 @@
 								${exchangeProperty.customSKU} regex '.+x[1-9]+[0-9]*$'
 							</simple>
 							<to uri="direct:loadBasicUnitSKU" />
-							<to uri="direct:updateAndPublish" />
-							<to uri="direct:syncDuplicateSKUs" />
-							<to uri="direct:loadMultipleUnitSKUs" />
-							<split parallelProcessing="false">
-								<simple>${body}</simple>
-								<process ref="setMultipleUnitQuantity" />
-								<to uri="direct:updateAndPublish" />
-								<to uri="direct:syncDuplicateSKUs" />
-							</split>
+							<choice>
+								<when>
+									<simple>${body} != null</simple>
+									<setProperty propertyName="inventory">
+										<simple>${body}</simple>
+									</setProperty>
+									<to uri="direct:updateAndPublish" />
+									<to uri="direct:syncDuplicateSKUs" />
+									<to uri="direct:loadMultipleUnitSKUs" />
+									<split parallelProcessing="false">
+										<simple>${body}</simple>
+										<process ref="setMultipleUnitQuantity" />
+										<to uri="direct:updateAndPublish" />
+										<to uri="direct:syncDuplicateSKUs" />
+									</split>
+								</when>
+								<otherwise>
+									<to uri="direct:updateSKUQuantity" />
+								</otherwise>
+							</choice>
 						</when>
 						<otherwise>
-							<to uri="direct:updateAndPublish" />
-							<to uri="direct:syncDuplicateSKUs" />
+							<to uri="direct:updateSKUQuantity" />
 						</otherwise>
 					</choice>
 				</when>
 			</when>
 		</route>
 
-		<route>
+		<route id="updateSKUQuantity">
+			<from uri="direct:updateSKUQuantity" />
+			<to uri="direct:updateAndPublish" />
+			<to uri="direct:syncDuplicateSKUs" />
+		</route>
+
+		<route id="syncDuplicateSKUs">
 			<from uri="direct:syncDuplicateSKUs" />
 			<when>
 				<simple>${exchangeProperty.syncDuplicateSKUs} == true and
@@ -302,9 +317,6 @@
 			<to
 				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findOneByQuery"
 				pattern="InOut" />
-			<setProperty propertyName="inventory">
-				<simple>${body}</simple>
-			</setProperty>
 		</route>
 
 		<route id="loadMultipleUnitSKUs">

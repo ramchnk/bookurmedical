@@ -45,6 +45,7 @@ public class UpdateInventoryDBQuery implements Processor {
 		if ( quantityIncDecModifier.isEmpty()) {
 			syncSites.clear();
 		} else {
+			exchange.setProperty("quantityModified", true);
 			DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
 			BasicDBObject searchQuery = new BasicDBObject();
 			searchQuery.put("SKU", SKU);
@@ -66,12 +67,23 @@ public class UpdateInventoryDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void processQuantityUpdates(
-			NotificationOrderActionStatus notificationOrderActionStatus,
-			JSONObject orderMessage, BasicDBObject inventoryDBRecord,
-			int quantitySold, List<String> syncSites, BasicDBObject quantityIncDecModifier,
-			BasicDBObject quantitySetModifier)
-			throws JSONException {
+	private void processQuantityUpdates(NotificationOrderActionStatus notificationOrderActionStatus,
+			JSONObject orderMessage, BasicDBObject inventoryDBRecord, int quantitySold, List<String> syncSites,
+			BasicDBObject quantityIncDecModifier, BasicDBObject quantitySetModifier) throws JSONException {
+		boolean newOrder = notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED);
+
+		boolean cancelledOrder = notificationOrderActionStatus
+				.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED);
+
 		for (String siteName : siteNames ) {
 			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
@@ -95,22 +107,13 @@ public class UpdateInventoryDBQuery implements Processor {
 							continue;
 						}
 						int quantityDiff = quantitySold - (invNoOfItem - siteNoOfItem);
-						if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED)) {
+						if ( newOrder) {
 							if(siteSpecific.containsField("noOfItem") && siteNoOfItem > quantityDiff){
 								incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", -quantityDiff);
 							} else {
 								incrementSetter(quantitySetModifier, siteName+"."+index+".noOfItem", 0);
 							}
-						} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED) ||
-								notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)) {
+						} else if (cancelledOrder) {
 							// in case of cancel, ideally we should compare with
 							// max allolwed quantity and decide whether to
 							// increment or not. To be done in future.
@@ -128,30 +131,24 @@ public class UpdateInventoryDBQuery implements Processor {
 					hasSiteSpecificIndex = true;
 				}
 			}
-			if ( notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED)) {
-				incrementSetter(quantityIncDecModifier, "noOfItem", -quantitySold);
-				incrementSetter(quantityIncDecModifier, "noOfItemsold", quantitySold);
+			if ( newOrder) {
 				if (hasSiteSpecificIndex) {
 					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", -quantitySold);
 					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", quantitySold);
 				}
-			} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED) ||
-					notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)) {
-				incrementSetter(quantityIncDecModifier, "noOfItem", quantitySold);
-				incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantitySold);
+			} else if (cancelledOrder) {
 				if (hasSiteSpecificIndex) {
 					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", quantitySold);
 					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", -quantitySold);
 				}
 			}
+		}
+		if (newOrder) {
+			incrementSetter(quantityIncDecModifier, "noOfItem", -quantitySold);
+			incrementSetter(quantityIncDecModifier, "noOfItemsold", quantitySold);
+		} else if (cancelledOrder) {
+			incrementSetter(quantityIncDecModifier, "noOfItem", quantitySold);
+			incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantitySold);
 		}
 	}
 	

@@ -236,14 +236,16 @@
 										<simple>${body}</simple>
 									</setProperty>
 									<to uri="direct:updateAndPublish" />
-									<to uri="direct:syncDuplicateSKUs" />
-									<to uri="direct:loadMultipleUnitSKUs" />
-									<split parallelProcessing="false">
-										<simple>${body}</simple>
-										<process ref="setMultipleUnitQuantity" />
-										<to uri="direct:updateAndPublish" />
+									<when>
+										<simple>${exchangeProperty.quantityModified} == true</simple>
 										<to uri="direct:syncDuplicateSKUs" />
-									</split>
+										<to uri="direct:loadMultipleUnitSKUs" />
+										<split parallelProcessing="false">
+											<simple>${body}</simple>
+											<process ref="setMultipleUnitQuantity" />
+											<to uri="direct:updateAndPublish" />
+										</split>
+									</when>
 								</when>
 								<otherwise>
 									<to uri="direct:updateSKUQuantity" />

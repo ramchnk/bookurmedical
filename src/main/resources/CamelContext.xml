@@ -117,6 +117,13 @@
 		<property name="password" value="${shopcluesmq.password}" />
 		<property name="virtualHost" value="${shopcluesmq.virtualHost}" />
 	</bean>
+	<bean id="qoo10TxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${qoo10mq.host}" />
+		<property name="port" value="${qoo10mq.tx.port}" />
+		<property name="username" value="${qoo10mq.username}" />
+		<property name="password" value="${qoo10mq.password}" />
+		<property name="virtualHost" value="${qoo10mq.virtualHost}" />
+	</bean>
 	<bean id="loggingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${activity.host}" />
 		<property name="port" value="${activity.port}" />
@@ -429,6 +436,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{etsymq.host}}:{{etsymq.tx.port}}/etsyListingExchange?connectionFactory=#etsyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.qoo10} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>qoo10ListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{qoo10mq.host}}:{{qoo10mq.tx.port}}/qoo10ListingExchange?connectionFactory=#qoo10TxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

@@ -75,6 +75,9 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("notificationID", notificationIDList);
 		}
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
+		if (orderMessage.containsField("timeOrderCreated")) {
+			orderRecord.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
+		}
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);

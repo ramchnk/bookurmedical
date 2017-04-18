@@ -125,11 +125,11 @@
 		<property name="virtualHost" value="${qoo10mq.virtualHost}" />
 	</bean>
 	<bean id="lazadaTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
-		<property name="host" value="${lazadamq.host}" />
-		<property name="port" value="${lazadamq.rx.port}" />
-		<property name="username" value="${lazadamq.username}" />
-		<property name="password" value="${lazadamq.password}" />
-		<property name="virtualHost" value="${lazadamq.virtualHost}" />
+		<property name="host" value="${lazada.host}" />
+		<property name="port" value="${lazada.rx.port}" />
+		<property name="username" value="${lazada.username}" />
+		<property name="password" value="${lazada.password}" />
+		<property name="virtualHost" value="${lazada.virtualHost}" />
 	</bean>
 	<bean id="loggingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${activity.host}" />
@@ -462,7 +462,7 @@
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{lazadamq.host}}:{{lazadamq.tx.port}}/lazadaListingExchange?connectionFactory=#lazadaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					uri="rabbitmq://{{lazada.host}}:{{lazada.tx.port}}/lazadaListingExchange?connectionFactory=#lazadaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

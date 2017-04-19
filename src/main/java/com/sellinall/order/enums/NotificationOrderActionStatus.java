@@ -10,6 +10,7 @@ public enum NotificationOrderActionStatus {
 	DELIVERED("DELIVERED"), /* "decrement" inventory inStock quantity */
 	DELIVERY_FAILED("DELIVERY_FAILED"), /* "decrement" inventory inStock quantity */
 	CANCELLED("CANCELLED"), /* "increment" inventory inStock quantity */
+	CANCEL_PENDING ("CANCEL_PENDING"), /* order cancellation is pending */
 	RETURNED("RETURNED"),
 	COMBINED("COMBINED"), /* No Action, as the sync have happened already */
 

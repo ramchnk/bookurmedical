@@ -10,6 +10,7 @@ public enum NotificationOrderActionStatus {
 	DELIVERED("DELIVERED"), /* "decrement" inventory inStock quantity */
 	DELIVERY_FAILED("DELIVERY_FAILED"), /* "decrement" inventory inStock quantity */
 	CANCELLED("CANCELLED"), /* "increment" inventory inStock quantity */
+	CANCEL_PENDING ("CANCEL_PENDING"), /* order cancellation is pending */
 	RETURNED("RETURNED"),
 	COMBINED("COMBINED"), /* No Action, as the sync have happened already */
 
@@ -35,7 +36,9 @@ public enum NotificationOrderActionStatus {
 	DISPATCHED_TO_COMPLETED("DISPATCHED_TO_COMPLETED"), /* No Action */
 
 	INITIATED_TO_CANCELLED("INITIATED_TO_CANCELLED"), /* "increment" inventory inStock quantity */
+	INITIATED_TO_CANCEL_PENDING("INITIATED_TO_CANCEL_PENDING"),
 	ACCEPTED_TO_CANCELLED("ACCEPTED_TO_CANCELLED"), /* "increment" inventory inStock quantity */
+	ACCEPTED_TO_CANCEL_PENDING("ACCEPTED_TO_CANCEL_PENDING"),
 	DISPATCHED_TO_RETURNED("DISPATCHED_TO_RETURNED"), /* "increment" inventory inStock quantity */
 	DELIVERED_TO_RETURNED("DELIVERED_TO_RETURNED"), /* "increment" inventory inStock quantity */
 	PROCESSING_TO_CANCELLED("PROCESSING_TO_CANCELLED"); /* "increment" inventory inStock quantity */

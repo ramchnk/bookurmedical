@@ -44,7 +44,10 @@ public enum NotificationOrderActionStatus {
 	ACCEPTED_TO_CANCEL_REQUESTED("ACCEPTED_TO_CANCEL_REQUESTED"),
 	DISPATCHED_TO_RETURNED("DISPATCHED_TO_RETURNED"), /* "increment" inventory inStock quantity */
 	DELIVERED_TO_RETURNED("DELIVERED_TO_RETURNED"), /* "increment" inventory inStock quantity */
-	PROCESSING_TO_CANCELLED("PROCESSING_TO_CANCELLED"); /* "increment" inventory inStock quantity */
+	PROCESSING_TO_CANCELLED("PROCESSING_TO_CANCELLED"), /* "increment" inventory inStock quantity */
+
+	CANCEL_PENDING_TO_CANCELLED("CANCEL_PENDING_TO_CANCELLED"),
+	CANCEL_REQUESTED_TO_CANCELLED("CANCEL_REQUESTED_TO_CANCELLED");
 
 	private final String name;
 

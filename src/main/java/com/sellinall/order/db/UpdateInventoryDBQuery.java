@@ -79,15 +79,11 @@ public class UpdateInventoryDBQuery implements Processor {
 
 		boolean cancelledOrder = notificationOrderActionStatus
 				.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCEL_PENDING)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCEL_REQUESTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCEL_PENDING)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCEL_REQUESTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED);
 
 		for (String siteName : siteNames) {

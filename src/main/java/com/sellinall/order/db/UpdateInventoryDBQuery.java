@@ -82,15 +82,17 @@ public class UpdateInventoryDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED);
 
-		for (String siteName : siteNames ) {
+		for (String siteName : siteNames) {
 			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
 			}
-			if ( inventoryDBRecord.getBoolean("sync") ) {
+			if (inventoryDBRecord.getBoolean("sync")) {
 				syncSites.add(siteName);
-			}		
+			}
 			ArrayList<BasicDBObject> siteSpecificList = (ArrayList<BasicDBObject>) inventoryDBRecord.get(siteName);
 			Boolean hasSiteSpecificIndex = false;
 			int siteSpecificIndex = 0;
@@ -107,21 +109,23 @@ public class UpdateInventoryDBQuery implements Processor {
 							continue;
 						}
 						int quantityDiff = quantitySold - (invNoOfItem - siteNoOfItem);
-						if ( newOrder) {
-							if(siteSpecific.containsField("noOfItem") && siteNoOfItem > quantityDiff){
-								incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", -quantityDiff);
+						if (newOrder) {
+							if (siteSpecific.containsField("noOfItem") && siteNoOfItem > quantityDiff) {
+								incrementSetter(quantityIncDecModifier, siteName + "." + index + ".noOfItem",
+										-quantityDiff);
 							} else {
-								incrementSetter(quantitySetModifier, siteName+"."+index+".noOfItem", 0);
+								incrementSetter(quantitySetModifier, siteName + "." + index + ".noOfItem", 0);
 							}
 						} else if (cancelledOrder) {
 							// in case of cancel, ideally we should compare with
 							// max allolwed quantity and decide whether to
 							// increment or not. To be done in future.
-							incrementSetter(quantityIncDecModifier, siteName+"."+index+".noOfItem", quantitySold);
+							incrementSetter(quantityIncDecModifier, siteName + "." + index + ".noOfItem", quantitySold);
 						}
 					}
 				} else { // notification from this site
-					// For already Bided inventory, the quantity(noOfItem) is updated for the first bid without a order been created.
+					// For already Bided inventory, the quantity(noOfItem) is
+					// updated for the first bid without a order been created.
 					if (SIAInventoryStatus.BIDDING.equalsName(siteSpecific.getString("status"))) {
 						// skip the inventory update
 						quantityIncDecModifier.clear();
@@ -131,15 +135,19 @@ public class UpdateInventoryDBQuery implements Processor {
 					hasSiteSpecificIndex = true;
 				}
 			}
-			if ( newOrder) {
+			if (newOrder) {
 				if (hasSiteSpecificIndex) {
-					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", -quantitySold);
-					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", quantitySold);
+					incrementSetter(quantityIncDecModifier, siteName + "." + siteSpecificIndex + ".noOfItem",
+							-quantitySold);
+					incrementSetter(quantityIncDecModifier, siteName + "." + siteSpecificIndex + ".noOfItemsold",
+							quantitySold);
 				}
 			} else if (cancelledOrder) {
 				if (hasSiteSpecificIndex) {
-					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItem", quantitySold);
-					incrementSetter(quantityIncDecModifier, siteName+"."+siteSpecificIndex+".noOfItemsold", -quantitySold);
+					incrementSetter(quantityIncDecModifier, siteName + "." + siteSpecificIndex + ".noOfItem",
+							quantitySold);
+					incrementSetter(quantityIncDecModifier, siteName + "." + siteSpecificIndex + ".noOfItemsold",
+							-quantitySold);
 				}
 			}
 		}

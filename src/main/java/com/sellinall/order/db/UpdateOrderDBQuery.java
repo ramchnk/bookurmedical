@@ -214,16 +214,19 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 	
-	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord){
-		// TODO: need to get more insights on how these dates can be used, so as of now ignoring other state transition timestamps
+	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord) {
+		// TODO: need to get more insights on how these dates can be used, so as
+		// of now ignoring other state transition timestamps
 		if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)) {
 			orderRecord.put("timeProcessing", DateUtil.getSIADateFormat());
-		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED) ||
-				notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_COMPLETED)) {
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_COMPLETED)) {
 			orderRecord.put("timeCompleted", DateUtil.getSIADateFormat());
-		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCELLED) ||
-				notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED) ) {
-			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());			
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)) {
+			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());
 		}
 	}
 

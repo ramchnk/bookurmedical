@@ -28,6 +28,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		String siteName = exchange.getProperty("siteName", String.class);
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		DBObject queryResult = runQuery(accountNumber, nickNameID, siteName);
+		exchange.setProperty("syncInventory",(Boolean)queryResult.get("syncInventory"));
 		List<BasicDBObject> userSiteSpecificObjectList = (List<BasicDBObject>) queryResult.get(siteName);
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
@@ -73,6 +74,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		fields.put("profile", 1);
 		fields.put("syncDuplicateSKUs", 1);
 		fields.put("syncMultipleUnitSKUs", 1);
+		fields.put("syncInventory",1);
 		DBCollection table = DbUtilities.getDBCollection("accounts");
 		DBObject object = table.findOne(searchQuery, fields);
 		return object;

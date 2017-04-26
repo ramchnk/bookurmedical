@@ -34,12 +34,13 @@ public class UpdateInventoryDBQuery implements Processor {
 		
 		int quantity = exchange.getProperty("quantity", Integer.class);
 		
+		boolean syncInventory = exchange.getProperty("syncInventory", Boolean.class);
 		List<String> syncSites = new ArrayList<String>();
 		BasicDBObject quantityIncDecModifier = new BasicDBObject();
 		BasicDBObject quantitySetModifier = new BasicDBObject();
 		processQuantityUpdates(notificationOrderActionStatus, orderMessage,
 				inventoryDBRecord, quantity,
-				syncSites, quantityIncDecModifier, quantitySetModifier);
+				syncSites, quantityIncDecModifier, quantitySetModifier, syncInventory);
 
 		log.debug("updateInventoryRecord: Quantity: "+quantityIncDecModifier);
 		if ( quantityIncDecModifier.isEmpty()) {
@@ -69,7 +70,7 @@ public class UpdateInventoryDBQuery implements Processor {
 	@SuppressWarnings("unchecked")
 	private void processQuantityUpdates(NotificationOrderActionStatus notificationOrderActionStatus,
 			JSONObject orderMessage, BasicDBObject inventoryDBRecord, int quantitySold, List<String> syncSites,
-			BasicDBObject quantityIncDecModifier, BasicDBObject quantitySetModifier) throws JSONException {
+			BasicDBObject quantityIncDecModifier, BasicDBObject quantitySetModifier, boolean syncInventory) throws JSONException {
 		boolean newOrder = notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
@@ -85,12 +86,12 @@ public class UpdateInventoryDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED);
-
 		for (String siteName : siteNames) {
+
 			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
 			}
-			if (inventoryDBRecord.getBoolean("sync")) {
+			if (inventoryDBRecord.getBoolean("sync") && syncInventory) {
 				syncSites.add(siteName);
 			}
 			ArrayList<BasicDBObject> siteSpecificList = (ArrayList<BasicDBObject>) inventoryDBRecord.get(siteName);
@@ -99,7 +100,7 @@ public class UpdateInventoryDBQuery implements Processor {
 			for (int index = 0; index < siteSpecificList.size(); index++) {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
 				if (!siteSpecific.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
-					if (inventoryDBRecord.getBoolean("sync")) {
+					if (inventoryDBRecord.getBoolean("sync") && syncInventory) {
 						// Update other sites only if sync is true. Skip if the
 						// site specific quantity is lesser than (overall
 						// quantity - quantity sold).

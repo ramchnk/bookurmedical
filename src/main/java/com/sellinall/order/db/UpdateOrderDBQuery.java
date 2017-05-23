@@ -78,6 +78,12 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("timeOrderCreated")) {
 			orderRecord.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
 		}
+		if (orderMessage.containsField("shippingAmount")) {
+			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
+		}
+		if (orderMessage.containsField("voucherAmount")) {
+			orderRecord.put("voucherAmount", orderMessage.get("voucherAmount"));
+		}
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);

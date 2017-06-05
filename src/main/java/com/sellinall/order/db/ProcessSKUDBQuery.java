@@ -75,17 +75,17 @@ public class ProcessSKUDBQuery implements Processor {
 				break;
 			}
 		}
-		if (site!=null && parentInventory.length() != 0){
+		if (site != null && parentInventory.length() != 0) {
 			JSONArray parentSiteSpecificList = parentInventory.getJSONArray(siteName);
 			BasicDBObject parentSite = null;
 			for (int index = 0; index < parentSiteSpecificList.length(); index++) {
 				JSONObject parentSiteJSON = parentSiteSpecificList.getJSONObject(index);
 				if (parentSiteJSON.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
 					parentSite = (BasicDBObject) JSON.parse(parentSiteJSON.toString());
-					if(parentSite.containsField("categoryName")){
+					if (parentSite.containsField("categoryName")) {
 						site.put("categoryName", parentSite.get("categoryName"));
 					}
-					if(parentSite.containsField("categoryID")){
+					if (parentSite.containsField("categoryID")) {
 						site.put("categoryID", parentSite.get("categoryID"));
 					}
 					break;

@@ -177,10 +177,10 @@ public class UpdateOrderDBQuery implements Processor {
 					} else {
 						orderItem.put("isOption", false);
 					}
-					if(site.containsField("categoryName")){
+					if (site.containsField("categoryName")) {
 						orderItem.put("categoryName", site.get("categoryName"));
 					}
-					if(site.containsField("categoryID")){
+					if (site.containsField("categoryID")) {
 						orderItem.put("categoryID", site.get("categoryID"));
 					}
 

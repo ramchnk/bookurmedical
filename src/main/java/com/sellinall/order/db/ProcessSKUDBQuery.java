@@ -85,7 +85,7 @@ public class ProcessSKUDBQuery implements Processor {
 					if(parentSite.containsField("categoryName")){
 						site.put("categoryName", parentSite.get("categoryName"));
 					}
-					if(parentSite.containsField("categoryName")){
+					if(parentSite.containsField("categoryID")){
 						site.put("categoryID", parentSite.get("categoryID"));
 					}
 					break;

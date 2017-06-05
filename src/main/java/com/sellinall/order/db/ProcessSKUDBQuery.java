@@ -29,16 +29,17 @@ public class ProcessSKUDBQuery implements Processor {
 		String SKU = exchange.getProperty("SKU", String.class);
 		JSONObject inventory = getInventoryBySKU(inventoryList, SKU);
 		String itemTitle = "";
+		JSONObject parentInventory = new JSONObject();
 		if (inventory.has("itemTitle")) {
 			itemTitle = inventory.getString("itemTitle");
 		} else if (inventoryList.length() > 1) {
-			JSONObject parentInventory = getInventoryBySKU(inventoryList, SKU.split("-")[0]);
+			parentInventory = getInventoryBySKU(inventoryList, SKU.split("-")[0]);
 			itemTitle = parentInventory.getString("itemTitle");
 		}
 
 		exchange.setProperty("hasInventoryInDB", true);
 		exchange.setProperty("inventory", inventory.toString());
-		extractInventoryValues(exchange, inventory, itemTitle);
+		extractInventoryValues(exchange, inventory, itemTitle, parentInventory);
 
 		if (exchange.getProperty("messageType", String.class).equals("order")) {
 			JSONObject orderItemMessage = new JSONObject(exchange.getProperty("orderItemMessage", String.class));
@@ -47,7 +48,7 @@ public class ProcessSKUDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle) throws JSONException {
+	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle, JSONObject parentInventory) throws JSONException {
 		Map<String, BasicDBObject> inventoryDetailsMap = new HashMap<String, BasicDBObject>();
 		if (exchange.getProperties().containsKey("inventoryDetailsMap")) {
 			inventoryDetailsMap = (Map<String, BasicDBObject>) exchange.getProperty("inventoryDetailsMap");
@@ -72,6 +73,23 @@ public class ProcessSKUDBQuery implements Processor {
 			if (siteJSON.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
 				site = (BasicDBObject) JSON.parse(siteJSON.toString());
 				break;
+			}
+		}
+		if (site != null && parentInventory.length() != 0) {
+			JSONArray parentSiteSpecificList = parentInventory.getJSONArray(siteName);
+			BasicDBObject parentSite = null;
+			for (int index = 0; index < parentSiteSpecificList.length(); index++) {
+				JSONObject parentSiteJSON = parentSiteSpecificList.getJSONObject(index);
+				if (parentSiteJSON.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
+					parentSite = (BasicDBObject) JSON.parse(parentSiteJSON.toString());
+					if (parentSite.containsField("categoryName")) {
+						site.put("categoryName", parentSite.get("categoryName"));
+					}
+					if (parentSite.containsField("categoryID")) {
+						site.put("categoryID", parentSite.get("categoryID"));
+					}
+					break;
+				}
 			}
 		}
 		inventoryValues.put(siteName, site);

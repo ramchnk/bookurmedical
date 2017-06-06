@@ -75,6 +75,7 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("notificationID", notificationIDList);
 		}
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
+		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		if (orderMessage.containsField("timeOrderCreated")) {
 			orderRecord.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
 		}

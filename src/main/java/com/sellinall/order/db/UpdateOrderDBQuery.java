@@ -88,6 +88,9 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("voucherAmount", orderMessage.get("voucherAmount"));
 		}
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
+		if (orderMessage.containsField("cartNumber")) {
+			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
+		}
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);

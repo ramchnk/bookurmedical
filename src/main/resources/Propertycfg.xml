@@ -46,5 +46,6 @@
 		<property name="InventoryCollectionDBName" value="${InventoryCollectionDBName}" />
 		<property name="uploadImageUri" value="${uploadImageUri}" />
 		<property name="SIAOrderPageURL" value="${SIAOrderPageURL}" />
+		<property name="SIAAccountingChannels" value="${SIAAccountingChannels}" />
 		</bean>
 </beans>

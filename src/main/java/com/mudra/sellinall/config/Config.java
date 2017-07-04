@@ -18,6 +18,7 @@ public class Config {
 	private String uploadImageUri;
 	private String SIAOrderPageURL;
 	private String Ragasiyam;
+	private String SIAAccountingChannels;
 
 	public String getRagasiyam() {
 		return Ragasiyam;
@@ -118,6 +119,14 @@ public class Config {
 
 	public void setSIAOrderPageURL(String sIAOrderPageURL) {
 		SIAOrderPageURL = sIAOrderPageURL;
+	}
+
+	public String getSIAAccountingChannels() {
+		return SIAAccountingChannels;
+	}
+
+	public void setSIAAccountingChannels(String sIAAccountingChannels) {
+		SIAAccountingChannels = sIAAccountingChannels;
 	}
 
 }

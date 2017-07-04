@@ -35,8 +35,10 @@ public class UpdateOrderDBQuery implements Processor {
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		JSONObject orderMessageJSON = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
+		exchange.setProperty("isNewOrder", false);
 		if (!hasOrderInDB) {
 			insertOrderRecord(exchange, notificationOrderActionStatus, orderMessage, inBody);
+			exchange.setProperty("isNewOrder", true);
 			return;
 		}
 		updateOrderRecord(exchange, notificationOrderActionStatus, orderMessage);
@@ -85,6 +87,7 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("voucherAmount")) {
 			orderRecord.put("voucherAmount", orderMessage.get("voucherAmount"));
 		}
+		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		if (orderMessage.containsField("cartNumber")) {
 			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
 		}
@@ -158,6 +161,7 @@ public class UpdateOrderDBQuery implements Processor {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
 		boolean addOrderItemLocation = false;
+		ArrayList<String> customSKUs = new ArrayList<String>();
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
@@ -192,10 +196,14 @@ public class UpdateOrderDBQuery implements Processor {
 						addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
 					}
 					orderItems.set(i, orderItem);
+					if(orderItem.containsKey("customSKU")){
+						customSKUs.add(orderItem.getString("customSKU"));
+					}
 				}
 			}
 			orderRecord.put("orderItems", orderItems);
 		}
+		exchange.setProperty("customSKUs", customSKUs);
 	}
 
 	@SuppressWarnings("unchecked")

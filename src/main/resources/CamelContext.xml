@@ -14,6 +14,7 @@
 	<bean id="updateInventoryForBidMessage" class="com.sellinall.bid.process.UpdateInventoryForBidMessage" />
 	<bean id="updateInventoryWithBidAmount" class="com.sellinall.bid.process.UpdateInventoryWithBidAmount" />
 
+	<bean id="createInvoiceToAccountingChannel" class="com.sellinall.order.message.CreateInvoiceToAccountingChannel" />
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
 	<bean id="prepareOrderEventPublishMessage" class="com.sellinall.order.message.PrepareOrderEventPublishMessage" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
@@ -131,6 +132,13 @@
 		<property name="password" value="${lazada.password}" />
 		<property name="virtualHost" value="${lazada.virtualHost}" />
 	</bean>
+	<bean id="quickBooksTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${quickBooks.host}" />
+		<property name="port" value="${quickBooks.rx.port}" />
+		<property name="username" value="${quickBooks.username}" />
+		<property name="password" value="${quickBooks.password}" />
+		<property name="virtualHost" value="${quickBooks.virtualHost}" />
+	</bean>
 	<bean id="loggingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${activity.host}" />
 		<property name="port" value="${activity.port}" />
@@ -216,6 +224,10 @@
 			<when>
 				<simple>${exchangeProperty.hasCombinedOrderIds} == true</simple>
 				<to uri="direct:updateCombineOrderIds" />
+			</when>
+			<when>
+				<simple>${exchangeProperty.isNewOrder} == true</simple>
+				<to uri="direct:publishToAccountingChannels" />
 			</when>
 		</route>
 
@@ -473,6 +485,24 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{batchProcessor.host}}:{{batchProcessor.tx.port}}/batchProcessorExchange?connectionFactory=#batchProcessorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+		</route>
+		
+		<route id="publishToAccountingChannels" >
+			<from uri="direct:publishToAccountingChannels" />
+			<process ref="createInvoiceToAccountingChannel" />
+			<setHeader headerName="rabbitmq.DELIVERY_MODE">
+				<constant>2</constant>
+			</setHeader>
+			<when>
+				<simple>${header.quickBooks} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>quickbooksKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+				uri="rabbitmq://{{quickBooks.host}}:{{quickBooks.tx.port}}/quickbooksExchange?connectionFactory=#quickBooksTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 		</route>

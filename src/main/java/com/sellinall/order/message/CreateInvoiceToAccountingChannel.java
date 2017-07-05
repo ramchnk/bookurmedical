@@ -15,12 +15,8 @@ import com.sellinall.database.DbUtilities;
 public class CreateInvoiceToAccountingChannel implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
-		String accountNumber = exchange.getProperty("accountNumber", String.class);
-		ArrayList<String> customSKUs = exchange.getProperty("customSKUs", ArrayList.class);
-		if (customSKUs == null || customSKUs.size() <= 0) {
-			return;
-		}
-		BasicDBObject accounts = loadAccountDetails(accountNumber);
+		BasicDBObject orderRecord = exchange.getProperty("orderRecord", BasicDBObject.class);
+		BasicDBObject accounts = loadAccountDetails(orderRecord.getString("accountNumber"));
 		String accountingChannel = Config.getConfig().getSIAAccountingChannels();
 		String[] channels = accountingChannel.split("-");
 		for (String site : channels) {
@@ -28,11 +24,8 @@ public class CreateInvoiceToAccountingChannel implements Processor {
 				exchange.getOut().setHeader(site, true);
 			}
 		}
-		JSONObject publishMessage = new JSONObject();
+		JSONObject publishMessage = new JSONObject(orderRecord.toString());
 		publishMessage.put("requestType", "createInvoice");
-		publishMessage.put("customSKUs", customSKUs);
-		publishMessage.put("accountNumber", accountNumber);
-		exchange.getOut().setBody(publishMessage);
 	}
 
 	private BasicDBObject loadAccountDetails(String accountNumber) {

@@ -94,6 +94,8 @@ public class UpdateOrderDBQuery implements Processor {
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
 		table.insert(orderRecord);
+		//for accounting channel
+		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
 	}
 	
@@ -161,7 +163,6 @@ public class UpdateOrderDBQuery implements Processor {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
 		boolean addOrderItemLocation = false;
-		ArrayList<String> customSKUs = new ArrayList<String>();
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
@@ -196,14 +197,10 @@ public class UpdateOrderDBQuery implements Processor {
 						addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
 					}
 					orderItems.set(i, orderItem);
-					if(orderItem.containsKey("customSKU")){
-						customSKUs.add(orderItem.getString("customSKU"));
-					}
 				}
 			}
 			orderRecord.put("orderItems", orderItems);
 		}
-		exchange.setProperty("customSKUs", customSKUs);
 	}
 
 	@SuppressWarnings("unchecked")

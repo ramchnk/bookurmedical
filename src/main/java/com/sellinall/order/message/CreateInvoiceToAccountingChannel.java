@@ -1,7 +1,5 @@
 package com.sellinall.order.message;
 
-import java.util.ArrayList;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.bson.types.ObjectId;
@@ -26,6 +24,7 @@ public class CreateInvoiceToAccountingChannel implements Processor {
 		}
 		JSONObject publishMessage = new JSONObject(orderRecord.toString());
 		publishMessage.put("requestType", "createInvoice");
+		exchange.getOut().setBody(publishMessage);
 	}
 
 	private BasicDBObject loadAccountDetails(String accountNumber) {

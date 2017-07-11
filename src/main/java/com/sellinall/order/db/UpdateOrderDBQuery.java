@@ -155,7 +155,6 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "shippingDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "refundDetails", orderMessage);
-		fillTransactionKeyValuePair(orderRecord, "fulfillmentDetails", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord);
 	}
 

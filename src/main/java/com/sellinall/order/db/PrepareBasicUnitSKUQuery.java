@@ -23,7 +23,7 @@ public class PrepareBasicUnitSKUQuery implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		String customSKU = exchange.getProperty("customSKU", String.class);
-		String[] splitCustomSKU = customSKU.split("x");
+		String[] splitCustomSKU = customSKU.split("[xX]");
 		String basicUnitCustomSKU = splitCustomSKU[0];
 		for (int i = 1; i < splitCustomSKU.length - 1; i++) {
 			basicUnitCustomSKU = basicUnitCustomSKU + splitCustomSKU[i];

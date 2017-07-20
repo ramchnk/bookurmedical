@@ -13,7 +13,7 @@ public class SetMultipleUnitQuantity implements Processor {
 	public void process(Exchange exchange) {
 		BasicDBObject inventory = exchange.getIn().getBody(BasicDBObject.class);
 		String customSKU = inventory.getString("customSKU");
-		String[] splitCustomSKU = customSKU.split("x");
+		String[] splitCustomSKU = customSKU.split("[xX]");
 		int lotSize = Integer.parseInt(splitCustomSKU[splitCustomSKU.length - 1]);
 		int noOfItem = inventory.getInt("noOfItem");
 		exchange.setProperty("inventory", inventory.toString());

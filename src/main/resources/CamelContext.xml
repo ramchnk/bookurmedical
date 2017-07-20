@@ -252,7 +252,7 @@
 						<when>
 							<simple>${exchangeProperty.syncMultipleUnitSKUs} == true and
 								${exchangeProperty.customSKU} != null and
-								${exchangeProperty.customSKU} regex '.+x[1-9]+[0-9]*$'
+								${exchangeProperty.customSKU} regex '.+(x|X)[1-9]+[0-9]*$'
 							</simple>
 							<to uri="direct:loadBasicUnitSKU" />
 							<choice>

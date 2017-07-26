@@ -176,7 +176,7 @@
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 		<route id="messageListner">
 			<from
-				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true" />
+				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true&amp;autoAck=false&amp;prefetchEnabled=true&amp;prefetchSize=0&amp;prefetchCount=1&amp;prefetchGlobal=false&amp;concurrentConsumers=1" />
 			<process ref="initMessageListenerRoute" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>
@@ -215,7 +215,7 @@
 			<to uri="direct:loadOrderData" />
 			<process ref="loadUserDataByNicknameId" />
 			<process ref="processOrderStatus" />
-			<split parallelProcessing="true" strategyRef="aggregatorStrategy">
+			<split parallelProcessing="false" strategyRef="aggregatorStrategy">
 				<method ref="splitterBean" method="splitOrders" />
 				<to uri="direct:processOrderItem" />
 			</split>

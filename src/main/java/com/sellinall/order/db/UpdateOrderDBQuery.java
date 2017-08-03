@@ -171,31 +171,36 @@ public class UpdateOrderDBQuery implements Processor {
 				if (orderItem.containsField("SKU")) {
 					String SKU = orderItem.getString("SKU");
 					BasicDBObject inventoryValue = inventoryDetailsMap.get(SKU);
-					orderItem.put("itemTitle", inventoryValue.getString("itemTitle"));
-					if (!getImageURL(inventoryValue, siteName).isEmpty()) {
-						orderItem.put("imageURL", getImageURL(inventoryValue, siteName));
-					}
-					if (inventoryValue.containsField("variantDetails")) {
-						orderItem.put("variantDetails", inventoryValue.get("variantDetails"));
-					}
-					if (inventoryValue.containsField("customSKU")) {
-						orderItem.put("customSKU", inventoryValue.get("customSKU"));
-					}
-					BasicDBObject site = (BasicDBObject) inventoryValue.get(siteName);
-					if (site.containsKey("isOption")) {
-						orderItem.put("isOption", site.getBoolean("isOption"));
-					} else {
-						orderItem.put("isOption", false);
-					}
-					if (site.containsField("categoryName")) {
-						orderItem.put("categoryName", site.get("categoryName"));
-					}
-					if (site.containsField("categoryID")) {
-						orderItem.put("categoryID", site.get("categoryID"));
-					}
-
-					if (siteName.equals("eBay") && !addOrderItemLocation) {
-						addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
+					if (inventoryValue != null) {
+						orderItem.put("itemTitle", inventoryValue.getString("itemTitle"));
+						if (!getImageURL(inventoryValue, siteName).isEmpty()) {
+							orderItem.put("imageURL", getImageURL(inventoryValue, siteName));
+						}
+						if (inventoryValue.containsField("variantDetails")) {
+							orderItem.put("variantDetails", inventoryValue.get("variantDetails"));
+						}
+						if (inventoryValue.containsField("customSKU")) {
+							orderItem.put("customSKU", inventoryValue.get("customSKU"));
+						}
+						BasicDBObject site = (BasicDBObject) inventoryValue.get(siteName);
+						if (site.containsKey("isOption")) {
+							orderItem.put("isOption", site.getBoolean("isOption"));
+						} else {
+							orderItem.put("isOption", false);
+						}
+						if (site.containsField("categoryName")) {
+							orderItem.put("categoryName", site.get("categoryName"));
+						}
+						if (site.containsField("categoryID")) {
+							orderItem.put("categoryID", site.get("categoryID"));
+						}
+						if (siteName.equals("eBay") && !addOrderItemLocation) {
+							addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
+						}
+					}else{
+						//If inventory deleted then 
+						orderItem.remove("SKU");
+						orderItem.remove("imageURL");
 					}
 					orderItems.set(i, orderItem);
 				}

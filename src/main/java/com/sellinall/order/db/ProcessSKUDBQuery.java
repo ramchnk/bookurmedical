@@ -28,19 +28,20 @@ public class ProcessSKUDBQuery implements Processor {
 		JSONArray inventoryList = new JSONArray(inventoryString);
 		String SKU = exchange.getProperty("SKU", String.class);
 		JSONObject inventory = getInventoryBySKU(inventoryList, SKU);
-		String itemTitle = "";
-		JSONObject parentInventory = new JSONObject();
-		if (inventory.has("itemTitle")) {
-			itemTitle = inventory.getString("itemTitle");
-		} else if (inventoryList.length() > 1) {
-			parentInventory = getInventoryBySKU(inventoryList, SKU.split("-")[0]);
-			itemTitle = parentInventory.getString("itemTitle");
+		if (inventory != null) {
+			String itemTitle = "";
+			JSONObject parentInventory = new JSONObject();
+			if (inventory.has("itemTitle")) {
+				itemTitle = inventory.getString("itemTitle");
+			} else if (inventoryList.length() > 1) {
+				parentInventory = getInventoryBySKU(inventoryList, SKU.split("-")[0]);
+				itemTitle = parentInventory.getString("itemTitle");
+			}
+
+			exchange.setProperty("hasInventoryInDB", true);
+			exchange.setProperty("inventory", inventory.toString());
+			extractInventoryValues(exchange, inventory, itemTitle, parentInventory);
 		}
-
-		exchange.setProperty("hasInventoryInDB", true);
-		exchange.setProperty("inventory", inventory.toString());
-		extractInventoryValues(exchange, inventory, itemTitle, parentInventory);
-
 		if (exchange.getProperty("messageType", String.class).equals("order")) {
 			JSONObject orderItemMessage = new JSONObject(exchange.getProperty("orderItemMessage", String.class));
 			exchange.setProperty("quantity", orderItemMessage.getInt("quantity"));

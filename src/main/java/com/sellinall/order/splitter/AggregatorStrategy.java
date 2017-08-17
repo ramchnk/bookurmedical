@@ -17,7 +17,7 @@ public class AggregatorStrategy implements AggregationStrategy {
 		if (oldExchange == null) {
 			try {
 				JSONObject outBody = new JSONObject();
-				outBody.put("userID", newExchange.getProperty("userID", String.class));
+				outBody.put("accountNumber", newExchange.getProperty("accountNumber", String.class));
 				newExchange.getIn().setBody(outBody);
 				return newExchange;
 			} catch (JSONException e) {

@@ -39,7 +39,6 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 							Config.getConfig().getRagasiyam().split(","))) {
 				InBoundHeaders headers = new InBoundHeaders();
 				String accountNumber = arg0.getHeaderValue("accountNumber");
-				headers.add("userID", accountNumber);
 				headers.add("accountNumber", accountNumber);
 				// we can pass multiple ragasiyam values using comma separator
 				headers.add(AuthConstant.RAGASIYAM_KEY, Config.getConfig().getRagasiyam());

@@ -63,12 +63,10 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("invoiceNumber", invoiceNumber);
 		}
 		//TODO: remove the condition after all publishers start publishing user id.
-		if (orderMessage.containsField("userId")) {
-			orderRecord.put("userId", orderMessage.getString("userId"));
-			orderRecord.put("accountNumber", orderMessage.getString("userId"));
+		if (orderMessage.containsField("accountNumber")) {
+			orderRecord.put("accountNumber", orderMessage.getString("accountNumber"));
 		} else {
-			orderRecord.put("userId", inBody.getString("userID"));
-			orderRecord.put("accountNumber", inBody.getString("userID"));
+			orderRecord.put("accountNumber", inBody.getString("accountNumber"));
 		}
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
 		List<String> notificationIDList = new ArrayList<String>();
@@ -103,7 +101,7 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderMessage) throws JSONException {
 		BasicDBObject orderRecord = new BasicDBObject();
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("userId", orderMessage.getString("userId"));
+		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
 		String siteName = orderMessage.getString("site");
 		searchQuery.put("site.name", siteName);

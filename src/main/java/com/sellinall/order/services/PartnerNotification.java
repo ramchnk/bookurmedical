@@ -21,9 +21,9 @@ public class PartnerNotification {
 	}
 
 	@POST
-	public JSONObject post(@HeaderParam("userID") String UserID, JSONObject payload) throws Exception {
+	public JSONObject post(@HeaderParam("accountNumber") String accountNumber, JSONObject payload) throws Exception {
 		JSONObject json = new JSONObject();
-		json.put("UserID", UserID);
+		json.put("accountNumber", accountNumber);
 		json.put("payload", payload);
 		ProducerTemplate template = context.createProducerTemplate();
 		template.sendBody("direct:publishMessage", json);

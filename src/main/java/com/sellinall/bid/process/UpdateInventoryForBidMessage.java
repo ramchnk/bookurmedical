@@ -42,7 +42,11 @@ public class UpdateInventoryForBidMessage implements Processor {
 
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
-		searchQuery.put("userId", bidMessage.getString("userId"));
+		if (bidMessage.has("accountNumber")) {
+			searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
+		} else {
+			searchQuery.put("accountNumber", bidMessage.getString("userID"));
+		}
 		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
 		if (quantityModifier.isEmpty()) {
 			syncSites.clear();

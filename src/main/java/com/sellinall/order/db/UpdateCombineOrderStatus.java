@@ -36,7 +36,7 @@ public class UpdateCombineOrderStatus implements Processor {
 		for (int index = 0; index < combineOrderIds.length(); index++) {
 			combineOrderIdsList.add(combineOrderIds.getString(index));
 		}
-		BasicDBObject query = new BasicDBObject("userId", exchange.getProperty("accountNumber", String.class));
+		BasicDBObject query = new BasicDBObject("accountNumber", exchange.getProperty("accountNumber", String.class));
 		query.put("orderID", new BasicDBObject("$in", combineOrderIdsList));
 		query.put("site.nickNameID", orderMessage.getString("nickNameID"));
 		BasicDBObject updateSet = new BasicDBObject();

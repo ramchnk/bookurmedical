@@ -27,8 +27,8 @@ public class PrepareDuplicateSKUsDBQuery implements Processor {
 		DBObject searchQuery = new BasicDBObject("customSKU", customSKU);
 		searchQuery.put("SKU", new BasicDBObject("$ne", SKU));
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		if (orderMessage.has("userId")) {
-			searchQuery.put("userId", orderMessage.getString("userId"));
+		if (orderMessage.has("accountNumber")) {
+			searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		}
 		searchQuery.put("variants", new BasicDBObject("$exists", false));
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
@@ -40,7 +40,7 @@ public class PrepareDuplicateSKUsDBQuery implements Processor {
 		BasicDBObject fieldsFilter = new BasicDBObject("SKU", 1);
 		fieldsFilter.put("sync", 1);
 		fieldsFilter.put("noOfItem", 1);
-		fieldsFilter.put("userId", 1);
+		fieldsFilter.put("accountNumber", 1);
 		String[] sites = PostingSites.getConfig().getSitesList();
 		for (int i = 0; i < sites.length; i++) {
 			fieldsFilter.put(sites[i] + ".nickNameID", 1);

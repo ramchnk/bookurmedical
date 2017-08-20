@@ -27,6 +27,9 @@ public class InitMessageListenerRoute implements Processor {
 		} else {
 			exchange.setProperty("accountNumber",message.getString("userID"));
 		}
+		if(message.has("userId")){
+			exchange.setProperty("accountNumber",message.getString("userId"));
+		}
 		exchange.getOut().setBody(message);
 	}
 }

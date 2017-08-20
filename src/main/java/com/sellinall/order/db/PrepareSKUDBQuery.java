@@ -4,13 +4,9 @@
 package com.sellinall.order.db;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.component.mongodb.converters.MongoDbBasicConverters;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -36,6 +32,9 @@ public class PrepareSKUDBQuery implements Processor {
 		}
 		DBObject searchQuery = new BasicDBObject("SKU", new BasicDBObject("$in", in));
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
+		if (orderMessage.has("userId")) {
+			searchQuery.put("accountNumber", orderMessage.getString("userId"));
+		}
 		if (orderMessage.has("accountNumber")) {
 			searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		}

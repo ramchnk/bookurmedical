@@ -22,14 +22,14 @@ public class InitMessageListenerRoute implements Processor {
 		String siteName = nickNameID.split("-")[0];
 		exchange.setProperty("siteName", siteName);
 		exchange.setProperty("nickNameID", nickNameID);
-		if(message.has("accountNumber")){
-			exchange.setProperty("accountNumber",message.getString("accountNumber"));
+		if (message.has("accountNumber")) {
+			exchange.setProperty("accountNumber", message.getString("accountNumber"));
+		} else if (message.has("userId")) {
+			exchange.setProperty("accountNumber", message.getString("userId"));
 		} else {
-			exchange.setProperty("accountNumber",message.getString("userID"));
+			exchange.setProperty("accountNumber", message.getString("userID"));
 		}
-		if(message.has("userId")){
-			exchange.setProperty("accountNumber",message.getString("userId"));
-		}
+		
 		exchange.getOut().setBody(message);
 	}
 }

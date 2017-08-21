@@ -34,7 +34,7 @@ public class UpdateInventoryWithBidAmount implements Processor {
 		if (bidMessage.has("accountNumber")) {
 			searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
 		} else {
-			searchQuery.put("accountNumber", bidMessage.getString("userID"));
+			searchQuery.put("accountNumber", bidMessage.getString("userId"));
 		}
 		String siteName = bidMessage.getString("site");
 		searchQuery.put(siteName + ".nickNameID", bidMessage.getString("nickNameID"));

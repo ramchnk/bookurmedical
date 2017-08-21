@@ -65,8 +65,12 @@ public class UpdateOrderDBQuery implements Processor {
 		//TODO: remove the condition after all publishers start publishing user id.
 		if (orderMessage.containsField("accountNumber")) {
 			orderRecord.put("accountNumber", orderMessage.getString("accountNumber"));
-		} else {
+		} else if (orderMessage.containsField("userId")) {
+			orderRecord.put("accountNumber", orderMessage.getString("userId"));
+		} else if (inBody.has("accountNumber")) {
 			orderRecord.put("accountNumber", inBody.getString("accountNumber"));
+		} else if (inBody.has("userID")) {
+			orderRecord.put("accountNumber", inBody.getString("userID"));
 		}
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
 		List<String> notificationIDList = new ArrayList<String>();

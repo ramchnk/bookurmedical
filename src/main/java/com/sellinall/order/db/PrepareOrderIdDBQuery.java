@@ -24,7 +24,12 @@ public class PrepareOrderIdDBQuery implements Processor {
 
 	private BasicDBObject createBody(JSONObject orderMessage) throws JSONException {
 		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+		if(orderMessage.has("accountNumber")){
+			searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+		}
+		if(orderMessage.has("userId")){
+			searchQuery.put("accountNumber", orderMessage.getString("userId"));
+		}
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 		searchQuery.put("site.name", orderMessage.getString("site"));

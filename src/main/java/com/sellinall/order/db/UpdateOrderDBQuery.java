@@ -182,7 +182,9 @@ public class UpdateOrderDBQuery implements Processor {
 					String SKU = orderItem.getString("SKU");
 					BasicDBObject inventoryValue = inventoryDetailsMap.get(SKU);
 					if (inventoryValue != null) {
-						orderItem.put("itemTitle", inventoryValue.getString("itemTitle"));
+						if (!orderItem.containsField("itemTitle")){
+							orderItem.put("itemTitle", inventoryValue.getString("itemTitle"));
+						}
 						if (!getImageURL(inventoryValue, siteName).isEmpty()) {
 							orderItem.put("imageURL", getImageURL(inventoryValue, siteName));
 						}

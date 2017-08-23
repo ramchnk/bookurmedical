@@ -63,19 +63,7 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("invoiceNumber", invoiceNumber);
 		}
 		//TODO: remove the condition after all publishers start publishing user id.
-		if (orderMessage.containsField("accountNumber")) {
-			orderRecord.put("userId", orderMessage.getString("accountNumber"));
-			orderRecord.put("accountNumber", orderMessage.getString("accountNumber"));
-		} else if (orderMessage.containsField("userId")) {
-			orderRecord.put("userId", orderMessage.getString("userId"));
-			orderRecord.put("accountNumber", orderMessage.getString("userId"));
-		} else if (inBody.has("accountNumber")) {
-			orderRecord.put("userId", orderMessage.getString("accountNumber"));
-			orderRecord.put("accountNumber", inBody.getString("accountNumber"));
-		} else if (inBody.has("userID")) {
-			orderRecord.put("userId", orderMessage.getString("userID"));
-			orderRecord.put("accountNumber", inBody.getString("userID"));
-		}
+		orderRecord.put("accountNumber", orderMessage.getString("accountNumber"));
 		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
 		List<String> notificationIDList = new ArrayList<String>();
 		if(orderMessage.containsKey("notificationID")){
@@ -109,11 +97,7 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderMessage) throws JSONException {
 		BasicDBObject orderRecord = new BasicDBObject();
 		BasicDBObject searchQuery = new BasicDBObject();
-		if(orderMessage.containsField("userId")){
-			searchQuery.put("accountNumber", orderMessage.getString("userId"));
-		}else{
-			searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
-		}
+		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
 		String siteName = orderMessage.getString("site");
 		searchQuery.put("site.name", siteName);

@@ -27,12 +27,7 @@ public class PrepareMultipleUnitSKUsQuery implements Processor {
 		String customSKU = exchange.getProperty("customSKU", String.class);
 		DBObject searchQuery = new BasicDBObject("customSKU", Pattern.compile(customSKU + "(x|X)[1-9]+[0-9]*$"));
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		if (orderMessage.has("userId")) {
-			searchQuery.put("accountNumber", orderMessage.getString("userId"));
-		}
-		if (orderMessage.has("accountNumber")) {
-			searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
-		}
+		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		searchQuery.put("variants", new BasicDBObject("$exists", false));
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = exchange.getProperty("siteName", String.class);

@@ -31,11 +31,7 @@ public class UpdateInventoryWithBidAmount implements Processor {
 			throws JSONException {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
-		if (bidMessage.has("accountNumber")) {
-			searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
-		} else {
-			searchQuery.put("accountNumber", bidMessage.getString("userId"));
-		}
+		searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
 		String siteName = bidMessage.getString("site");
 		searchQuery.put(siteName + ".nickNameID", bidMessage.getString("nickNameID"));
 		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");

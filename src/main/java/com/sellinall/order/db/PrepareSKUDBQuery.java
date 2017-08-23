@@ -32,12 +32,7 @@ public class PrepareSKUDBQuery implements Processor {
 		}
 		DBObject searchQuery = new BasicDBObject("SKU", new BasicDBObject("$in", in));
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		if (orderMessage.has("userId")) {
-			searchQuery.put("accountNumber", orderMessage.getString("userId"));
-		}
-		if (orderMessage.has("accountNumber")) {
-			searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
-		}
+		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = exchange.getProperty("siteName", String.class);
 		BasicDBObject elemMatch = new BasicDBObject("nickNameID", nickNameID);

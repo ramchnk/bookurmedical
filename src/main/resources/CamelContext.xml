@@ -125,6 +125,13 @@
 		<property name="password" value="${qoo10mq.password}" />
 		<property name="virtualHost" value="${qoo10mq.virtualHost}" />
 	</bean>
+	<bean id="wishTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${wishmq.host}" />
+		<property name="port" value="${wishmq.tx.port}" />
+		<property name="username" value="${wishmq.username}" />
+		<property name="password" value="${wishmq.password}" />
+		<property name="virtualHost" value="${wishmq.virtualHost}" />
+	</bean>
 	<bean id="lazadaTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${lazada.host}" />
 		<property name="port" value="${lazada.rx.port}" />
@@ -465,6 +472,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{qoo10mq.host}}:{{qoo10mq.tx.port}}/qoo10ListingExchange?connectionFactory=#qoo10TxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.wish} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>wishListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{wishmq.host}}:{{wishmq.tx.port}}/wishExchange?connectionFactory=#wishTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

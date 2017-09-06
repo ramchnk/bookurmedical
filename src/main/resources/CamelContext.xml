@@ -481,7 +481,7 @@
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{wishmq.host}}:{{wishmq.tx.port}}/wishExchange?connectionFactory=#wishTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					uri="rabbitmq://{{wishmq.host}}:{{wishmq.tx.port}}/wishListingExchange?connectionFactory=#wishTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

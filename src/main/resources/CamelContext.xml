@@ -90,6 +90,13 @@
 		<property name="password" value="${shopifymq.password}" />
 		<property name="virtualHost" value="${shopifymq.virtualHost}" />
 	</bean>
+	<bean id="shopeeTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${shopeemq.host}" />
+		<property name="port" value="${shopeemq.tx.port}" />
+		<property name="username" value="${shopeemq.username}" />
+		<property name="password" value="${shopeemq.password}" />
+		<property name="virtualHost" value="${shopeemq.virtualHost}" />
+	</bean>
 	<bean id="sellinallTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${sellinallmq.host}" />
 		<property name="port" value="${sellinallmq.tx.port}" />
@@ -492,6 +499,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{lazada.host}}:{{lazada.tx.port}}/lazadaListingExchange?connectionFactory=#lazadaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.shopee} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>shopeeListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{shopeemq.host}}:{{shopeemq.tx.port}}/shopeeListingExchange?connectionFactory=#shopeeTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

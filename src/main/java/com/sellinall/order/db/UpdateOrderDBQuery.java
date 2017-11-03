@@ -21,6 +21,7 @@ import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.util.DateUtil;
 import com.sellinall.util.InvoiceSequence;
 import com.sellinall.util.enums.OrderUpdateStatus;
+
 /**
  * @author Mallikarjun
  * 
@@ -31,7 +32,8 @@ public class UpdateOrderDBQuery implements Processor {
 	public void process(Exchange exchange) throws Exception {
 
 		JSONObject inBody = new JSONObject(exchange.getIn().getBody(String.class));
-		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange.getProperty("notificationOrderActionStatus");
+		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
+				.getProperty("notificationOrderActionStatus");
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		JSONObject orderMessageJSON = exchange.getProperty("message", JSONObject.class);
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
@@ -44,10 +46,8 @@ public class UpdateOrderDBQuery implements Processor {
 		updateOrderRecord(exchange, notificationOrderActionStatus, orderMessage);
 	}
 
-	private void insertOrderRecord(Exchange exchange, 
-			NotificationOrderActionStatus notificationOrderActionStatus, 
-			BasicDBObject orderMessage, 
-			JSONObject inBody) throws JSONException {
+	private void insertOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
+			BasicDBObject orderMessage, JSONObject inBody) throws JSONException {
 		BasicDBObject site = new BasicDBObject();
 		String siteName = orderMessage.getString("site");
 		site.put("name", siteName);
@@ -62,11 +62,12 @@ public class UpdateOrderDBQuery implements Processor {
 			String invoiceNumber = invoiceNumberPrefix + InvoiceSequence.getNextInvoiceSequence(merchantID, profileID);
 			orderRecord.put("invoiceNumber", invoiceNumber);
 		}
-		//TODO: remove the condition after all publishers start publishing user id.
+		// TODO: remove the condition after all publishers start publishing user
+		// id.
 		orderRecord.put("accountNumber", orderMessage.getString("accountNumber"));
-		fillOrderRecord (notificationOrderActionStatus, orderRecord, orderMessage);
+		fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
 		List<String> notificationIDList = new ArrayList<String>();
-		if(orderMessage.containsKey("notificationID")){
+		if (orderMessage.containsKey("notificationID")) {
 			notificationIDList.add(orderMessage.getString("notificationID"));
 			orderRecord.put("notificationID", notificationIDList);
 		}
@@ -86,13 +87,26 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
 		}
 		fillAdditionDetails(exchange, orderRecord, siteName);
-		DBCollection table = DbUtilities.getInventoryDBCollection("order");
-		table.insert(orderRecord);
-		//for accounting channel
+		if (checkIsValidOrderForAccount(orderRecord)) {
+			DBCollection table = DbUtilities.getInventoryDBCollection("order");
+			table.insert(orderRecord);
+		}
+		// for accounting channel
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
 	}
-	
+
+	private Boolean checkIsValidOrderForAccount(BasicDBObject orderRecord) {
+		if (!orderRecord.containsField("orderItems")) {
+			return false;
+		}
+		List<BasicDBObject> orderItems = (List<BasicDBObject>) orderRecord.get("orderItems");
+		if (orderItems.size() == 0 || orderItems == null) {
+			return false;
+		}
+		return true;
+	}
+
 	private void updateOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
 			BasicDBObject orderMessage) throws JSONException {
 		BasicDBObject orderRecord = new BasicDBObject();
@@ -104,27 +118,27 @@ public class UpdateOrderDBQuery implements Processor {
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 
 		DBCollection table = DbUtilities.getInventoryDBCollection("order");
-		if(orderMessage.containsKey("notificationID")){
+		if (orderMessage.containsKey("notificationID")) {
 			// Append the OrderNotificationID to the database
-			table.update(searchQuery,
-				new BasicDBObject("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
+			table.update(searchQuery, new BasicDBObject("$push",
+					new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
 		}
 
 		String updateStatus = OrderUpdateStatus.COMPLETE.toString();
 		if (orderMessage.containsField("updateStatus")) {
 			updateStatus = orderMessage.getString("updateStatus");
 		}
-		if(orderMessage.containsField("timeSettled")){
+		if (orderMessage.containsField("timeSettled")) {
 			orderRecord.put("timeSettled", orderMessage.getLong("timeSettled"));
 		}
-		if(orderMessage.containsField("settlementStatus")){
+		if (orderMessage.containsField("settlementStatus")) {
 			orderRecord.put("settlementStatus", orderMessage.getString("settlementStatus"));
 		}
-		if(orderMessage.containsField("transactionPeriod")){
+		if (orderMessage.containsField("transactionPeriod")) {
 			orderRecord.put("transactionPeriod", orderMessage.getString("transactionPeriod"));
 		}
 
-		//update order data only when the update is complete
+		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
 			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
 			fillAdditionDetails(exchange, orderRecord, siteName);
@@ -135,8 +149,9 @@ public class UpdateOrderDBQuery implements Processor {
 		table.update(searchQuery, new BasicDBObject("$set", orderRecord));
 		exchange.getOut().setBody(orderMessage);
 	}
-	
-	private void fillOrderRecord (NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord, BasicDBObject orderMessage) {
+
+	private void fillOrderRecord(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord,
+			BasicDBObject orderMessage) {
 		fillTransactionKeyValuePair(orderRecord, "buyerDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderNumber", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "paymentMethods", orderMessage);
@@ -159,6 +174,8 @@ public class UpdateOrderDBQuery implements Processor {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
 		boolean addOrderItemLocation = false;
+		boolean processOrderWithSKU = processOrderWithtSKU(exchange);
+		List<BasicDBObject> newOrderItems = new ArrayList<BasicDBObject>();
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
@@ -167,7 +184,7 @@ public class UpdateOrderDBQuery implements Processor {
 					String SKU = orderItem.getString("SKU");
 					BasicDBObject inventoryValue = inventoryDetailsMap.get(SKU);
 					if (inventoryValue != null) {
-						if (!orderItem.containsField("itemTitle")){
+						if (!orderItem.containsField("itemTitle")) {
 							orderItem.put("itemTitle", inventoryValue.getString("itemTitle"));
 						}
 						if (!getImageURL(inventoryValue, siteName).isEmpty()) {
@@ -194,16 +211,30 @@ public class UpdateOrderDBQuery implements Processor {
 						if (siteName.equals("eBay") && !addOrderItemLocation) {
 							addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
 						}
-					}else{
-						//If inventory deleted then 
+					} else {
+						// If inventory deleted then
 						orderItem.remove("SKU");
 						orderItem.remove("imageURL");
 					}
-					orderItems.set(i, orderItem);
+					if (processOrderWithSKU) {
+						if (inventoryDetailsMap.containsValue(SKU)) {
+							newOrderItems.add(orderItem);
+						}
+					} else {
+						newOrderItems.add(orderItem);
+					}
 				}
 			}
-			orderRecord.put("orderItems", orderItems);
+			orderRecord.put("orderItems", newOrderItems);
 		}
+	}
+
+	private boolean processOrderWithtSKU(Exchange exchange) {
+		BasicDBObject userSiteSpecificObject = exchange.getProperty("userSiteSpecificObject", BasicDBObject.class);
+		if (!userSiteSpecificObject.containsField("processOrderWithSKU")) {
+			return false;
+		}
+		return userSiteSpecificObject.getBoolean("processOrderWithSKU");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -231,13 +262,13 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		return false;
 	}
-	
-	private void fillTransactionKeyValuePair (BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {
+
+	private void fillTransactionKeyValuePair(BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {
 		if (orderMessage.containsField(key)) {
 			orderRecord.put(key, orderMessage.get(key));
 		}
 	}
-	
+
 	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord) {
 		// TODO: need to get more insights on how these dates can be used, so as
 		// of now ignoring other state transition timestamps

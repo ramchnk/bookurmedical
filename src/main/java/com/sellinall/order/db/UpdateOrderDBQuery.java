@@ -217,7 +217,7 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.remove("imageURL");
 					}
 					if (processOrderWithSKU) {
-						if (inventoryDetailsMap.containsValue(SKU)) {
+						if (inventoryDetailsMap.containsKey(SKU)) {
 							newOrderItems.add(orderItem);
 						}
 					} else {

@@ -174,7 +174,7 @@ public class UpdateOrderDBQuery implements Processor {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
 		boolean addOrderItemLocation = false;
-		boolean processOrderWithSKU = processOrderWithtSKU(exchange);
+		boolean processOrdersWithSKUOnly = processOrdersWithtSKUOnly(exchange);
 		List<BasicDBObject> newOrderItems = new ArrayList<BasicDBObject>();
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
@@ -216,7 +216,7 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.remove("SKU");
 						orderItem.remove("imageURL");
 					}
-					if (processOrderWithSKU) {
+					if (processOrdersWithSKUOnly) {
 						if (inventoryDetailsMap.containsKey(SKU)) {
 							newOrderItems.add(orderItem);
 						}
@@ -229,12 +229,12 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
-	private boolean processOrderWithtSKU(Exchange exchange) {
+	private boolean processOrdersWithtSKUOnly(Exchange exchange) {
 		BasicDBObject userSiteSpecificObject = exchange.getProperty("userSiteSpecificObject", BasicDBObject.class);
-		if (!userSiteSpecificObject.containsField("processOrderWithSKU")) {
+		if (!userSiteSpecificObject.containsField("processOrdersWithSKUOnly")) {
 			return false;
 		}
-		return userSiteSpecificObject.getBoolean("processOrderWithSKU");
+		return userSiteSpecificObject.getBoolean("processOrdersWithSKUOnly");
 	}
 
 	@SuppressWarnings("unchecked")

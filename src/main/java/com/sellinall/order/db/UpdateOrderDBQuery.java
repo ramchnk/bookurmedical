@@ -180,10 +180,12 @@ public class UpdateOrderDBQuery implements Processor {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
 				BasicDBObject orderItem = orderItems.get(i);
+				boolean orderHasInventory = false;
 				if (orderItem.containsField("SKU")) {
 					String SKU = orderItem.getString("SKU");
 					BasicDBObject inventoryValue = inventoryDetailsMap.get(SKU);
 					if (inventoryValue != null) {
+						orderHasInventory = true;
 						if (!orderItem.containsField("itemTitle")) {
 							orderItem.put("itemTitle", inventoryValue.getString("itemTitle"));
 						}
@@ -216,13 +218,13 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.remove("SKU");
 						orderItem.remove("imageURL");
 					}
-					if (processOrdersWithSKUOnly) {
-						if (inventoryDetailsMap.containsKey(SKU)) {
-							newOrderItems.add(orderItem);
-						}
-					} else {
+				}
+				if (processOrdersWithSKUOnly) {
+					if (orderHasInventory) {
 						newOrderItems.add(orderItem);
 					}
+				} else {
+					newOrderItems.add(orderItem);
 				}
 			}
 			orderRecord.put("orderItems", newOrderItems);

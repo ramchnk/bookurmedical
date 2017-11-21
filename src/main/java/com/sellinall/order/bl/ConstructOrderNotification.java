@@ -36,14 +36,12 @@ public class ConstructOrderNotification implements Processor {
 				items.put(itemDetails);
 			}
 			message.put("items", items);
-			String buyerId = "-";
 			if (inBody.has("buyerDetails")) {
 				JSONObject buyerDetails = inBody.getJSONObject("buyerDetails");
 				if (buyerDetails.has("buyerID")) {
 					message.put("buyerId", buyerDetails.getString("buyerID"));
 				}
 			}
-			message.put("buyerId", buyerId);
 			message.put("orderPageUrl", orderPageUrl);
 			// For amazon cancel orders, orderAmount is not returned
 			if (inBody.has("orderAmount")) {

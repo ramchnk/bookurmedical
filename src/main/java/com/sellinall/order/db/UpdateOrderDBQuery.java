@@ -65,6 +65,9 @@ public class UpdateOrderDBQuery implements Processor {
 		// TODO: remove the condition after all publishers start publishing user
 		// id.
 		orderRecord.put("accountNumber", orderMessage.getString("accountNumber"));
+		if(exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)){
+			orderRecord.put("isManaged", exchange.getProperty("isManaged", Boolean.class));
+		}
 		fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
 		List<String> notificationIDList = new ArrayList<String>();
 		if (orderMessage.containsKey("notificationID")) {
@@ -122,6 +125,9 @@ public class UpdateOrderDBQuery implements Processor {
 			// Append the OrderNotificationID to the database
 			table.update(searchQuery, new BasicDBObject("$push",
 					new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
+		}
+		if(exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)){
+			orderRecord.put("isManaged", exchange.getProperty("isManaged", Boolean.class));
 		}
 
 		String updateStatus = OrderUpdateStatus.COMPLETE.toString();

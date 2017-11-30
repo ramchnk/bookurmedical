@@ -50,6 +50,11 @@ public class LoadUserDataByNicknameId implements Processor {
 			ignoreSoldEvent = userSiteSpecificObject.getBoolean("ignoreSoldEvent");
 		}
 		exchange.setProperty("ignoreSoldEvent", ignoreSoldEvent);
+		Boolean isManaged = false;
+		if (userSiteSpecificObject.containsField("isManaged")) {
+			isManaged = userSiteSpecificObject.getBoolean("isManaged");
+		}
+		exchange.setProperty("isManaged", isManaged);
 
 		boolean syncDuplicateSKUs = false;
 		if (queryResult.containsField("syncDuplicateSKUs")) {

@@ -48,8 +48,10 @@ public class ConstructOrderNotification implements Processor {
 				message.put("orderAmount", inBody.getJSONObject("orderAmount"));
 			}
 			message.put("orderId", inBody.get("orderID"));
+			message.put("isManaged", exchange.getProperty("isManaged"));
 			message.put("orderNumber", inBody.get("orderID"));
 			outBody.put("accountNumber", inBody.get("accountNumber"));
+			outBody.put("merchantID", exchange.getProperty("merchantID"));
 			outBody.put("userMessageName", (String) exchange.getIn().getHeader("userMessageName"));
 			outBody.put("message", message);
 			exchange.getOut().setBody(outBody);

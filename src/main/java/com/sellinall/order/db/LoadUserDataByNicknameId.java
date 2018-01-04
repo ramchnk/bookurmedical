@@ -10,9 +10,11 @@ import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 
 /**
@@ -27,12 +29,12 @@ public class LoadUserDataByNicknameId implements Processor {
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = exchange.getProperty("siteName", String.class);
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
-		DBObject queryResult = runQuery(accountNumber, nickNameID, siteName);
-		exchange.setProperty("syncInventory",(Boolean)queryResult.get("syncInventory"));
+		String accountingChannel = Config.getConfig().getSIAAccountingChannels();
+		DBObject queryResult = runQuery(accountNumber, nickNameID, siteName, accountingChannel);
+		exchange.setProperty("syncInventory", (Boolean) queryResult.get("syncInventory"));
 		List<BasicDBObject> userSiteSpecificObjectList = (List<BasicDBObject>) queryResult.get(siteName);
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
-
 		if (userSiteSpecificObject.containsField("invoiceProfile")
 				&& userSiteSpecificObject.get("invoiceProfile") != null
 				&& !userSiteSpecificObject.get("invoiceProfile").equals("null")) {
@@ -43,6 +45,21 @@ public class LoadUserDataByNicknameId implements Processor {
 			exchange.setProperty("profileID", userSiteSpecificObject.getString("invoiceProfile"));
 		}
 
+		exchange.setProperty("isAccountingChannel", false);
+		String[] channels = accountingChannel.split("-");
+		for (String channel : channels) {
+			if (queryResult.containsKey(channel)) {
+				exchange.setProperty("isAccountingChannel", true);
+			}
+		}
+		exchange.setProperty("isNinjaVanShippingCarrier", false);
+		if (userSiteSpecificObject.containsKey("shippingCarrier")
+				&& userSiteSpecificObject.get("shippingCarrier") != null) {
+			BasicDBList shippingCarrier = (BasicDBList) userSiteSpecificObject.get("shippingCarrier");
+			if (shippingCarrier.contains("ninjaVan")) {
+				exchange.setProperty("isNinjaVanShippingCarrier", true);
+			}
+		}
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
 		exchange.setProperty("userSiteSpecificObject", userSiteSpecificObject);
 		Boolean ignoreSoldEvent = false;
@@ -68,20 +85,25 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("syncMultipleUnitSKUs", syncMultipleUnitSKUs);
 	}
 
-	private DBObject runQuery(String accountNumber, String nickNameID, String siteName) {
+	private DBObject runQuery(String accountNumber, String nickNameID, String siteName, String accountingChannel) {
 		BasicDBObject elemMatch = new BasicDBObject("nickName.id", nickNameID);
 		BasicDBObject searchQuery = new BasicDBObject(siteName, new BasicDBObject("$elemMatch", elemMatch));
 		ObjectId objId = new ObjectId(accountNumber);
 		searchQuery.put("_id", objId);
 
-		BasicDBObject fields = new BasicDBObject(siteName + ".$", 1);
-		fields.put("merchantID", 1);
-		fields.put("profile", 1);
-		fields.put("syncDuplicateSKUs", 1);
-		fields.put("syncMultipleUnitSKUs", 1);
-		fields.put("syncInventory",1);
+		BasicDBObject projection = new BasicDBObject(siteName + ".$", 1);
+		projection.put("merchantID", 1);
+		projection.put("profile", 1);
+		projection.put("syncDuplicateSKUs", 1);
+		projection.put("syncMultipleUnitSKUs", 1);
+		projection.put("syncInventory", 1);
+
+		String[] channels = accountingChannel.split("-");
+		for (String channel : channels) {
+			projection.put(channel, 1);
+		}
 		DBCollection table = DbUtilities.getDBCollection("accounts");
-		DBObject object = table.findOne(searchQuery, fields);
+		DBObject object = table.findOne(searchQuery, projection);
 		return object;
 	}
 

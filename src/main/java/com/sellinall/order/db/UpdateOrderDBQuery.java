@@ -3,6 +3,7 @@
  */
 package com.sellinall.order.db;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,13 +13,18 @@ import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.eclipse.jetty.http.HttpStatus;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.util.CurrencyUtil;
 import com.sellinall.util.DateUtil;
+import com.sellinall.util.HttpsURLConnectionUtil;
 import com.sellinall.util.InvoiceSequence;
 import com.sellinall.util.enums.OrderUpdateStatus;
 
@@ -69,6 +75,7 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("isManaged", exchange.getProperty("isManaged", Boolean.class));
 		}
 		fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
+		fillOrderAmountInUSD(orderRecord);
 		List<String> notificationIDList = new ArrayList<String>();
 		if (orderMessage.containsKey("notificationID")) {
 			notificationIDList.add(orderMessage.getString("notificationID"));
@@ -97,6 +104,42 @@ public class UpdateOrderDBQuery implements Processor {
 		// for accounting channel
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
+	}
+
+	private void fillOrderAmountInUSD(BasicDBObject orderRecord) {
+		if (orderRecord.containsField("orderAmount")) {
+			BasicDBObject orderAmount = (BasicDBObject) orderRecord.get("orderAmount");
+			try {
+				double exchangeRate = getExchangeRateFromApi(orderAmount.getString("currencyCode"), "USD");
+				long amount = Math.round(orderAmount.getLong("amount") * exchangeRate);
+				DBObject orderAmountInUSD = CurrencyUtil
+						.getAmountObject(amount, "USD");
+				orderRecord.put("orderAmountInUSD", orderAmountInUSD);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static double getExchangeRateFromApi(String fromCurrency, String toCurrency)
+			throws JSONException, IOException {
+		if (fromCurrency.equals(toCurrency)) {
+			return 1;
+		}
+		String url = Config.getConfig().getSIAfeeManagementServerURL() + "/exchange?fromCurrency=" + fromCurrency
+				+ "&toCurrency=" + toCurrency;
+		JSONObject response = HttpsURLConnectionUtil.doGet(url, null);
+		log.debug("exchange rate:" + response);
+		int httpCode = response.getInt("httpCode");
+		if (httpCode == HttpStatus.OK_200) {
+			JSONObject payload = new JSONObject(response.getString("payload"));
+			double exchangeRate = payload.getDouble("exchangeRate");
+			exchangeRate = Math.round(exchangeRate * 100D) / 100D;
+			return exchangeRate;
+		} else {
+			log.error("Get " + url + " failed with status code " + httpCode);
+			return 0;
+		}
 	}
 
 	private Boolean checkIsValidOrderForAccount(BasicDBObject orderRecord) {
@@ -148,6 +191,7 @@ public class UpdateOrderDBQuery implements Processor {
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
 			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
 			fillAdditionDetails(exchange, orderRecord, siteName);
+			fillOrderAmountInUSD(orderRecord);
 		}
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		orderRecord.put("updateStatus", updateStatus);

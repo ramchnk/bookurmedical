@@ -19,6 +19,7 @@ public class Config {
 	private String SIAOrderPageURL;
 	private String Ragasiyam;
 	private String SIAAccountingChannels;
+	private String SIAfeeManagementServerURL;
 
 	public String getRagasiyam() {
 		return Ragasiyam;
@@ -127,6 +128,14 @@ public class Config {
 
 	public void setSIAAccountingChannels(String sIAAccountingChannels) {
 		SIAAccountingChannels = sIAAccountingChannels;
+	}
+
+	public String getSIAfeeManagementServerURL() {
+		return SIAfeeManagementServerURL;
+	}
+
+	public void setSIAfeeManagementServerURL(String sIAfeeManagementServerURL) {
+		SIAfeeManagementServerURL = sIAfeeManagementServerURL;
 	}
 
 }

@@ -14,9 +14,9 @@
 	<bean id="updateInventoryForBidMessage" class="com.sellinall.bid.process.UpdateInventoryForBidMessage" />
 	<bean id="updateInventoryWithBidAmount" class="com.sellinall.bid.process.UpdateInventoryWithBidAmount" />
 
-	<bean id="createInvoiceToAccountingChannel" class="com.sellinall.order.message.CreateInvoiceToAccountingChannel" />
+	<bean id="prepareRequestMessage" class="com.sellinall.order.message.PrepareRequestMessage" />
+	<bean id="constructRequestType" class="com.sellinall.order.message.ConstructRequestType" />
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
-	<bean id="prepareOrderEventPublishMessage" class="com.sellinall.order.message.PrepareOrderEventPublishMessage" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
 	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
 	<bean id="initOrderItemRoute" class="com.sellinall.order.bl.InitOrderItemRoute" />
@@ -153,6 +153,13 @@
 		<property name="password" value="${quickBooks.password}" />
 		<property name="virtualHost" value="${quickBooks.virtualHost}" />
 	</bean>
+	<bean id="ninjaVanTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${ninjaVan.host}" />
+		<property name="port" value="${ninjaVan.rx.port}" />
+		<property name="username" value="${ninjaVan.username}" />
+		<property name="password" value="${ninjaVan.password}" />
+		<property name="virtualHost" value="${ninjaVan.virtualHost}" />
+	</bean>
 	<bean id="loggingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${activity.host}" />
 		<property name="port" value="${activity.port}" />
@@ -234,15 +241,12 @@
 				<to uri="direct:processOrderItem" />
 			</split>
 			<process ref="updateOrderDBQuery" />
-			<to uri="direct:publishOrderNotificationToMQ" />
 			<when>
 				<simple>${exchangeProperty.hasCombinedOrderIds} == true</simple>
 				<to uri="direct:updateCombineOrderIds" />
 			</when>
-			<when>
-				<simple>${exchangeProperty.isNewOrder} == true</simple>
-				<to uri="direct:publishToAccountingChannels" />
-			</when>
+			<process ref="prepareRequestMessage" />
+			<to uri="direct:publishOrderNotificationToMQ" />
 		</route>
 
 		<route id="updateCombineOrderIds">
@@ -370,28 +374,66 @@
 
 		<route id="publishOrderNotificationToMQ">
 			<from uri="direct:publishOrderNotificationToMQ" />
-			<process ref="prepareOrderEventPublishMessage" />
-			<setHeader headerName="rabbitmq.DELIVERY_MODE">
-				<constant>2</constant>
-			</setHeader>
-			<when>
-				<simple>${header.feeManagement} == true</simple>
-				<process ref="myPrint" />
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
-					<constant>feeManagementKey</constant>
-				</setHeader>
-				<convertBodyTo type="java.lang.String" />
-				<to
-					uri="rabbitmq://{{feemanagementmq.host}}:{{feemanagementmq.tx.port}}/feeManagementExchange?connectionFactory=#feeManagementTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
-				<process ref="myPrint" />
-			</when>
 			<when>
 				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
 				<setHeader headerName="userMessageName">
 					<constant>ORDER_CREATED</constant>
 				</setHeader>
 				<to uri="direct:notificationToUser" />
+			</when>
+			<setHeader headerName="rabbitmq.DELIVERY_MODE">
+				<constant>2</constant>
+			</setHeader>
+			<when>
+				<simple>${exchangeProperty.publishToFeeManagement} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>feeManagement</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>feeManagementKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{feemanagementmq.host}}:{{feemanagementmq.tx.port}}/feeManagementExchange?connectionFactory=#feeManagementTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToQuickBooks} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>quickbooks</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>quickbooksKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{quickBooks.host}}:{{quickBooks.tx.port}}/quickbooksExchange?connectionFactory=#quickBooksTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToNinjaVan} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>ninjaVan</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>ninjaVanKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{ninjaVan.host}}:{{ninjaVan.tx.port}}/ninjaVanExchange?connectionFactory=#ninjaVanTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
 			</when>
 		</route>
 
@@ -523,24 +565,6 @@
 			</when>
 		</route>
 		
-		<route id="publishToAccountingChannels" >
-			<from uri="direct:publishToAccountingChannels" />
-			<process ref="createInvoiceToAccountingChannel" />
-			<setHeader headerName="rabbitmq.DELIVERY_MODE">
-				<constant>2</constant>
-			</setHeader>
-			<when>
-				<simple>${header.quickBooks} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
-					<constant>quickbooksKey</constant>
-				</setHeader>
-				<convertBodyTo type="java.lang.String" />
-				<to
-				uri="rabbitmq://{{quickBooks.host}}:{{quickBooks.tx.port}}/quickbooksExchange?connectionFactory=#quickBooksTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
-			</when>
-		</route>
-
 		<route id="publishMessageToLogging">
 			<from uri="direct:publishMessageToLogging" />
 			<setHeader headerName="rabbitmq.ROUTING_KEY">

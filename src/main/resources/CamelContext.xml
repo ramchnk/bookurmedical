@@ -384,22 +384,20 @@
 			<setHeader headerName="rabbitmq.DELIVERY_MODE">
 				<constant>2</constant>
 			</setHeader>
+			<!-- we are going to publish message to fee always -->
+			<setProperty propertyName="publishTo">
+				<constant>feeManagement</constant>
+			</setProperty>
+			<process ref="constructRequestType" />
 			<when>
-				<simple>${exchangeProperty.publishToFeeManagement} == true</simple>
-				<setProperty propertyName="publishTo">
-					<constant>feeManagement</constant>
-				</setProperty>
-				<process ref="constructRequestType" />
-				<when>
-					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
-						<constant>feeManagementKey</constant>
-					</setHeader>
-					<convertBodyTo type="java.lang.String" />
-					<to
-						uri="rabbitmq://{{feemanagementmq.host}}:{{feemanagementmq.tx.port}}/feeManagementExchange?connectionFactory=#feeManagementTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
-				</when>
+				<simple>${exchangeProperty.publishMessage} != null</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>feeManagementKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{feemanagementmq.host}}:{{feemanagementmq.tx.port}}/feeManagementExchange?connectionFactory=#feeManagementTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToQuickBooks} == true</simple>

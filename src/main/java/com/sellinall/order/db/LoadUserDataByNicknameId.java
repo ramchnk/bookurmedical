@@ -61,6 +61,9 @@ public class LoadUserDataByNicknameId implements Processor {
 			}
 		}
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
+		if(userSiteSpecificObject.containsField("countryCode")){
+			exchange.setProperty("countryCode", userSiteSpecificObject.getString("countryCode"));
+		}
 		exchange.setProperty("userSiteSpecificObject", userSiteSpecificObject);
 		Boolean ignoreSoldEvent = false;
 		if (userSiteSpecificObject.containsField("ignoreSoldEvent")) {

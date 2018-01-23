@@ -160,6 +160,13 @@
 		<property name="password" value="${ninjaVan.password}" />
 		<property name="virtualHost" value="${ninjaVan.virtualHost}" />
 	</bean>
+	<bean id="inforTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${infor.host}" />
+		<property name="port" value="${infor.rx.port}" />
+		<property name="username" value="${infor.username}" />
+		<property name="password" value="${infor.password}" />
+		<property name="virtualHost" value="${infor.virtualHost}" />
+	</bean>
 	<bean id="loggingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${activity.host}" />
 		<property name="port" value="${activity.port}" />
@@ -430,6 +437,23 @@
 					<convertBodyTo type="java.lang.String" />
 					<to
 						uri="rabbitmq://{{ninjaVan.host}}:{{ninjaVan.tx.port}}/ninjaVanExchange?connectionFactory=#ninjaVanTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToInfor} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>infor</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>inforKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{infor.host}}:{{infor.tx.port}}/inforExchange?connectionFactory=#inforTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 						pattern="InOut" />
 				</when>
 			</when>

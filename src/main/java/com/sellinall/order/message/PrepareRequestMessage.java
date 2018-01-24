@@ -39,5 +39,12 @@ public class PrepareRequestMessage implements Processor {
 		if (isNinjaVanShippingCarrier) {
 			exchange.setProperty("publishToNinjaVan", true);
 		}
+
+		// prepare publish message for create & update in infor server
+		boolean isInforWMS = exchange.getProperty("isInforWMS", Boolean.class);
+		exchange.setProperty("publishToInfor", false);
+		if (isInforWMS) {
+			exchange.setProperty("publishToInfor", true);
+		}
 	}
 }

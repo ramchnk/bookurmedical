@@ -60,6 +60,14 @@ public class LoadUserDataByNicknameId implements Processor {
 				exchange.setProperty("isNinjaVanShippingCarrier", true);
 			}
 		}
+		exchange.setProperty("isInforWMS", false);
+		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {
+			BasicDBList wms = (BasicDBList) userSiteSpecificObject.get("wms");
+			// Only one infor will be present
+			if (wms.contains("infor-1")) {
+				exchange.setProperty("isInforWMS", true);
+			}
+		}
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
 		if(userSiteSpecificObject.containsField("countryCode")){
 			exchange.setProperty("countryCode", userSiteSpecificObject.getString("countryCode"));

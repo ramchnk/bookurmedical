@@ -28,7 +28,9 @@ public class ConstructRequestType implements Processor {
 				publishMessage.remove("feeType");
 			}
 			// for ninjaVan createOrder & updateOrder
-			if (exchange.getProperty("publishTo", String.class).equals("ninjaVan")) {
+			// for infor createOrder & updateOrder
+			if (exchange.getProperty("publishTo", String.class).equals("ninjaVan")
+					|| exchange.getProperty("publishTo", String.class).equals("infor")) {
 				if (exchange.getProperty("isNewOrder", boolean.class)) {
 					publishMessage.put("requestType", "createOrder");
 				}

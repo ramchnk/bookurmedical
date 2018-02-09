@@ -34,9 +34,9 @@ public class PrepareBasicUnitSKUQuery implements Processor {
 		int quantity = orderItemMessage.getInt("quantity") * lotSize;
 		exchange.setProperty("quantity", quantity);
 		exchange.setProperty("processBasicUnitSKU", true);
-		DBObject searchQuery = new BasicDBObject("customSKU", basicUnitCustomSKU);
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+		DBObject searchQuery = new BasicDBObject("accountNumber", orderMessage.getString("accountNumber"));
+		searchQuery.put("customSKU", basicUnitCustomSKU);
 		searchQuery.put("variants", new BasicDBObject("$exists", false));
 		searchQuery.put("variantDetails", new BasicDBObject("$exists", false));
 

@@ -24,10 +24,10 @@ public class PrepareDuplicateSKUsDBQuery implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		String customSKU = exchange.getProperty("customSKU", String.class);
 		String SKU = exchange.getProperty("SKU", String.class);
-		DBObject searchQuery = new BasicDBObject("customSKU", customSKU);
-		searchQuery.put("SKU", new BasicDBObject("$ne", SKU));
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+		DBObject searchQuery = new BasicDBObject("accountNumber", orderMessage.getString("accountNumber"));
+		searchQuery.put("SKU", new BasicDBObject("$ne", SKU));
+		searchQuery.put("customSKU", customSKU);
 		searchQuery.put("variants", new BasicDBObject("$exists", false));
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = exchange.getProperty("siteName", String.class);

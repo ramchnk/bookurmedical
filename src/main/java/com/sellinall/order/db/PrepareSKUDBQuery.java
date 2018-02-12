@@ -30,9 +30,10 @@ public class PrepareSKUDBQuery implements Processor {
 		if (SKU.split("-").length > 1) {
 			in.add(SKU.split("-")[0]);
 		}
-		DBObject searchQuery = new BasicDBObject("SKU", new BasicDBObject("$in", in));
+		DBObject searchQuery = new BasicDBObject();
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+		searchQuery.put("SKU", new BasicDBObject("$in", in));
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = exchange.getProperty("siteName", String.class);
 		BasicDBObject elemMatch = new BasicDBObject("nickNameID", nickNameID);

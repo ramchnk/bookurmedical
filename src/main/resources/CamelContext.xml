@@ -17,6 +17,7 @@
 	<bean id="prepareRequestMessage" class="com.sellinall.order.message.PrepareRequestMessage" />
 	<bean id="constructRequestType" class="com.sellinall.order.message.ConstructRequestType" />
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
+	<bean id="prepareUpdateOrderPublishMessage" class="com.sellinall.order.message.PrepareUpdateOrderPublishMessage" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
 	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
 	<bean id="initOrderItemRoute" class="com.sellinall.order.bl.InitOrderItemRoute" />
@@ -174,6 +175,13 @@
 		<property name="password" value="${activity.password}" />
 		<property name="virtualHost" value="${activity.virtualHost}" />
 	</bean>
+	<bean id="magentoTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${magentomq.host}" />
+		<property name="port" value="${magentomq.tx.port}" />
+		<property name="username" value="${magentomq.username}" />
+		<property name="password" value="${magentomq.password}" />
+		<property name="virtualHost" value="${magentomq.virtualHost}" />
+	</bean>
 
 	<!-- batchprocessor -->
 	<bean id="batchProcessorTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
@@ -230,7 +238,7 @@
 						${exchangeProperty.ignoreSoldEvent} == false
 					</simple>
 					<process ref="updateInventoryForBidMessage" />
-					<to uri="direct:publishToMQ" />
+					<to uri="direct:publishToMQForItemSync" />
 				</when>
 				<otherwise>
 					<process ref="updateInventoryWithBidAmount" />
@@ -254,6 +262,10 @@
 			</when>
 			<process ref="prepareRequestMessage" />
 			<to uri="direct:publishOrderNotificationToMQ" />
+			<when>
+				<simple>${exchangeProperty.needToPublishForUpdateOrder} == true</simple>
+				<to uri="direct:publishToMQForUpdateOrder" />
+			</when>
 		</route>
 
 		<route id="updateCombineOrderIds">
@@ -337,7 +349,7 @@
 		<route id="updateAndPublish">
 			<from uri="direct:updateAndPublish" />
 			<process ref="updateInventoryDBQuery" />
-			<to uri="direct:publishToMQ" />
+			<to uri="direct:publishToMQForItemSync" />
 		</route>
 
 		<route id="loadOrderData">
@@ -459,9 +471,20 @@
 			</when>
 		</route>
 
+		<route id="publishToMQForItemSync">
+			<from uri="direct:publishToMQForItemSync" />
+			<process ref="prepareSyncPublishMessage" />
+			<to uri="direct:publishToMQ" />
+		</route>
+
+		<route id="publishToMQForUpdateOrder">
+			<from uri="direct:publishToMQForUpdateOrder" />
+			<process ref="prepareUpdateOrderPublishMessage" />
+			<to uri="direct:publishToMQ" />
+		</route>
+
 		<route id="publishToMQ">
 			<from uri="direct:publishToMQ" />
-			<process ref="prepareSyncPublishMessage" />
 			<setHeader headerName="rabbitmq.DELIVERY_MODE">
 				<constant>2</constant>
 			</setHeader>
@@ -573,6 +596,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{shopeemq.host}}:{{shopeemq.tx.port}}/shopeeListingExchange?connectionFactory=#shopeeTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.magento} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>magentoListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{magentomq.host}}:{{magentomq.rx.port}}/magentoListingExchange?connectionFactory=#magentoTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

@@ -42,6 +42,10 @@ public class UpdateOrderDBQuery implements Processor {
 				.getProperty("notificationOrderActionStatus");
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		JSONObject orderMessageJSON = exchange.getProperty("message", JSONObject.class);
+		exchange.setProperty("needToPublishForUpdateOrder", false);
+		if(orderMessageJSON.has("isOrderUpdatedByShippingCarrier") && orderMessageJSON.getBoolean("isOrderUpdatedByShippingCarrier")) {
+			exchange.setProperty("needToPublishForUpdateOrder", true);
+		}
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
 		exchange.setProperty("isNewOrder", false);
 		if (!hasOrderInDB) {

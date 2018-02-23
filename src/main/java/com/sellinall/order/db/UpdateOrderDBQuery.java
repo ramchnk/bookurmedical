@@ -138,7 +138,6 @@ public class UpdateOrderDBQuery implements Processor {
 		if (httpCode == HttpStatus.OK_200) {
 			JSONObject payload = new JSONObject(response.getString("payload"));
 			double exchangeRate = payload.getDouble("exchangeRate");
-			exchangeRate = Math.round(exchangeRate * 100D) / 100D;
 			return exchangeRate;
 		} else {
 			log.error("Get " + url + " failed with status code " + httpCode);

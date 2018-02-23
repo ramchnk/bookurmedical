@@ -263,7 +263,7 @@
 			<process ref="prepareRequestMessage" />
 			<to uri="direct:publishOrderNotificationToMQ" />
 			<when>
-				<simple>${exchangeProperty.needToPublishForUpdateOrder} == true</simple>
+				<simple>${exchangeProperty.isOrderUpdatedByShippingCarrier} == true</simple>
 				<to uri="direct:publishToMQForUpdateOrder" />
 			</when>
 		</route>

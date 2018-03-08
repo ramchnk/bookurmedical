@@ -27,6 +27,7 @@ public class ConstructOrderNotification implements Processor {
 					+ nickNameID;
 			String siteNickname = nickNameID.split("-")[0] + "-" + nickName.getString("value");
 			message.put("siteNickname", siteNickname);
+			message.put("nicknameId", nickNameID);
 			JSONArray orderItems = inBody.getJSONArray("orderItems");
 			JSONArray items = new JSONArray();
 			for (int i = 0; i < orderItems.length(); i++) {

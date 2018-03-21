@@ -15,7 +15,7 @@ public class ConstructOrderNotification implements Processor {
 
 	public void process(Exchange exchange) {
 
-		JSONObject inBody = new JSONObject(exchange.getIn().getBody(String.class));
+		JSONObject orderRecord = new JSONObject(exchange.getProperty("orderRecord", BasicDBObject.class).toString());
 		JSONObject outBody = new JSONObject();
 
 		try {
@@ -23,12 +23,16 @@ public class ConstructOrderNotification implements Processor {
 			BasicDBObject userSiteObject = exchange.getProperty("userSiteSpecificObject", BasicDBObject.class);
 			BasicDBObject nickName = (BasicDBObject) userSiteObject.get("nickName");
 			String nickNameID = nickName.getString("id");
-			String orderPageUrl = Config.getConfig().getSIAOrderPageURL() + inBody.get("orderID") + "&site="
+			String orderPageUrl = Config.getConfig().getSIAOrderPageURL() + orderRecord.get("orderID") + "&site="
 					+ nickNameID;
 			String siteNickname = nickNameID.split("-")[0] + "-" + nickName.getString("value");
 			message.put("siteNickname", siteNickname);
 			message.put("nicknameId", nickNameID);
-			JSONArray orderItems = inBody.getJSONArray("orderItems");
+			JSONArray orderItems = orderRecord.getJSONArray("orderItems");
+			if(orderItems.length() == 0){
+				exchange.getOut().setBody(null);
+				return;
+			}
 			JSONArray items = new JSONArray();
 			for (int i = 0; i < orderItems.length(); i++) {
 				JSONObject itemDetails = new JSONObject();
@@ -41,21 +45,21 @@ public class ConstructOrderNotification implements Processor {
 				items.put(itemDetails);
 			}
 			message.put("items", items);
-			if (inBody.has("buyerDetails")) {
-				JSONObject buyerDetails = inBody.getJSONObject("buyerDetails");
+			if (orderRecord.has("buyerDetails")) {
+				JSONObject buyerDetails = orderRecord.getJSONObject("buyerDetails");
 				if (buyerDetails.has("buyerID")) {
 					message.put("buyerId", buyerDetails.getString("buyerID"));
 				}
 			}
 			message.put("orderPageUrl", orderPageUrl);
 			// For amazon cancel orders, orderAmount is not returned
-			if (inBody.has("orderAmount")) {
-				message.put("orderAmount", inBody.getJSONObject("orderAmount"));
+			if (orderRecord.has("orderAmount")) {
+				message.put("orderAmount", orderRecord.getJSONObject("orderAmount"));
 			}
-			message.put("orderId", inBody.get("orderID"));
+			message.put("orderId", orderRecord.get("orderID"));
 			message.put("isManaged", exchange.getProperty("isManaged"));
-			message.put("orderNumber", inBody.get("orderID"));
-			outBody.put("accountNumber", inBody.get("accountNumber"));
+			message.put("orderNumber", orderRecord.get("orderID"));
+			outBody.put("accountNumber", orderRecord.get("accountNumber"));
 			outBody.put("merchantID", exchange.getProperty("merchantID"));
 			outBody.put("userMessageName", (String) exchange.getIn().getHeader("userMessageName"));
 			outBody.put("message", message);

@@ -77,6 +77,13 @@
 		<property name="password" value="${amazonmq.password}" />
 		<property name="virtualHost" value="${amazonmq.virtualHost}" />
 	</bean>
+	<bean id="elevenStreetTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${elevenStreetmq.host}" />
+		<property name="port" value="${elevenStreetmq.tx.port}" />
+		<property name="username" value="${elevenStreetmq.username}" />
+		<property name="password" value="${elevenStreetmq.password}" />
+		<property name="virtualHost" value="${elevenStreetmq.virtualHost}" />
+	</bean>
 	<bean id="eBayTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${ebaymq.host}" />
 		<property name="port" value="${ebaymq.tx.port}" />
@@ -588,6 +595,16 @@
 					uri="rabbitmq://{{lazada.host}}:{{lazada.tx.port}}/lazadaListingExchange?connectionFactory=#lazadaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
+			<when>
+					<simple>${header.elevenStreet} == true</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+							<constant>elevenStreetListingKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{elevenStreetmq.host}}:{{elevenStreetmq.tx.port}}/elevenStreetListingExchange?connectionFactory=#elevenStreetTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOnly" />
+				</when>
 			<when>
 				<simple>${header.shopee} == true</simple>
 				<setHeader headerName="rabbitmq.ROUTING_KEY">

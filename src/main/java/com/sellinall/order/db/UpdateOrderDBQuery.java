@@ -78,6 +78,10 @@ public class UpdateOrderDBQuery implements Processor {
 		if(exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)){
 			orderRecord.put("isManaged", exchange.getProperty("isManaged", Boolean.class));
 		}
+		if (exchange.getProperties().containsKey("isTransactionFee")
+				&& exchange.getProperty("isTransactionFee", boolean.class)) {
+			orderRecord.put("isTransactionFee", exchange.getProperty("isTransactionFee", boolean.class));
+		}
 		fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
 		fillOrderAmountInUSD(orderRecord);
 		List<String> notificationIDList = new ArrayList<String>();

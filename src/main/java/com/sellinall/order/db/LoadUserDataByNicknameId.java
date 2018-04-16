@@ -84,6 +84,12 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isManaged", isManaged);
 
+		boolean isTransactionFee = false;
+		if (userSiteSpecificObject.containsField("isTransactionFee")) {
+			isTransactionFee = userSiteSpecificObject.getBoolean("isTransactionFee");
+		}
+		exchange.setProperty("isTransactionFee", isTransactionFee);
+
 		boolean syncDuplicateSKUs = false;
 		if (queryResult.containsField("syncDuplicateSKUs")) {
 			syncDuplicateSKUs = (Boolean) queryResult.get("syncDuplicateSKUs");

@@ -219,7 +219,7 @@
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 		<route id="messageListner">
 			<from
-				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true&amp;autoAck=false&amp;prefetchEnabled=true&amp;prefetchSize=0&amp;prefetchCount=1&amp;prefetchGlobal=false&amp;concurrentConsumers=1" />
+				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true&amp;autoAck=false&amp;prefetchEnabled=true&amp;prefetchSize=0&amp;prefetchCount=1&amp;prefetchGlobal=false&amp;concurrentConsumers=2" />
 			<process ref="initMessageListenerRoute" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>

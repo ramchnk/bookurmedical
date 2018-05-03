@@ -16,7 +16,6 @@ public class ConstructRequestType implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject publishMessage = exchange.getProperty("publishMessage", JSONObject.class);
-		publishMessage.remove("_id");
 		if (exchange.getProperties().containsKey("publishTo")) {
 			// for feemanagement createOrder & updateOrder
 			if (exchange.getProperty("publishTo", String.class).equals("feeManagement")) {

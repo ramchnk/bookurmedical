@@ -23,6 +23,10 @@ public class PrepareRequestMessage implements Processor {
 		if(exchange.getProperties().containsKey("countryCode")){
 			orderRecord.put("countryCode", exchange.getProperty("countryCode"));
 		}
+		JSONObject getIdObject = orderRecord.getJSONObject("_id");
+		String orderObjectId = getIdObject.getString("$oid");
+		orderRecord.put("objectId", orderObjectId);
+		orderRecord.remove("_id");
 		// prepare publish message to fee management server
 		exchange.setProperty("publishMessage", orderRecord);		
 		// prepare publish message for create in quickbooks server

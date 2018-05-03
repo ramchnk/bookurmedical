@@ -149,21 +149,21 @@
 	</bean>
 	<bean id="lazadaTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${lazada.host}" />
-		<property name="port" value="${lazada.rx.port}" />
+		<property name="port" value="${lazada.tx.port}" />
 		<property name="username" value="${lazada.username}" />
 		<property name="password" value="${lazada.password}" />
 		<property name="virtualHost" value="${lazada.virtualHost}" />
 	</bean>
 	<bean id="quickBooksTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${quickBooks.host}" />
-		<property name="port" value="${quickBooks.rx.port}" />
+		<property name="port" value="${quickBooks.tx.port}" />
 		<property name="username" value="${quickBooks.username}" />
 		<property name="password" value="${quickBooks.password}" />
 		<property name="virtualHost" value="${quickBooks.virtualHost}" />
 	</bean>
 	<bean id="ninjaVanTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${ninjaVan.host}" />
-		<property name="port" value="${ninjaVan.rx.port}" />
+		<property name="port" value="${ninjaVan.tx.port}" />
 		<property name="username" value="${ninjaVan.username}" />
 		<property name="password" value="${ninjaVan.password}" />
 		<property name="virtualHost" value="${ninjaVan.virtualHost}" />
@@ -207,6 +207,16 @@
 		<property name="password" value="${userMessaging.password}" />
 		<property name="virtualHost" value="${userMessaging.virtualHost}" />
 	</bean>
+
+	<!-- buyer management server -->
+	<bean id="buyerTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${buyer.host}" />
+		<property name="port" value="${buyer.tx.port}" />
+		<property name="username" value="${buyer.username}" />
+		<property name="password" value="${buyer.password}" />
+		<property name="virtualHost" value="${buyer.virtualHost}" />
+	</bean>
+
 	<!-- mongo db bean -->
 	<bean id="mongoInventoryBean" class="com.mongodb.MongoClient">
 		<constructor-arg index="0">
@@ -406,6 +416,7 @@
 					<constant>ORDER_CREATED</constant>
 				</setHeader>
 				<to uri="direct:notificationToUser" />
+				<to uri="direct:publishMessageToBuyer" />
 			</when>
 			<setHeader headerName="rabbitmq.DELIVERY_MODE">
 				<constant>2</constant>
@@ -646,6 +657,21 @@
 			<to
 				uri="rabbitmq://{{activity.host}}:{{activity.port}}/activitylogging?connectionFactory=#loggingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 				pattern="InOnly" />
+		</route>
+
+		<route id="publishMessageToBuyer">
+			<from uri="direct:publishMessageToBuyer" />
+			<process ref="constructRequestType" />
+			<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>buyerKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{buyer.host}}:{{buyer.tx.port}}/buyerExchange?connectionFactory=#buyerTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
 		</route>
 
 		<route id="notificationToUser">

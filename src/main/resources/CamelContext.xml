@@ -36,7 +36,6 @@
 	<bean id="myPrint" class="com.sellinall.order.LoggingProcessor" />
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
-	<bean id="activityLogging" class="com.sellinall.order.util.ActivityLogging" />
 	<bean id="constructOrderNotification" class="com.sellinall.order.bl.ConstructOrderNotification" />
 	<bean id="setMultipleUnitQuantity" class="com.sellinall.order.bl.SetMultipleUnitQuantity" />
 
@@ -175,13 +174,6 @@
 		<property name="password" value="${infor.password}" />
 		<property name="virtualHost" value="${infor.virtualHost}" />
 	</bean>
-	<bean id="loggingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
-		<property name="host" value="${activity.host}" />
-		<property name="port" value="${activity.port}" />
-		<property name="username" value="${activity.username}" />
-		<property name="password" value="${activity.password}" />
-		<property name="virtualHost" value="${activity.virtualHost}" />
-	</bean>
 	<bean id="magentoTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${magentomq.host}" />
 		<property name="port" value="${magentomq.tx.port}" />
@@ -240,7 +232,6 @@
 				<to uri="direct:processBidNotification" />
 			</when>
 
-			<!-- <setHeader headerName="activityLogMethod"> <constant>end</constant> </setHeader> <process ref="activityLogging" /> -->
 		</route>
 
 		<route id="processBidNotification">
@@ -647,17 +638,7 @@
 					pattern="InOut" />
 			</when>
 		</route>
-		
-		<route id="publishMessageToLogging">
-			<from uri="direct:publishMessageToLogging" />
-			<setHeader headerName="rabbitmq.ROUTING_KEY">
-				<constant>activityloggingkey</constant>
-			</setHeader>
-			<convertBodyTo type="java.lang.String" />
-			<to
-				uri="rabbitmq://{{activity.host}}:{{activity.port}}/activitylogging?connectionFactory=#loggingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-				pattern="InOnly" />
-		</route>
+
 
 		<route id="publishMessageToBuyer">
 			<from uri="direct:publishMessageToBuyer" />

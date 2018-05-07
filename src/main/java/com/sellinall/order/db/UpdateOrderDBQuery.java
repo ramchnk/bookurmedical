@@ -95,6 +95,8 @@ public class UpdateOrderDBQuery implements Processor {
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		if (orderMessage.containsField("timeOrderCreated")) {
 			orderRecord.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
+		} else {
+			orderRecord.put("timeOrderCreated", System.currentTimeMillis() / 1000);
 		}
 		if (orderMessage.containsField("shippingAmount")) {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));

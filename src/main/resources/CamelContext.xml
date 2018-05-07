@@ -265,6 +265,10 @@
 			</split>
 			<process ref="updateOrderDBQuery" />
 			<when>
+			       <simple>${exchangeProperty.stopProcess} == true</simple>
+			       <stop />
+			</when>
+			<when>
 				<simple>${exchangeProperty.hasCombinedOrderIds} == true</simple>
 				<to uri="direct:updateCombineOrderIds" />
 			</when>

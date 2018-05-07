@@ -38,6 +38,7 @@ public class UpdateOrderDBQuery implements Processor {
 	public void process(Exchange exchange) throws Exception {
 
 		JSONObject inBody = new JSONObject(exchange.getIn().getBody(String.class));
+		exchange.setProperty("stopProcess", false);
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
@@ -58,6 +59,7 @@ public class UpdateOrderDBQuery implements Processor {
 
 	private void insertOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
 			BasicDBObject orderMessage, JSONObject inBody) throws JSONException {
+		
 		BasicDBObject site = new BasicDBObject();
 		String siteName = orderMessage.getString("site");
 		site.put("name", siteName);
@@ -105,10 +107,12 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
 		}
 		fillAdditionDetails(exchange, orderRecord, siteName);
-		if (checkIsValidOrderForAccount(orderRecord)) {
-			DBCollection table = DbUtilities.getInventoryDBCollection("order");
-			table.insert(orderRecord);
+		if (!checkIsValidOrderForAccount(orderRecord)) {
+			exchange.setProperty("stopProcess", true);
+			return;
 		}
+		DBCollection table = DbUtilities.getInventoryDBCollection("order");
+		table.insert(orderRecord);
 		// for accounting channel
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);

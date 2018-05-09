@@ -104,6 +104,12 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("voucherAmount")) {
 			orderRecord.put("voucherAmount", orderMessage.get("voucherAmount"));
 		}
+		if (orderMessage.containsField("sellerDiscountAmount")) {
+			orderRecord.put("sellerDiscountAmount", orderMessage.get("sellerDiscountAmount"));
+		}
+		if (orderMessage.containsField("channelDiscountAmount")) {
+			orderRecord.put("channelDiscountAmount", orderMessage.get("channelDiscountAmount"));
+		}
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		if (orderMessage.containsField("cartNumber")) {
 			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
@@ -232,6 +238,8 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "refundDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "cancelDetails", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "sellerDiscountAmount", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "channelDiscountAmount", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord);
 	}
 

@@ -47,6 +47,10 @@ public class PrepareRequestMessage implements Processor {
 		if (isNinjaVanShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 			exchange.setProperty("publishToNinjaVan", true);
 		}
+		if (exchange.getProperties().containsKey("isDelhiveryShippingCarrier")
+				&& exchange.getProperty("isDelhiveryShippingCarrier", Boolean.class)) {
+			exchange.setProperty("publishToDelhivery", true);
+		}
 
 		// prepare publish message for create & update in infor server
 		boolean isInforWMS = exchange.getProperty("isInforWMS", Boolean.class);

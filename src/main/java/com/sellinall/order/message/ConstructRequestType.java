@@ -17,19 +17,19 @@ public class ConstructRequestType implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		JSONObject publishMessage = exchange.getProperty("publishMessage", JSONObject.class);
 		if (exchange.getProperties().containsKey("publishTo")) {
+			String publishTo = exchange.getProperty("publishTo", String.class);
 			// for feemanagement createOrder & updateOrder
-			if (exchange.getProperty("publishTo", String.class).equals("feeManagement")) {
+			if (publishTo.equals("feeManagement")) {
 				publishMessage.put("feeType", "order");
 			}
 			// for quickBooks createInvoice
-			if (exchange.getProperty("publishTo", String.class).equals("quickbooks")) {
+			if (publishTo.equals("quickbooks")) {
 				publishMessage.put("requestType", "createInvoice");
 				publishMessage.remove("feeType");
 			}
 			// for ninjaVan createOrder & updateOrder
 			// for infor createOrder & updateOrder
-			if (exchange.getProperty("publishTo", String.class).equals("ninjaVan")
-					|| exchange.getProperty("publishTo", String.class).equals("infor")) {
+			if (publishTo.equals("ninjaVan") || publishTo.equals("infor") || publishTo.equals("delhivery")) {
 				if (exchange.getProperty("isNewOrder", boolean.class)) {
 					publishMessage.put("requestType", "createOrder");
 				}

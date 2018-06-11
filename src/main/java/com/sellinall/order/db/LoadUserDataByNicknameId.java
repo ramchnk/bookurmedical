@@ -59,6 +59,9 @@ public class LoadUserDataByNicknameId implements Processor {
 			if (shippingCarrier.contains("ninjaVan")) {
 				exchange.setProperty("isNinjaVanShippingCarrier", true);
 			}
+			if (shippingCarrier.contains("delhivery")) {
+				exchange.setProperty("isDelhiveryShippingCarrier", true);
+			}
 		}
 		exchange.setProperty("isInforWMS", false);
 		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {

@@ -86,7 +86,8 @@ public class UpdateInventoryDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED);
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)
+				||notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED);
 		for (String siteName : siteNames) {
 
 			if (!inventoryDBRecord.containsField(siteName)) {

@@ -1,6 +1,7 @@
 package com.sellinall.order;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.spring.SpringCamelContext;
 import org.apache.log4j.BasicConfigurator;
 import org.eclipse.jetty.server.Server;
@@ -59,7 +60,8 @@ public class MainPrg {
 		ApplicationContext appContext = new ClassPathXmlApplicationContext("CamelContext.xml");
 		CamelContext camelContext = SpringCamelContext.springCamelContext(appContext, false);
 		camelContext.start();
-		PartnerNotification.setCamelContext(camelContext);
+		ProducerTemplate template = camelContext.createProducerTemplate();
+		PartnerNotification.setProducerTemplate(template);
 
 		Config config = Config.getConfig();
 		InvoiceSequence.init(config.getInventoryCollectionDBName(), config.getInventoryCollectionHostName(),

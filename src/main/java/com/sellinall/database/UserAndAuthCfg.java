@@ -6,15 +6,15 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoDatabase;
 import com.mudra.sellinall.config.Config;
 
 @Configuration
 public class UserAndAuthCfg {
-	public @Bean DB db() throws Exception {
+	public @Bean MongoDatabase db() throws Exception {
 		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
 		String[] hostNames = Config.getConfig().getUserCollectionHostName().split(",");
 		String[] ports = Config.getConfig().getUserCollectionPort().split(",");
@@ -27,7 +27,7 @@ public class UserAndAuthCfg {
 				.getConfig().getUserCollectionDBName(), Config.getConfig().getDbPassword().toCharArray()));
 
 		MongoClient mongoClient = new MongoClient(seeds, credentials);
-		DB db = mongoClient.getDB(Config.getConfig().getUserCollectionDBName());
+		MongoDatabase db = mongoClient.getDatabase(Config.getConfig().getUserCollectionDBName());
 		return db;
 	}
 }

@@ -6,11 +6,12 @@ package com.sellinall.bid.db;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
 
@@ -31,7 +32,7 @@ public class InsertBidNotification implements Processor {
 	}
 
 	private void insertBidRecord(BasicDBObject bidMessage) throws JSONException {
-		DBCollection table = DbUtilities.getInventoryDBCollection("bid");
-		table.insert(bidMessage);
+		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("bid");
+		table.insertOne(new Document(bidMessage));
 	}
 }

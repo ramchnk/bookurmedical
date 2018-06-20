@@ -11,13 +11,17 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.ReturnDocument;
+import com.mongodb.client.result.UpdateResult;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
@@ -44,7 +48,8 @@ public class UpdateOrderDBQuery implements Processor {
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		JSONObject orderMessageJSON = exchange.getProperty("message", JSONObject.class);
 		exchange.setProperty("isOrderUpdatedByShippingCarrier", false);
-		if(orderMessageJSON.has("isOrderUpdatedByShippingCarrier") && orderMessageJSON.getBoolean("isOrderUpdatedByShippingCarrier")) {
+		if (orderMessageJSON.has("isOrderUpdatedByShippingCarrier")
+				&& orderMessageJSON.getBoolean("isOrderUpdatedByShippingCarrier")) {
 			exchange.setProperty("isOrderUpdatedByShippingCarrier", true);
 		}
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
@@ -59,7 +64,7 @@ public class UpdateOrderDBQuery implements Processor {
 
 	private void insertOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
 			BasicDBObject orderMessage, JSONObject inBody) throws JSONException {
-		
+
 		BasicDBObject site = new BasicDBObject();
 		String siteName = orderMessage.getString("site");
 		site.put("name", siteName);
@@ -77,7 +82,7 @@ public class UpdateOrderDBQuery implements Processor {
 		// TODO: remove the condition after all publishers start publishing user
 		// id.
 		orderRecord.put("accountNumber", orderMessage.getString("accountNumber"));
-		if(exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)){
+		if (exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)) {
 			orderRecord.put("isManaged", exchange.getProperty("isManaged", Boolean.class));
 		}
 		if (exchange.getProperties().containsKey("isTransactionFee")
@@ -119,9 +124,11 @@ public class UpdateOrderDBQuery implements Processor {
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
-		DBCollection table = DbUtilities.getInventoryDBCollection("order");
-		table.insert(orderRecord);
+		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
+		Document document = new Document(orderRecord);
+		table.insertOne(document);
 		// for accounting channel
+		orderRecord.put("_id", document.get("_id"));
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
 	}
@@ -132,8 +139,7 @@ public class UpdateOrderDBQuery implements Processor {
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderAmount.getString("currencyCode"), "USD");
 				long amount = Math.round(orderAmount.getLong("amount") * exchangeRate);
-				DBObject orderAmountInUSD = CurrencyUtil
-						.getAmountObject(amount, "USD");
+				DBObject orderAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				orderRecord.put("orderAmountInUSD", orderAmountInUSD);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -182,13 +188,8 @@ public class UpdateOrderDBQuery implements Processor {
 		searchQuery.put("site.name", siteName);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 
-		DBCollection table = DbUtilities.getInventoryDBCollection("order");
-		if (orderMessage.containsKey("notificationID")) {
-			// Append the OrderNotificationID to the database
-			table.update(searchQuery, new BasicDBObject("$push",
-					new BasicDBObject("notificationID", orderMessage.get("notificationID"))));
-		}
-		if(exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)){
+		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
+		if (exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)) {
 			orderRecord.put("isManaged", exchange.getProperty("isManaged", Boolean.class));
 		}
 
@@ -212,14 +213,33 @@ public class UpdateOrderDBQuery implements Processor {
 			fillAdditionDetails(exchange, orderRecord, siteName);
 			fillOrderAmountInUSD(orderRecord);
 		}
-		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		orderRecord.put("updateStatus", updateStatus);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
-		//if we pass true then will modified data
-		BasicDBObject orderData = (BasicDBObject) table.findAndModify(searchQuery, null, null, false,
-				new BasicDBObject("$set", orderRecord), true, false);
-		exchange.setProperty("orderRecord", orderData);
+		// if we pass true then will modified data
+		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", orderRecord));
+		if (result.getModifiedCount() == 0) {
+			log.info("Order :"+orderMessage.getString("orderID")+" is already updated. this is duplicate message.");
+			exchange.setProperty("stopProcess", true);
+			return;
+		}
+		exchange.setProperty("orderRecord", updateAndGetLatestUpdatedOrder(searchQuery, orderMessage));
 		exchange.getOut().setBody(orderMessage);
+	}
+
+	private BasicDBObject updateAndGetLatestUpdatedOrder(BasicDBObject searchQuery, BasicDBObject orderMessage) {
+		BasicDBObject updateObject = new BasicDBObject();
+		if (orderMessage.containsKey("notificationID")) {
+			// Append the OrderNotificationID to the database
+			updateObject.put("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID")));
+		}
+		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
+		FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
+		options.returnDocument(ReturnDocument.AFTER);
+		BasicDBObject update = new BasicDBObject("timeLastUpdated", DateUtil.getSIADateFormat());
+		updateObject.put("$set", update);
+		Document orderDoc = table.findOneAndUpdate(searchQuery, updateObject, options);
+		BasicDBObject order = (BasicDBObject) JSON.parse(orderDoc.toJson());
+		return order;
 	}
 
 	private void fillOrderRecord(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord,

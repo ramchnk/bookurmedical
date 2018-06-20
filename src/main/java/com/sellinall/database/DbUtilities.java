@@ -1,22 +1,23 @@
 package com.sellinall.database;
 
+import org.bson.Document;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 public class DbUtilities {
 	static ApplicationContext userContext = new AnnotationConfigApplicationContext(UserAndAuthCfg.class);
-	static DB userDB = (DB) userContext.getBean("db");
+	static MongoDatabase userDB = (MongoDatabase) userContext.getBean("db");
 	static ApplicationContext inventoryContext = new AnnotationConfigApplicationContext(InventoryCfg.class);
-	static DB inventoryDB = (DB) inventoryContext.getBean("db");
+	static MongoDatabase inventoryDB = (MongoDatabase) inventoryContext.getBean("db");
 
-	public static DBCollection getDBCollection(String collectionName) {
+	public static MongoCollection<Document> getDBCollection(String collectionName) {
 		return userDB.getCollection(collectionName);
 	}
 
-	public static DBCollection getInventoryDBCollection(String collectionName) {
+	public static MongoCollection<Document> getInventoryDBCollection(String collectionName) {
 		return inventoryDB.getCollection(collectionName);
 	}
 

@@ -3,11 +3,12 @@ package com.sellinall.bid.process;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.util.DateUtil;
@@ -34,7 +35,7 @@ public class UpdateInventoryWithBidAmount implements Processor {
 		searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
 		String siteName = bidMessage.getString("site");
 		searchQuery.put(siteName + ".nickNameID", bidMessage.getString("nickNameID"));
-		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
+		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");
 		BasicDBObject updateFields = new BasicDBObject(siteName + ".$.highBidAmount",
 				(BasicDBObject) JSON.parse(bidMessage.getJSONObject("bidAmount").toString()));
 		if (bidMessage.has("bidder")) {
@@ -53,6 +54,6 @@ public class UpdateInventoryWithBidAmount implements Processor {
 		updateFields.put(siteName + ".$.status", SIAInventoryStatus.BIDDING.toString());
 		updateFields.put(siteName + ".$.failureReason", "");
 		updateFields.put(siteName + ".$.timeLastUpdated", DateUtil.getSIADateFormat());
-		table.update(searchQuery, new BasicDBObject("$set", updateFields));
+		table.updateOne(searchQuery, new BasicDBObject("$set", updateFields));
 	}
 }

@@ -6,11 +6,12 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
@@ -27,7 +28,6 @@ public class UpdateInventoryForBidMessage implements Processor {
 	static String siteNames[] = PostingSites.getConfig().getSitesList();
 
 	public void process(Exchange exchange) throws Exception {
-
 		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getProperty("inventory", String.class));
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		JSONObject bidMessage = exchange.getProperty("message", JSONObject.class);
@@ -39,16 +39,15 @@ public class UpdateInventoryForBidMessage implements Processor {
 
 		processQuantityUpdates(inventoryDBRecord, bidMessage, updateInventoryQuantity, syncSites, quantityModifier,
 				updateFields);
-
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
 		searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
-		DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
+		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");
 		if (quantityModifier.isEmpty()) {
 			syncSites.clear();
 		} else {
 			updateFields.put("$inc", quantityModifier);
-			table.update(searchQuery, updateFields);
+			table.updateOne(searchQuery, updateFields);
 		}
 		log.debug("searchQuery:" + searchQuery + " updateFields: " + updateFields);
 		exchange.getOut().setBody(syncSites);

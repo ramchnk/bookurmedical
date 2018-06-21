@@ -6,13 +6,14 @@ package com.sellinall.order.db;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.util.enums.SIAOrderStatus;
 import com.sellinall.util.enums.SIAPaymentStatus;
@@ -44,8 +45,8 @@ public class UpdateCombineOrderStatus implements Processor {
 		updateSet.put("paymentStatus", SIAPaymentStatus.UNSUPPORTED.toString());
 		updateSet.put("shippingStatus", SIAShippingStatus.UNSUPPORTED.toString());
 		updateSet.put("combinedOrderId", orderMessage.getString("orderID"));
-		DBCollection table = DbUtilities.getInventoryDBCollection("order");
+		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
 		BasicDBObject update = new BasicDBObject("$set", updateSet);
-		table.update(query, update, false, true);
+		table.updateMany(query, update);
 	}
 }

@@ -6,11 +6,14 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
@@ -41,13 +44,12 @@ public class UpdateInventoryDBQuery implements Processor {
 		processQuantityUpdates(notificationOrderActionStatus, orderMessage,
 				inventoryDBRecord, quantity,
 				syncSites, quantityIncDecModifier, quantitySetModifier, syncInventory);
-
 		log.debug("updateInventoryRecord: Quantity: "+quantityIncDecModifier);
 		if ( quantityIncDecModifier.isEmpty()) {
 			syncSites.clear();
 		} else {
 			exchange.setProperty("quantityModified", true);
-			DBCollection table = DbUtilities.getInventoryDBCollection("inventory");
+			MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");
 			BasicDBObject searchQuery = new BasicDBObject();
 			searchQuery.put("SKU", SKU);
 
@@ -57,8 +59,11 @@ public class UpdateInventoryDBQuery implements Processor {
 				queryToDB.put("$set", quantitySetModifier);
 			}
 			log.debug("searchQuery: " + searchQuery + " queryToDB: " + queryToDB);
-			BasicDBObject result = (BasicDBObject) table.findAndModify(searchQuery, new BasicDBObject("noOfItem", 1),
-					null, false, queryToDB, true, false);
+			FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
+			options.projection(new BasicDBObject("noOfItem", 1));
+			options.returnDocument(ReturnDocument.AFTER);
+			Document inventoryDoc = table.findOneAndUpdate(searchQuery, queryToDB, options);
+			BasicDBObject result = (BasicDBObject) JSON.parse(inventoryDoc.toJson());
 			if (exchange.getProperties().containsKey("processBasicUnitSKU")
 					&& exchange.getProperty("processBasicUnitSKU", Boolean.class) && result != null) {
 				exchange.setProperty("basicUnitQuantity", result.getInt("noOfItem"));

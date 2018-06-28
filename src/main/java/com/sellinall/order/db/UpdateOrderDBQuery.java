@@ -127,6 +127,10 @@ public class UpdateOrderDBQuery implements Processor {
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
+		if (exchange.getProperties().containsKey("isPartnerLogistics")
+				&& exchange.getProperties().containsKey("isTrackingNumberExist")) {
+			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));
+		}
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
 		Document document = new Document(orderRecord);
 		table.insertOne(document);

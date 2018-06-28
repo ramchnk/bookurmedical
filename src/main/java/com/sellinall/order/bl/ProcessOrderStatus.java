@@ -17,6 +17,16 @@ public class ProcessOrderStatus implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
+		JSONObject shippingObj = orderMessage.getJSONObject("shippingDetails");
+		if (shippingObj.has("shippingTrackingDetails")) {
+			JSONObject shippingTrackingObj = shippingObj.getJSONObject("shippingTrackingDetails");
+			if (shippingTrackingObj.has("airwayBill")) {
+				String trackingId = shippingTrackingObj.getString("airwayBill");
+				if (!trackingId.equals("") && trackingId != null) {
+					exchange.setProperty("isTrackingNumberExist", true);
+				}
+			}
+		}
 		SIAOrderStatus notificationOrderStatus = SIAOrderStatus.valueOf(orderMessage.getString("orderStatus"));
 		NotificationOrderActionStatus notificationOrderActionStatus = NotificationOrderActionStatus.NO_ACTION;
 		exchange.setProperty("hasCombinedOrderIds", false);

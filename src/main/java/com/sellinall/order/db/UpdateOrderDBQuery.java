@@ -103,6 +103,9 @@ public class UpdateOrderDBQuery implements Processor {
 		} else {
 			orderRecord.put("timeOrderCreated", System.currentTimeMillis() / 1000);
 		}
+		if (orderMessage.containsField("timeOrderUpdated")) {
+			orderRecord.put("timeOrderUpdated",  orderMessage.getLong("timeOrderUpdated"));
+		}
 		if (orderMessage.containsField("shippingAmount")) {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
 		}
@@ -206,7 +209,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("transactionPeriod")) {
 			orderRecord.put("transactionPeriod", orderMessage.getString("transactionPeriod"));
 		}
-
+		if (orderMessage.containsField("timeOrderUpdated")) {
+			orderRecord.put("timeOrderUpdated", orderMessage.getLong("timeOrderUpdated"));
+		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
 			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);

@@ -17,13 +17,15 @@ public class ProcessOrderStatus implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		JSONObject shippingObj = orderMessage.getJSONObject("shippingDetails");
-		if (shippingObj.has("shippingTrackingDetails")) {
-			JSONObject shippingTrackingObj = shippingObj.getJSONObject("shippingTrackingDetails");
-			if (shippingTrackingObj.has("airwayBill")) {
-				String trackingId = shippingTrackingObj.getString("airwayBill");
-				if (!trackingId.isEmpty() && trackingId != null) {
-					exchange.setProperty("airwayBillExists", true);
+		if (orderMessage.has("shippingDetails")) {
+			JSONObject shippingObj = orderMessage.getJSONObject("shippingDetails");
+			if (shippingObj.has("shippingTrackingDetails")) {
+				JSONObject shippingTrackingObj = shippingObj.getJSONObject("shippingTrackingDetails");
+				if (shippingTrackingObj.has("airwayBill")) {
+					String trackingId = shippingTrackingObj.getString("airwayBill");
+					if (!trackingId.isEmpty() && trackingId != null) {
+						exchange.setProperty("airwayBillExists", true);
+					}
 				}
 			}
 		}

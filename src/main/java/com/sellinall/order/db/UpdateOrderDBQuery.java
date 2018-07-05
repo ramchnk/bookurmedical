@@ -128,7 +128,7 @@ public class UpdateOrderDBQuery implements Processor {
 			return;
 		}
 		if (exchange.getProperties().containsKey("isPartnerLogistics")
-				&& exchange.getProperties().containsKey("isTrackingNumberExist")) {
+				&& exchange.getProperties().containsKey("airwayBillExists")) {
 			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));
 		}
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
@@ -215,6 +215,10 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsField("timeOrderUpdated")) {
 			orderRecord.put("timeOrderUpdated", orderMessage.getLong("timeOrderUpdated"));
+		}
+		if (exchange.getProperties().containsKey("isPartnerLogistics")
+				&& exchange.getProperties().containsKey("airwayBillExists")) {
+			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));
 		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {

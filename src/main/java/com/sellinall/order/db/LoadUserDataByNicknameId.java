@@ -73,6 +73,10 @@ public class LoadUserDataByNicknameId implements Processor {
 				exchange.setProperty("isInforWMS", true);
 			}
 		}
+		if (exchange.getProperty("isInforWMS", boolean.class)
+				|| exchange.getProperty("isNinjaVanShippingCarrier", boolean.class)) {
+			exchange.setProperty("isPartnerLogistics", true);
+		}
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
 		if(userSiteSpecificObject.containsField("countryCode")){
 			exchange.setProperty("countryCode", userSiteSpecificObject.getString("countryCode"));

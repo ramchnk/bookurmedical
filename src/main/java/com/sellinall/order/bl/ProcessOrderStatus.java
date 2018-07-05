@@ -22,8 +22,8 @@ public class ProcessOrderStatus implements Processor {
 			JSONObject shippingTrackingObj = shippingObj.getJSONObject("shippingTrackingDetails");
 			if (shippingTrackingObj.has("airwayBill")) {
 				String trackingId = shippingTrackingObj.getString("airwayBill");
-				if (!trackingId.equals("") && trackingId != null) {
-					exchange.setProperty("isTrackingNumberExist", true);
+				if (!trackingId.isEmpty() && trackingId != null) {
+					exchange.setProperty("airwayBillExists", true);
 				}
 			}
 		}

@@ -1,5 +1,9 @@
 package com.sellinall.order.bl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
@@ -34,6 +38,9 @@ public class ConstructOrderNotification implements Processor {
 				return;
 			}
 			JSONArray items = new JSONArray();
+			ArrayList<String> SKUListInOrder = new ArrayList<String>();
+			Map<String, JSONObject> skuDetailMap = new HashMap<String, JSONObject>();
+			exchange.setProperty("isSKUListEmpty", true);
 			for (int i = 0; i < orderItems.length(); i++) {
 				JSONObject itemDetails = new JSONObject();
 				JSONObject orderItem = orderItems.getJSONObject(i);
@@ -42,7 +49,16 @@ public class ConstructOrderNotification implements Processor {
 				if(orderItem.has("imageURL")) {
 					itemDetails.put("imageUrl", orderItem.getString("imageURL"));
 				}
+				if (orderItem.has("SKU")) {
+					SKUListInOrder.add(orderItem.getString("SKU"));
+					skuDetailMap.put(orderItem.getString("SKU"), itemDetails);
+				}
 				items.put(itemDetails);
+			}
+			exchange.setProperty("SKUListInOrder", SKUListInOrder);
+			exchange.setProperty("skuDetailMap", skuDetailMap);
+			if (!SKUListInOrder.isEmpty()) {
+				exchange.setProperty("isSKUListEmpty", true);
 			}
 			message.put("items", items);
 			if (orderRecord.has("buyerDetails")) {

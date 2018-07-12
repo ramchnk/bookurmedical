@@ -18,6 +18,7 @@
 	<bean id="constructRequestType" class="com.sellinall.order.message.ConstructRequestType" />
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
 	<bean id="prepareUpdateOrderPublishMessage" class="com.sellinall.order.message.PrepareUpdateOrderPublishMessage" />
+	<bean id="constructOutOfStockNotification" class="com.sellinall.order.message.ConstructOutOfStockNotification" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
 	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
 	<bean id="initOrderItemRoute" class="com.sellinall.order.bl.InitOrderItemRoute" />
@@ -33,6 +34,8 @@
 	<bean id="updateOrderDBQuery" class="com.sellinall.order.db.UpdateOrderDBQuery" />
 	<bean id="updateInventoryDBQuery" class="com.sellinall.order.db.UpdateInventoryDBQuery" />
 	<bean id="loadUserDataByNicknameId" class="com.sellinall.order.db.LoadUserDataByNicknameId" />
+	<bean id="loadAccountData" class="com.sellinall.order.db.LoadAccountData" />
+	<bean id="loadInventoryData" class="com.sellinall.order.db.LoadInventoryData" />
 	<bean id="myPrint" class="com.sellinall.order.LoggingProcessor" />
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
@@ -417,6 +420,7 @@
 				<setHeader headerName="userMessageName">
 					<constant>ORDER_CREATED</constant>
 				</setHeader>
+				<process ref="constructOrderNotification" />
 				<to uri="direct:notificationToUser" />
 				<to uri="direct:publishMessageToBuyer" />
 			</when>
@@ -506,8 +510,22 @@
 						pattern="InOut" />
 				</when>
 			</when>
+			<when>
+				<simple>${exchangeProperty.hasOrderInDB} == false and ${exchangeProperty.isSKUListEmpty} == true</simple>
+				<to uri="direct:lowValueNotification" />
+			</when>
 		</route>
 
+		<route id="lowValueNotification">
+			<from uri="direct:lowValueNotification" />
+			<process ref="loadAccountData" />
+			<process ref="loadInventoryData" />
+			<setHeader headerName="userMessageName">
+				<constant>OPTIMUM_THRESHOLD_ALERT</constant>
+			</setHeader>
+			<process ref="constructOutOfStockNotification" />
+			<to uri="direct:notificationToUser" />
+		</route>
 		<route id="publishToMQForItemSync">
 			<from uri="direct:publishToMQForItemSync" />
 			<process ref="prepareSyncPublishMessage" />
@@ -685,7 +703,6 @@
 
 		<route id="notificationToUser">
 			<from uri="direct:notificationToUser" />
-			<process ref="constructOrderNotification" />
 			<when>
 				<simple>${body} != null</simple>
 				<setHeader headerName="rabbitmq.ROUTING_KEY">

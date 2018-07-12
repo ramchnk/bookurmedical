@@ -64,7 +64,6 @@ public class UpdateOrderDBQuery implements Processor {
 
 	private void insertOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
 			BasicDBObject orderMessage, JSONObject inBody) throws JSONException {
-
 		BasicDBObject site = new BasicDBObject();
 		String siteName = orderMessage.getString("site");
 		site.put("name", siteName);
@@ -384,16 +383,33 @@ public class UpdateOrderDBQuery implements Processor {
 		// of now ignoring other state transition timestamps
 		if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)) {
 			orderRecord.put("timeProcessing", DateUtil.getSIADateFormat());
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_ACCEPTED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_ACCEPTED)) {
+			orderRecord.put("timeAccepted", DateUtil.getSIADateFormat());
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_DISPATCHED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DISPATCHED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_DISPATCHED)) {
+			orderRecord.put("timeDispatched", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_COMPLETED)) {
 			orderRecord.put("timeCompleted", DateUtil.getSIADateFormat());
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERED)) {
+			orderRecord.put("timeDelivered", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED_TO_CANCELLED)) {
 			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());
+		}  else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)) {
+			orderRecord.put("timeReturned", DateUtil.getSIADateFormat());
 		}
 	}
-
+	
 }

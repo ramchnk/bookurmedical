@@ -142,6 +142,7 @@ public class UpdateInventoryDBQuery implements Processor {
 					siteSpecificIndex = index;
 					hasSiteSpecificIndex = true;
 				}
+				quantitySetModifier.append(siteName + "." + index + ".lastSoldTime", System.currentTimeMillis()/1000L);
 			}
 			if (newOrder) {
 				if (hasSiteSpecificIndex) {

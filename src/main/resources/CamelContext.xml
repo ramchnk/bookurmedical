@@ -18,7 +18,7 @@
 	<bean id="constructRequestType" class="com.sellinall.order.message.ConstructRequestType" />
 	<bean id="prepareSyncPublishMessage" class="com.sellinall.order.message.PrepareSyncPublishMessage" />
 	<bean id="prepareUpdateOrderPublishMessage" class="com.sellinall.order.message.PrepareUpdateOrderPublishMessage" />
-	<bean id="constructOutOfStockNotification" class="com.sellinall.order.message.ConstructOutOfStockNotification" />
+	<bean id="constructLowQuantityNotification" class="com.sellinall.order.message.ConstructLowQuantityNotification" />
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
 	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
 	<bean id="initOrderItemRoute" class="com.sellinall.order.bl.InitOrderItemRoute" />
@@ -511,19 +511,19 @@
 				</when>
 			</when>
 			<when>
-				<simple>${exchangeProperty.hasOrderInDB} == false and ${exchangeProperty.isSKUListEmpty} == true</simple>
-				<to uri="direct:lowValueNotification" />
+				<simple>${exchangeProperty.hasOrderInDB} == false and ${exchangeProperty.isSKUListEmpty} == false</simple>
+				<to uri="direct:lowQuantityNotification" />
 			</when>
 		</route>
 
-		<route id="lowValueNotification">
-			<from uri="direct:lowValueNotification" />
+		<route id="lowQuantityNotification">
+			<from uri="direct:lowQuantityNotification" />
 			<process ref="loadAccountData" />
 			<process ref="loadInventoryData" />
 			<setHeader headerName="userMessageName">
-				<constant>OPTIMUM_THRESHOLD_ALERT</constant>
+				<constant>LOW_QUANTITY_NOTIFICATION</constant>
 			</setHeader>
-			<process ref="constructOutOfStockNotification" />
+			<process ref="constructLowQuantityNotification" />
 			<to uri="direct:notificationToUser" />
 		</route>
 		<route id="publishToMQForItemSync">

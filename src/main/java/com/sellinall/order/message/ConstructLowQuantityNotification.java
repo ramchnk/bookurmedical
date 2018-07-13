@@ -11,7 +11,7 @@ import org.json.JSONArray;
 import com.mongodb.BasicDBObject;
 import com.mudra.sellinall.config.PostingSites;
 
-public class ConstructOutOfStockNotification implements Processor {
+public class ConstructLowQuantityNotification implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		Map<String, JSONObject> skuDetailMap = (Map<String, JSONObject>) exchange.getProperty("skuDetailMap");
@@ -64,8 +64,8 @@ public class ConstructOutOfStockNotification implements Processor {
 					String nickNameID = siteInventoryObject.getString("nickNameID");
 					if (nickNameObjectMap.containsKey(nickNameID)) {
 						BasicDBObject siteAccountObject = (BasicDBObject) nickNameObjectMap.get(nickNameID);
-						if (siteAccountObject.containsField("enableQuantityAlert")
-								&& siteAccountObject.getBoolean("enableQuantityAlert")) {
+						if (siteAccountObject.containsField("enableLowQuantityNotification")
+								&& siteAccountObject.getBoolean("enableLowQuantityNotification")) {
 							int thresholdQuantity = (siteAccountObject.containsField("lowQuantityThreshold"))
 									? siteAccountObject.getInt("lowQuantityThreshold") : 0;
 							if (siteInventoryObject.getInt("noOfItem") < thresholdQuantity) {

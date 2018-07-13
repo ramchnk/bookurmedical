@@ -43,7 +43,7 @@ public class LoadAccountData implements Processor{
 		projection.put("merchantID", 1);
 		for (String site : sitesName) {
 			projection.put(site + ".nickName", 1);
-			projection.put(site + ".enableQuantityAlert", 1);
+			projection.put(site + ".enableLowQuantityNotification", 1);
 			projection.put(site + ".lowQuantityThreshold", 1);
 		}
 		MongoCollection<Document> table = DbUtilities.getDBCollection("accounts");

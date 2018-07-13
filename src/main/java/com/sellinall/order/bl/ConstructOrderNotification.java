@@ -58,7 +58,7 @@ public class ConstructOrderNotification implements Processor {
 			exchange.setProperty("SKUListInOrder", SKUListInOrder);
 			exchange.setProperty("skuDetailMap", skuDetailMap);
 			if (!SKUListInOrder.isEmpty()) {
-				exchange.setProperty("isSKUListEmpty", true);
+				exchange.setProperty("isSKUListEmpty", false);
 			}
 			message.put("items", items);
 			if (orderRecord.has("buyerDetails")) {

@@ -16,6 +16,7 @@ public class ConstructLowQuantityNotification implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		Map<String, JSONObject> skuDetailMap = (Map<String, JSONObject>) exchange.getProperty("skuDetailMap");
 		ArrayList<BasicDBObject> inventoryListFromDB = (ArrayList<BasicDBObject>) exchange.getIn().getBody();
+		exchange.getOut().setBody(null);
 		JSONObject outBody = new JSONObject();
 		JSONObject message = new JSONObject();
 		JSONArray items = new JSONArray();

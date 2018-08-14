@@ -65,7 +65,22 @@ public class ProcessOrderStatus implements Processor {
 		}
 		String orderStateTransition = orderDBStatus+"_TO_"+notificationOrderStatus;	
 		try {
-			if ( orderStateTransition.equals(NotificationOrderActionStatus.valueOf(orderStateTransition).toString())) {
+			if (orderStateTransition.equals(NotificationOrderActionStatus.valueOf(orderStateTransition).toString())) {
+				if (orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_INITIATED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_COMBINED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED.toString())
+						|| orderStateTransition
+								.equals(NotificationOrderActionStatus.DISPATCHED_TO_PROCESSING.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_DISPATCHED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.COMPLETED_TO_DISPATCHED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.COMPLETED_TO_CANCELLED.toString())
+						|| orderStateTransition
+								.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_ACCEPTED.toString())) {
+					log.warn(" The backward transistion came for orderID is " + orderMessage.getString("orderID")
+							+ " and orderStateTransistion " + orderStateTransition);
+				}
 				return NotificationOrderActionStatus.valueOf(orderStateTransition);
 			}
 		} catch ( Exception e) {

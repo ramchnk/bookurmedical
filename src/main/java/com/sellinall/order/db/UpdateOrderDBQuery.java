@@ -108,19 +108,11 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("shippingAmount")) {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
 		}
-		if (orderMessage.containsField("voucherAmount")) {
-			orderRecord.put("voucherAmount", orderMessage.get("voucherAmount"));
-		}
-		if (orderMessage.containsField("sellerDiscountAmount")) {
-			orderRecord.put("sellerDiscountAmount", orderMessage.get("sellerDiscountAmount"));
-		}
-		if (orderMessage.containsField("channelDiscountAmount")) {
-			orderRecord.put("channelDiscountAmount", orderMessage.get("channelDiscountAmount"));
-		}
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		if (orderMessage.containsField("cartNumber")) {
 			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
 		}
+		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		if (!checkIsValidOrderForAccount(orderRecord)) {
 			exchange.setProperty("stopProcess", true);
@@ -225,6 +217,7 @@ public class UpdateOrderDBQuery implements Processor {
 			fillAdditionDetails(exchange, orderRecord, siteName);
 			fillOrderAmountInUSD(orderRecord);
 		}
+		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		orderRecord.put("updateStatus", updateStatus);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		// if we pass true then will modified data
@@ -234,8 +227,38 @@ public class UpdateOrderDBQuery implements Processor {
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
+		
 		exchange.setProperty("orderRecord", updateAndGetLatestUpdatedOrder(searchQuery, orderMessage));
 		exchange.getOut().setBody(orderMessage);
+	}
+
+	private void caculateAndStoreOrderSoldAmount(BasicDBObject orderMessage, BasicDBObject orderRecord) {
+		BasicDBObject orderAmount = (BasicDBObject) orderMessage.get("orderAmount");
+		String currencyCode = orderAmount.getString("currencyCode");
+		double orderSoldAmount = orderAmount.getDouble("amount");
+		if (orderMessage.containsField("voucherAmount")) {
+			BasicDBObject voucherAmount = (BasicDBObject) orderMessage.get("voucherAmount");
+			orderSoldAmount = orderSoldAmount - voucherAmount.getDouble("amount");
+		} else if (orderMessage.containsField("sellerDiscountAmount")) {
+			BasicDBObject sellerDiscountAmount = (BasicDBObject) orderMessage.get("sellerDiscountAmount");
+			orderSoldAmount = orderSoldAmount - sellerDiscountAmount.getDouble("amount");
+		}
+		orderRecord.put("orderSoldAmount", CurrencyUtil.getAmountObject(orderSoldAmount, currencyCode));
+		fillOrderSoldAmountInUSD(orderRecord);
+	}
+
+	private void fillOrderSoldAmountInUSD(BasicDBObject orderRecord) {
+		if (orderRecord.containsField("orderSoldAmount")) {
+			BasicDBObject orderSoldAmount = (BasicDBObject) orderRecord.get("orderSoldAmount");
+			try {
+				double exchangeRate = getExchangeRateFromApi(orderSoldAmount.getString("currencyCode"), "USD");
+				long amount = Math.round(orderSoldAmount.getLong("amount") * exchangeRate);
+				DBObject orderSoldAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
+				orderRecord.put("orderSoldAmountInUSD", orderSoldAmountInUSD);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private BasicDBObject updateAndGetLatestUpdatedOrder(BasicDBObject searchQuery, BasicDBObject orderMessage) {
@@ -272,6 +295,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "cancelDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerDiscountAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "channelDiscountAmount", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "voucherAmount", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord);
 	}
 

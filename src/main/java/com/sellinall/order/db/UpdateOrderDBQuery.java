@@ -233,18 +233,20 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	private void caculateAndStoreOrderSoldAmount(BasicDBObject orderMessage, BasicDBObject orderRecord) {
-		BasicDBObject orderAmount = (BasicDBObject) orderMessage.get("orderAmount");
-		String currencyCode = orderAmount.getString("currencyCode");
-		double orderSoldAmount = orderAmount.getDouble("amount");
-		if (orderMessage.containsField("voucherAmount")) {
-			BasicDBObject voucherAmount = (BasicDBObject) orderMessage.get("voucherAmount");
-			orderSoldAmount = orderSoldAmount - voucherAmount.getDouble("amount");
-		} else if (orderMessage.containsField("sellerDiscountAmount")) {
-			BasicDBObject sellerDiscountAmount = (BasicDBObject) orderMessage.get("sellerDiscountAmount");
-			orderSoldAmount = orderSoldAmount - sellerDiscountAmount.getDouble("amount");
+		if (orderMessage.containsField("orderAmount")) {
+			BasicDBObject orderAmount = (BasicDBObject) orderMessage.get("orderAmount");
+			String currencyCode = orderAmount.getString("currencyCode");
+			long orderSoldAmount = orderAmount.getLong("amount");
+			if (orderMessage.containsField("voucherAmount")) {
+				BasicDBObject voucherAmount = (BasicDBObject) orderMessage.get("voucherAmount");
+				orderSoldAmount = orderSoldAmount - voucherAmount.getLong("amount");
+			} else if (orderMessage.containsField("sellerDiscountAmount")) {
+				BasicDBObject sellerDiscountAmount = (BasicDBObject) orderMessage.get("sellerDiscountAmount");
+				orderSoldAmount = orderSoldAmount - sellerDiscountAmount.getLong("amount");
+			}
+			orderRecord.put("orderSoldAmount", CurrencyUtil.getAmountObject(orderSoldAmount, currencyCode));
+			fillOrderSoldAmountInUSD(orderRecord);
 		}
-		orderRecord.put("orderSoldAmount", CurrencyUtil.getAmountObject(orderSoldAmount, currencyCode));
-		fillOrderSoldAmountInUSD(orderRecord);
 	}
 
 	private void fillOrderSoldAmountInUSD(BasicDBObject orderRecord) {

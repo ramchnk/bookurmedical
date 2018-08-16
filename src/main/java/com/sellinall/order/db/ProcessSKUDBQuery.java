@@ -31,13 +31,14 @@ public class ProcessSKUDBQuery implements Processor {
 		if (inventory != null) {
 			String itemTitle = "";
 			JSONObject parentInventory = new JSONObject();
-			if (inventory.has("itemTitle")) {
-				itemTitle = inventory.getString("itemTitle");
-			} else if (inventoryList.length() > 1) {
+			if (inventoryList.length() > 1) {
 				parentInventory = getInventoryBySKU(inventoryList, SKU.split("-")[0]);
 				itemTitle = parentInventory.getString("itemTitle");
 			}
 
+			if (inventory.has("itemTitle")) {
+				itemTitle = inventory.getString("itemTitle");
+			}
 			exchange.setProperty("hasInventoryInDB", true);
 			exchange.setProperty("inventory", inventory.toString());
 			extractInventoryValues(exchange, inventory, itemTitle, parentInventory);
@@ -60,7 +61,6 @@ public class ProcessSKUDBQuery implements Processor {
 		if (inventory.has("imageURL")) {
 			inventoryValues.put("imageURL", inventory.getString("imageURL"));
 		}
-
 		if (inventory.has("customSKU")) {
 			String customSKU = inventory.getString("customSKU");
 			inventoryValues.put("customSKU", customSKU);
@@ -72,7 +72,14 @@ public class ProcessSKUDBQuery implements Processor {
 		for (int index = 0; index < siteSpecificList.length(); index++) {
 			JSONObject siteJSON = siteSpecificList.getJSONObject(index);
 			if (siteJSON.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
-				site = (BasicDBObject) JSON.parse(siteJSON.toString());
+				// If variant record has no image, get the parent image.
+				site = BasicDBObject.parse(siteJSON.toString());
+				if ((site.containsField("imageURI") && siteJSON.getJSONArray("imageURI").length() == 0)
+						|| !site.containsField("imageURI")) {
+					if (parentInventory.has("imageURI")) {
+						site.put("imageURI", JSON.parse(parentInventory.getJSONArray("imageURI").toString()));
+					}
+				}
 				break;
 			}
 		}

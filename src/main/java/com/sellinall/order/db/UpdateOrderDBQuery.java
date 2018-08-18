@@ -377,8 +377,7 @@ public class UpdateOrderDBQuery implements Processor {
 		String imageURL = inventoryValues.getString("imageURL");
 		BasicDBObject site = (BasicDBObject) inventoryValues.get(siteName);
 		List<String> imageURIs = (List<String>) site.get("imageURI");
-		// TODO if variant record has no image, get the parent image.
-		// For quick fix, returning empty string
+
 		if (imageURIs != null && imageURIs.size() > 0) {
 			String imageURI = imageURIs.get(0);
 			String[] splitImageURI = imageURI.split("/");
@@ -437,5 +436,5 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("timeReturned", DateUtil.getSIADateFormat());
 		}
 	}
-	
+
 }

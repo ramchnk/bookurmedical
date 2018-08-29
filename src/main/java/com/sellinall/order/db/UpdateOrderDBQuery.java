@@ -112,7 +112,7 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("cartNumber")) {
 			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
 		}
-		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
+		//caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		if (!checkIsValidOrderForAccount(orderRecord)) {
 			exchange.setProperty("stopProcess", true);
@@ -217,7 +217,7 @@ public class UpdateOrderDBQuery implements Processor {
 			fillAdditionDetails(exchange, orderRecord, siteName);
 			fillOrderAmountInUSD(orderRecord);
 		}
-		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
+		//caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		orderRecord.put("updateStatus", updateStatus);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		// if we pass true then will modified data

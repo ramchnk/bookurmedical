@@ -406,7 +406,9 @@ public class UpdateOrderDBQuery implements Processor {
 	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord) {
 		// TODO: need to get more insights on how these dates can be used, so as
 		// of now ignoring other state transition timestamps
-		if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)) {
+		if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_PROCESSING)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_PROCESSING)) {
 			orderRecord.put("timeProcessing", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_ACCEPTED)

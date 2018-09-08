@@ -184,6 +184,13 @@
 		<property name="password" value="${magentomq.password}" />
 		<property name="virtualHost" value="${magentomq.virtualHost}" />
 	</bean>
+	<bean id="jdTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${jdmq.host}" />
+		<property name="port" value="${jdmq.tx.port}" />
+		<property name="username" value="${jdmq.username}" />
+		<property name="password" value="${jdmq.password}" />
+		<property name="virtualHost" value="${jdmq.virtualHost}" />
+	</bean>
 
 	<!-- batchprocessor -->
 	<bean id="batchProcessorTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
@@ -649,6 +656,17 @@
 					uri="rabbitmq://{{magentomq.host}}:{{magentomq.rx.port}}/magentoListingExchange?connectionFactory=#magentoTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
+			<when>
+				<simple>${header.jd} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>jdListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{jdmq.host}}:{{jdmq.rx.port}}/jdListingExchange?connectionFactory=#jdTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+
 			<when>
 				<simple>${exchangeProperty.batchDelayKey} != null</simple>
 				<setHeader headerName="rabbitmq.ROUTING_KEY">

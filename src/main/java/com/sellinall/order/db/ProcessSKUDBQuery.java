@@ -101,17 +101,28 @@ public class ProcessSKUDBQuery implements Processor {
 			}
 		}
 		inventoryValues.put(siteName, site);
-		if (inventory.has("variantDetails")) {
-			BasicDBList variants = new BasicDBList();
-			JSONArray invVariants = inventory.getJSONArray("variantDetails");
-			for (int i = 0; i < invVariants.length(); i++) {
-				JSONObject variant = invVariants.getJSONObject(i);
-				BasicDBObject bVariant = new BasicDBObject();
-				bVariant.put("title", variant.getString("title"));
-				bVariant.put("name", variant.getString("name"));
-				variants.add(bVariant);
+		for (int i = 0; i < siteSpecificList.length(); i++) {
+			JSONObject channelObj = siteSpecificList.getJSONObject(i);
+			if (channelObj.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
+				BasicDBList variants = new BasicDBList();
+				JSONArray invVariants = new JSONArray();
+				if (channelObj.has("variantDetails")) {
+					invVariants = channelObj.getJSONArray("variantDetails");
+				} else if (inventory.has("variantDetails")) {
+					invVariants = inventory.getJSONArray("variantDetails");
+				}
+				for (int j = 0; j < invVariants.length(); j++) {
+					JSONObject variant = invVariants.getJSONObject(j);
+					BasicDBObject bVariant = new BasicDBObject();
+					bVariant.put("title", variant.getString("title"));
+					bVariant.put("name", variant.getString("name"));
+					variants.add(bVariant);
+				}
+				if (variants.size() > 0) {
+					inventoryValues.put("variantDetails", variants);
+				}
+				break;
 			}
-			inventoryValues.put("variantDetails", variants);
 		}
 		inventoryDetailsMap.put(inventory.getString("SKU"), inventoryValues);
 		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);

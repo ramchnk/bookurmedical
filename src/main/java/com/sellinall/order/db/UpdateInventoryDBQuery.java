@@ -79,7 +79,7 @@ public class UpdateInventoryDBQuery implements Processor {
 		boolean newOrder = notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED);
 
@@ -89,7 +89,6 @@ public class UpdateInventoryDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)
 				||notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED);

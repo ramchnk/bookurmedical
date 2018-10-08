@@ -74,8 +74,6 @@ public class ProcessOrderStatus implements Processor {
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_DISPATCHED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.COMPLETED_TO_DISPATCHED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.COMPLETED_TO_CANCELLED.toString())
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_ACCEPTED.toString())) {
 					log.warn(" The backward transistion came for orderID is " + orderMessage.getString("orderID")

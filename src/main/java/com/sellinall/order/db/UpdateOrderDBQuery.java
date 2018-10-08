@@ -419,9 +419,6 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_DISPATCHED)) {
 			orderRecord.put("timeDispatched", DateUtil.getSIADateFormat());
-		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_COMPLETED)) {
-			orderRecord.put("timeCompleted", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERED)) {
@@ -432,8 +429,7 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.COMPLETED_TO_CANCELLED)) {
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_CANCELLED)) {
 			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());
 		}  else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)

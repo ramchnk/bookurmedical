@@ -429,6 +429,7 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_CANCELLED)) {
 			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());
 		}  else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURNED)

@@ -417,10 +417,13 @@ public class UpdateOrderDBQuery implements Processor {
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DISPATCHED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_DISPATCHED)) {
 			orderRecord.put("timeDispatched", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED_TO_DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERED)) {
 			orderRecord.put("timeDelivered", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCELLED)

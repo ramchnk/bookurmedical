@@ -112,7 +112,7 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("cartNumber")) {
 			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
 		}
-		//caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
+		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		fillAdditionDetails(exchange, orderRecord, siteName);
 		if (!checkIsValidOrderForAccount(orderRecord)) {
 			exchange.setProperty("stopProcess", true);
@@ -217,7 +217,7 @@ public class UpdateOrderDBQuery implements Processor {
 			fillAdditionDetails(exchange, orderRecord, siteName);
 			fillOrderAmountInUSD(orderRecord);
 		}
-		//caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
+		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		orderRecord.put("updateStatus", updateStatus);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		// if we pass true then will modified data
@@ -351,6 +351,17 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.remove("SKU");
 						orderItem.remove("imageURL");
 					}
+				}
+				orderItem.put("itemSoldAmount", (BasicDBObject) orderItem.get("itemAmount"));
+				if (orderItem.containsField("sellerDiscountAmount")) {
+					BasicDBObject itemAmountObject = (BasicDBObject) orderItem.get("itemAmount");
+					long itemAmount = itemAmountObject.getLong("amount");
+					BasicDBObject sellerDiscountAmountObject = (BasicDBObject) orderItem.get("sellerDiscountAmount");
+					long sellerDiscountAmount = sellerDiscountAmountObject.getLong("amount");
+					String currencyCode = itemAmountObject.getString("currencyCode");
+					long itemSoldAmount = itemAmount - sellerDiscountAmount;
+					orderItem.put("itemSoldAmount",
+							JSON.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
 				}
 				if (processOrdersWithSKUOnly) {
 					if (orderHasInventory) {

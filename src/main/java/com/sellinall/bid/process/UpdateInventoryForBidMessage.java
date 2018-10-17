@@ -1,7 +1,9 @@
 package com.sellinall.bid.process;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -36,9 +38,10 @@ public class UpdateInventoryForBidMessage implements Processor {
 		List<String> syncSites = new ArrayList<String>();
 		BasicDBObject quantityModifier = new BasicDBObject();
 		BasicDBObject updateFields = new BasicDBObject();
+		Map<String,List<String>> siteMap = new HashMap<String,List<String>>();
 
 		processQuantityUpdates(inventoryDBRecord, bidMessage, updateInventoryQuantity, syncSites, quantityModifier,
-				updateFields);
+				updateFields, siteMap);
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
 		searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
@@ -46,6 +49,8 @@ public class UpdateInventoryForBidMessage implements Processor {
 		if (quantityModifier.isEmpty()) {
 			syncSites.clear();
 		} else {
+			exchange.setProperty("isPublishSyncMsgToBatch", true);
+			exchange.setProperty("siteMap", siteMap);
 			updateFields.put("$inc", quantityModifier);
 			table.updateOne(searchQuery, updateFields);
 		}
@@ -56,13 +61,11 @@ public class UpdateInventoryForBidMessage implements Processor {
 	@SuppressWarnings("unchecked")
 	private void processQuantityUpdates(BasicDBObject inventoryDBRecord, JSONObject bidMessage,
 			BasicDBObject updateInventoryQuantity, List<String> syncSites, BasicDBObject quantityModifier,
-			BasicDBObject updateFields) throws JSONException {
+			BasicDBObject updateFields, Map<String, List<String>> siteMap) throws JSONException {
 		for (String siteName : siteNames) {
+			List<String> nickNameList = new ArrayList<String>();
 			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
-			}
-			if (inventoryDBRecord.getBoolean("sync")) {
-				syncSites.add(siteName);
 			}
 			ArrayList<BasicDBObject> siteSpecificList = (ArrayList<BasicDBObject>) inventoryDBRecord.get(siteName);
 			Boolean hasSiteSpecificIndex = false;
@@ -95,6 +98,7 @@ public class UpdateInventoryForBidMessage implements Processor {
 					int quantityDiff = BID_QUANTITY - (invNoOfItem - siteNoOfItem);
 					incrementSetter(quantityModifier, siteName + "." + index + ".noOfItem", -quantityDiff,
 							updateInventoryQuantity);
+					nickNameList.add(siteSpecific.getString("nickNameID"));
 				}
 			}
 			if (hasSiteSpecificIndex) {
@@ -123,6 +127,11 @@ public class UpdateInventoryForBidMessage implements Processor {
 				valuesSet.put(siteName + "." + siteSpecificIndex + ".timeLastUpdated", DateUtil.getSIADateFormat());
 				updateFields.put("$set", valuesSet);
 			}
+			if (inventoryDBRecord.getBoolean("sync") && !nickNameList.isEmpty()) {
+				syncSites.add(siteName);
+				siteMap.put(siteName, nickNameList);
+			}
+
 		}
 		incrementSetter(quantityModifier, "noOfItem", -BID_QUANTITY, updateInventoryQuantity);
 		incrementSetter(quantityModifier, "noOfItemsold", BID_QUANTITY, updateInventoryQuantity);

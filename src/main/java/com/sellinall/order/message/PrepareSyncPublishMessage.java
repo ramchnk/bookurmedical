@@ -1,7 +1,9 @@
 package com.sellinall.order.message;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -11,15 +13,19 @@ public class PrepareSyncPublishMessage implements Processor {
 
 	@SuppressWarnings("unchecked")
 	public void process(Exchange exchange) throws Exception {
-		List<String> syncSites = (ArrayList<String>) exchange.getIn().getBody();
-		if (syncSites.isEmpty()) {
-			return;
-		}
-		for ( String site : syncSites) {
-			exchange.getOut().setHeader(site, true);
-		}
 		JSONObject inventoryDBRecord = new JSONObject(exchange.getProperty("inventory", String.class));
 		JSONObject publishMessage = new JSONObject();
+		Object body = exchange.getIn().getBody();
+		// publish updateItem msg to site
+		if (body instanceof String) {
+			String site = (String) body;
+			Map<String, List<String>> siteMap = (HashMap<String, List<String>>) exchange.getProperty("siteMap");
+			exchange.getOut().setHeader(site, true);
+			publishMessage.put("siteNicknames", siteMap.get(site));
+		} else {
+			// publish updateItem msg to batch
+			exchange.setProperty("batchDelayKey", "batchDelay0secKey");
+		}
 		publishMessage.put("requestType", "updateItem");
 		List<String> syncFieldsToUpdate = new ArrayList<String>();
 		syncFieldsToUpdate.add("quantity");
@@ -27,11 +33,6 @@ public class PrepareSyncPublishMessage implements Processor {
 		publishMessage.put("SKU", inventoryDBRecord.getString("SKU"));
 		publishMessage.put("accountNumber", inventoryDBRecord.getString("accountNumber"));
 		exchange.setProperty("accountNumber", inventoryDBRecord.getString("accountNumber"));
-		exchange.setProperty("batchDelayKey", null);
-		//set the batch delay key only when sites need to be synced (that is, only for new orders)
-		if (syncSites.size() > 0) {
-			exchange.setProperty("batchDelayKey", "batchDelay0secKey");
-		}
 		exchange.getOut().setBody(publishMessage);
 	}
 }

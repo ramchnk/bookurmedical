@@ -1,7 +1,9 @@
 package com.sellinall.order.db;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -41,14 +43,16 @@ public class UpdateInventoryDBQuery implements Processor {
 		List<String> syncSites = new ArrayList<String>();
 		BasicDBObject quantityIncDecModifier = new BasicDBObject();
 		BasicDBObject quantitySetModifier = new BasicDBObject();
-		processQuantityUpdates(notificationOrderActionStatus, orderMessage,
-				inventoryDBRecord, quantity,
-				syncSites, quantityIncDecModifier, quantitySetModifier, syncInventory);
+		Map<String,List<String>> siteMap = new HashMap<String,List<String>>();
+		processQuantityUpdates(notificationOrderActionStatus, orderMessage, inventoryDBRecord, quantity, syncSites,
+				quantityIncDecModifier, quantitySetModifier, syncInventory, siteMap, exchange);
 		log.debug("updateInventoryRecord: Quantity: "+quantityIncDecModifier);
 		if ( quantityIncDecModifier.isEmpty()) {
 			syncSites.clear();
 		} else {
 			exchange.setProperty("quantityModified", true);
+			exchange.setProperty("isPublishSyncMsgToBatch", true);
+			exchange.setProperty("siteMap", siteMap);
 			MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");
 			BasicDBObject searchQuery = new BasicDBObject();
 			searchQuery.put("SKU", SKU);
@@ -75,7 +79,8 @@ public class UpdateInventoryDBQuery implements Processor {
 	@SuppressWarnings("unchecked")
 	private void processQuantityUpdates(NotificationOrderActionStatus notificationOrderActionStatus,
 			JSONObject orderMessage, BasicDBObject inventoryDBRecord, int quantitySold, List<String> syncSites,
-			BasicDBObject quantityIncDecModifier, BasicDBObject quantitySetModifier, boolean syncInventory) throws JSONException {
+			BasicDBObject quantityIncDecModifier, BasicDBObject quantitySetModifier, boolean syncInventory,
+			Map<String, List<String>> siteMap, Exchange exchange) throws JSONException {
 		boolean newOrder = notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
@@ -93,20 +98,25 @@ public class UpdateInventoryDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)
 				||notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED);
+		boolean isPublishDuplicatSKUS = false;
+		if (exchange.getProperties().containsKey("publishDuplicatSKUS")) {
+			isPublishDuplicatSKUS = exchange.getProperty("publishDuplicatSKUS", boolean.class);
+		}
 		for (String siteName : siteNames) {
-
+			List<String> nickNameList = new ArrayList<String>();
 			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
-			}
-			if (inventoryDBRecord.getBoolean("sync") && syncInventory) {
-				syncSites.add(siteName);
 			}
 			ArrayList<BasicDBObject> siteSpecificList = (ArrayList<BasicDBObject>) inventoryDBRecord.get(siteName);
 			Boolean hasSiteSpecificIndex = false;
 			int siteSpecificIndex = 0;
 			for (int index = 0; index < siteSpecificList.size(); index++) {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
-				if (!siteSpecific.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
+				boolean isSameSite = siteSpecific.getString("nickNameID").equals(orderMessage.getString("nickNameID"));
+				if (isPublishDuplicatSKUS || !isSameSite) {
+					nickNameList.add(siteSpecific.getString("nickNameID"));
+				}
+				if (!isSameSite) {
 					if (inventoryDBRecord.getBoolean("sync") && syncInventory) {
 						// Update other sites only if sync is true. Skip if the
 						// site specific quantity is lesser than (overall
@@ -158,6 +168,10 @@ public class UpdateInventoryDBQuery implements Processor {
 					incrementSetter(quantityIncDecModifier, siteName + "." + siteSpecificIndex + ".noOfItemsold",
 							-quantitySold);
 				}
+			}
+			if (inventoryDBRecord.getBoolean("sync") && syncInventory && !nickNameList.isEmpty()) {
+				syncSites.add(siteName);
+				siteMap.put(siteName, nickNameList);
 			}
 		}
 		if (newOrder) {

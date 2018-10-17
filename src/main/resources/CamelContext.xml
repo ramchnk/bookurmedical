@@ -393,6 +393,9 @@
 
 		<route id="loadDuplicateSKUs">
 			<from uri="direct:loadDuplicateSKUs" />
+			<setProperty propertyName="publishDuplicatSKUS">
+				<simple>true</simple>
+			</setProperty>
 			<process ref="prepareDuplicateSKUsDBQuery" />
 			<to uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=inventory&amp;operation=findAll"
 				pattern="InOut" />
@@ -511,8 +514,17 @@
 		</route>
 		<route id="publishToMQForItemSync">
 			<from uri="direct:publishToMQForItemSync" />
-			<process ref="prepareSyncPublishMessage" />
-			<to uri="direct:publishToMQ" />
+			<split>
+				<simple>${body}</simple>
+				<process ref="prepareSyncPublishMessage" />
+				<to uri="direct:publishToMQ" />
+			</split>
+			<!-- For publish updateItem msg to batch -->
+			<when>
+				<simple>${exchangeProperty.isPublishSyncMsgToBatch} == true</simple>
+				<process ref="prepareSyncPublishMessage" />
+				<to uri="direct:publishToMQ" />
+			</when>
 		</route>
 
 		<route id="publishToMQForUpdateOrder">

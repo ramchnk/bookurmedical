@@ -680,7 +680,7 @@
 			</when>
 
 			<when>
-				<simple>${exchangeProperty.batchDelayKey} != null</simple>
+				<simple>${header.batchProcessor} == true</simple>
 				<setHeader headerName="rabbitmq.ROUTING_KEY">
 					<simple>${exchangeProperty.batchDelayKey}</simple>
 				</setHeader>

@@ -24,6 +24,7 @@ public class PrepareSyncPublishMessage implements Processor {
 			publishMessage.put("siteNicknames", siteMap.get(site));
 		} else {
 			// publish updateItem msg to batch
+			exchange.getOut().setHeader("batchProcessor", true);
 			exchange.setProperty("batchDelayKey", "batchDelay0secKey");
 		}
 		publishMessage.put("requestType", "updateItem");

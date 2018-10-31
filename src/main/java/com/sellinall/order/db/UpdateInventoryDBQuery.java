@@ -112,6 +112,10 @@ public class UpdateInventoryDBQuery implements Processor {
 			int siteSpecificIndex = 0;
 			for (int index = 0; index < siteSpecificList.size(); index++) {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
+				if (siteSpecific.containsField("status")
+						&& !siteSpecific.getString("status").equals(SIAInventoryStatus.ACTIVE.toString())) {
+					continue;
+				}
 				boolean isSameSite = siteSpecific.getString("nickNameID").equals(orderMessage.getString("nickNameID"));
 				if (isPublishDuplicatSKUS || !isSameSite) {
 					nickNameList.add(siteSpecific.getString("nickNameID"));

@@ -72,6 +72,10 @@ public class UpdateInventoryForBidMessage implements Processor {
 			int siteSpecificIndex = 0;
 			for (int index = 0; index < siteSpecificList.size(); index++) {
 				BasicDBObject siteSpecific = siteSpecificList.get(index);
+				if (siteSpecific.containsField("status")
+						&& !siteSpecific.getString("status").equals(SIAInventoryStatus.ACTIVE.toString())) {
+					continue;
+				}
 				Boolean isNotificationFromThisNickNameID = false;
 
 				// This case may happen for auction and buy it now sync with

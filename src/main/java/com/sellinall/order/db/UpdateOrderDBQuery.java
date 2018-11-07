@@ -122,6 +122,12 @@ public class UpdateOrderDBQuery implements Processor {
 				&& exchange.getProperties().containsKey("airwayBillExists")) {
 			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));
 		}
+		if (orderRecord.containsField("orderItems")) {
+			List<BasicDBObject> orderItems = (List<BasicDBObject>) orderRecord.get("orderItems");
+			if (orderItems.size() == 0) {
+				log.error("Insert - orderItems List is Empty for this orderId: " + orderMessage.getString("orderID"));
+			}
+		}
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
 		Document document = new Document(orderRecord);
 		table.insertOne(document);
@@ -220,6 +226,12 @@ public class UpdateOrderDBQuery implements Processor {
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		orderRecord.put("updateStatus", updateStatus);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
+		if (orderRecord.containsField("orderItems")) {
+			List<BasicDBObject> orderItems = (List<BasicDBObject>) orderRecord.get("orderItems");
+			if (orderItems.size() == 0) {
+				log.error("Update - orderItems List is Empty for this orderId: " + orderMessage.getString("orderID"));
+			}
+		}
 		// if we pass true then will modified data
 		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", orderRecord));
 		if (result.getModifiedCount() == 0) {
@@ -227,7 +239,6 @@ public class UpdateOrderDBQuery implements Processor {
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
-		
 		exchange.setProperty("orderRecord", updateAndGetLatestUpdatedOrder(searchQuery, orderMessage));
 		exchange.getOut().setBody(orderMessage);
 	}

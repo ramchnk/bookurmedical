@@ -113,7 +113,7 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
 		}
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
-		fillAdditionDetails(exchange, orderRecord, siteName);
+		fillAdditionDetails(exchange, orderRecord, siteName, true);
 		if (!checkIsValidOrderForAccount(orderRecord)) {
 			exchange.setProperty("stopProcess", true);
 			return;
@@ -220,7 +220,7 @@ public class UpdateOrderDBQuery implements Processor {
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
 			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
-			fillAdditionDetails(exchange, orderRecord, siteName);
+			fillAdditionDetails(exchange, orderRecord, siteName, false);
 			fillOrderAmountInUSD(orderRecord);
 		}
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
@@ -313,7 +313,7 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord, String siteName)
+	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord, String siteName, boolean isNewOrder)
 			throws JSONException {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
@@ -374,7 +374,7 @@ public class UpdateOrderDBQuery implements Processor {
 					orderItem.put("itemSoldAmount",
 							JSON.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
 				}
-				if (processOrdersWithSKUOnly) {
+				if (processOrdersWithSKUOnly && isNewOrder) {
 					if (orderHasInventory) {
 						newOrderItems.add(orderItem);
 					}

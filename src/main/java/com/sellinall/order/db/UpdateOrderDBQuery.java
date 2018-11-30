@@ -11,7 +11,9 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.BsonObjectId;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
@@ -21,6 +23,7 @@ import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
+import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
@@ -65,12 +68,15 @@ public class UpdateOrderDBQuery implements Processor {
 	private void insertOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
 			BasicDBObject orderMessage, JSONObject inBody) throws JSONException {
 		BasicDBObject site = new BasicDBObject();
+		String nickNameID = orderMessage.getString("nickNameID");
+		String accountNumber = orderMessage.getString("accountNumber");
+		String orderID = orderMessage.getString("orderID");
 		String siteName = orderMessage.getString("site");
 		site.put("name", siteName);
-		site.put("nickNameID", orderMessage.getString("nickNameID"));
+		site.put("nickNameID", nickNameID);
 		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
-		orderRecord.put("orderID", orderMessage.getString("orderID"));
+		orderRecord.put("orderID", orderID);
 		if (exchange.getProperties().containsKey("profileID")) {
 			String profileID = exchange.getProperty("profileID", String.class);
 			String merchantID = exchange.getProperty("merchantID", String.class);
@@ -80,7 +86,7 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		// TODO: remove the condition after all publishers start publishing user
 		// id.
-		orderRecord.put("accountNumber", orderMessage.getString("accountNumber"));
+		orderRecord.put("accountNumber", accountNumber);
 		if (exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)) {
 			orderRecord.put("isManaged", exchange.getProperty("isManaged", Boolean.class));
 		}
@@ -129,10 +135,20 @@ public class UpdateOrderDBQuery implements Processor {
 			}
 		}
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
-		Document document = new Document(orderRecord);
-		table.insertOne(document);
-		// for accounting channel
-		orderRecord.put("_id", document.get("_id"));
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("orderID", orderID);
+		searchQuery.put("site.nickNameID", nickNameID);
+		searchQuery.put("site.name", siteName);
+		UpdateOptions options = new UpdateOptions();
+		options.upsert(true);
+		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", orderRecord), options);
+		if (result.getMatchedCount() > 0) {
+			log.info("Order Insert - Duplicate message received for orderID: " + orderID);
+			exchange.setProperty("stopProcess", true);
+			return;
+		}
+		BsonObjectId id = (BsonObjectId) result.getUpsertedId();
+		orderRecord.put("_id", new ObjectId(id.getValue().toString()));
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
 	}

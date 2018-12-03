@@ -136,6 +136,7 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
 		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("accountNumber", accountNumber);
 		searchQuery.put("orderID", orderID);
 		searchQuery.put("site.nickNameID", nickNameID);
 		searchQuery.put("site.name", siteName);

@@ -235,11 +235,11 @@
 			<process ref="initMessageListenerRoute" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>
-				<to uri="direct:processOrderNotification" />
+				<to uri="direct:processOrderNotification?block=true" />
 			</when>
 			<when>
 				<simple>${exchangeProperty.messageType} == 'bid'</simple>
-				<to uri="direct:processBidNotification" />
+				<to uri="direct:processBidNotification?block=true" />
 			</when>
 
 		</route>

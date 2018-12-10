@@ -64,6 +64,8 @@
 		<property name="username" value="${rabbitmq.username}" />
 		<property name="password" value="${rabbitmq.password}" />
 		<property name="virtualHost" value="${rabbitmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="feeManagementTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${feemanagementmq.host}" />
@@ -71,6 +73,8 @@
 		<property name="username" value="${feemanagementmq.username}" />
 		<property name="password" value="${feemanagementmq.password}" />
 		<property name="virtualHost" value="${feemanagementmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="amazonTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${amazonmq.host}" />
@@ -78,6 +82,8 @@
 		<property name="username" value="${amazonmq.username}" />
 		<property name="password" value="${amazonmq.password}" />
 		<property name="virtualHost" value="${amazonmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="elevenStreetTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${elevenStreetmq.host}" />
@@ -85,6 +91,8 @@
 		<property name="username" value="${elevenStreetmq.username}" />
 		<property name="password" value="${elevenStreetmq.password}" />
 		<property name="virtualHost" value="${elevenStreetmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="eBayTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${ebaymq.host}" />
@@ -92,6 +100,8 @@
 		<property name="username" value="${ebaymq.username}" />
 		<property name="password" value="${ebaymq.password}" />
 		<property name="virtualHost" value="${ebaymq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="shopifyTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${shopifymq.host}" />
@@ -99,6 +109,8 @@
 		<property name="username" value="${shopifymq.username}" />
 		<property name="password" value="${shopifymq.password}" />
 		<property name="virtualHost" value="${shopifymq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="shopeeTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${shopeemq.host}" />
@@ -106,6 +118,8 @@
 		<property name="username" value="${shopeemq.username}" />
 		<property name="password" value="${shopeemq.password}" />
 		<property name="virtualHost" value="${shopeemq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="sellinallTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${sellinallmq.host}" />
@@ -113,6 +127,8 @@
 		<property name="username" value="${sellinallmq.username}" />
 		<property name="password" value="${sellinallmq.password}" />
 		<property name="virtualHost" value="${sellinallmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="flipkartTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${flipkartmq.host}" />
@@ -120,6 +136,8 @@
 		<property name="username" value="${flipkartmq.username}" />
 		<property name="password" value="${flipkartmq.password}" />
 		<property name="virtualHost" value="${flipkartmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="etsyTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${etsymq.host}" />
@@ -127,6 +145,8 @@
 		<property name="username" value="${etsymq.username}" />
 		<property name="password" value="${etsymq.password}" />
 		<property name="virtualHost" value="${etsymq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="shopcluesTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${shopcluesmq.host}" />
@@ -134,6 +154,8 @@
 		<property name="username" value="${shopcluesmq.username}" />
 		<property name="password" value="${shopcluesmq.password}" />
 		<property name="virtualHost" value="${shopcluesmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="qoo10TxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${qoo10mq.host}" />
@@ -141,6 +163,8 @@
 		<property name="username" value="${qoo10mq.username}" />
 		<property name="password" value="${qoo10mq.password}" />
 		<property name="virtualHost" value="${qoo10mq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="wishTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${wishmq.host}" />
@@ -148,6 +172,8 @@
 		<property name="username" value="${wishmq.username}" />
 		<property name="password" value="${wishmq.password}" />
 		<property name="virtualHost" value="${wishmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="lazadaTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${lazada.host}" />
@@ -155,6 +181,8 @@
 		<property name="username" value="${lazada.username}" />
 		<property name="password" value="${lazada.password}" />
 		<property name="virtualHost" value="${lazada.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="quickBooksTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${quickBooks.host}" />
@@ -162,6 +190,8 @@
 		<property name="username" value="${quickBooks.username}" />
 		<property name="password" value="${quickBooks.password}" />
 		<property name="virtualHost" value="${quickBooks.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="ninjaVanTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${ninjaVan.host}" />
@@ -169,6 +199,8 @@
 		<property name="username" value="${ninjaVan.username}" />
 		<property name="password" value="${ninjaVan.password}" />
 		<property name="virtualHost" value="${ninjaVan.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="inforTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${infor.host}" />
@@ -176,6 +208,8 @@
 		<property name="username" value="${infor.username}" />
 		<property name="password" value="${infor.password}" />
 		<property name="virtualHost" value="${infor.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="magentoTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${magentomq.host}" />
@@ -183,6 +217,8 @@
 		<property name="username" value="${magentomq.username}" />
 		<property name="password" value="${magentomq.password}" />
 		<property name="virtualHost" value="${magentomq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 	<bean id="jdTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${jdmq.host}" />
@@ -190,6 +226,8 @@
 		<property name="username" value="${jdmq.username}" />
 		<property name="password" value="${jdmq.password}" />
 		<property name="virtualHost" value="${jdmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 
 	<!-- batchprocessor -->
@@ -199,6 +237,8 @@
 		<property name="username" value="${batchProcessor.username}" />
 		<property name="password" value="${batchProcessor.password}" />
 		<property name="virtualHost" value="${batchProcessor.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 
 	<!-- user-messaging server -->
@@ -208,6 +248,8 @@
 		<property name="username" value="${userMessaging.username}" />
 		<property name="password" value="${userMessaging.password}" />
 		<property name="virtualHost" value="${userMessaging.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 
 	<!-- buyer management server -->
@@ -217,6 +259,8 @@
 		<property name="username" value="${buyer.username}" />
 		<property name="password" value="${buyer.password}" />
 		<property name="virtualHost" value="${buyer.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 
 	<!-- mongo db bean -->

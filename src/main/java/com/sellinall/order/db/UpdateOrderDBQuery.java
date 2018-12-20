@@ -221,6 +221,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("timeSettled")) {
 			orderRecord.put("timeSettled", orderMessage.getLong("timeSettled"));
 		}
+		if (orderMessage.containsField("timeSettlementFileProcessed")) {
+			orderRecord.put("timeSettlementFileProcessed", orderMessage.getLong("timeSettlementFileProcessed"));
+		}
 		if (orderMessage.containsField("settlementStatus")) {
 			orderRecord.put("settlementStatus", orderMessage.getString("settlementStatus"));
 		}

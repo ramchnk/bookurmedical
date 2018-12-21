@@ -21,6 +21,7 @@ import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.util.enums.SIAInventoryStatus;
+import com.sellinall.util.enums.SIAOrderCancelReasons;
 
 /**
  * @author Mallikarjun
@@ -38,7 +39,6 @@ public class UpdateInventoryDBQuery implements Processor {
 		exchange.setProperty("SKU", SKU);
 		
 		int quantity = exchange.getProperty("quantity", Integer.class);
-		
 		boolean syncInventory = exchange.getProperty("syncInventory", Boolean.class);
 		List<String> syncSites = new ArrayList<String>();
 		BasicDBObject quantityIncDecModifier = new BasicDBObject();
@@ -81,13 +81,13 @@ public class UpdateInventoryDBQuery implements Processor {
 			JSONObject orderMessage, BasicDBObject inventoryDBRecord, int quantitySold, List<String> syncSites,
 			BasicDBObject quantityIncDecModifier, BasicDBObject quantitySetModifier, boolean syncInventory,
 			Map<String, List<String>> siteMap, Exchange exchange) throws JSONException {
+		boolean isOutOfStock = false;
 		boolean newOrder = notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED);
-
 		boolean cancelledOrder = notificationOrderActionStatus
 				.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
@@ -98,6 +98,13 @@ public class UpdateInventoryDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)
 				||notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED);
+		if (cancelledOrder && orderMessage.has("cancelDetails")) {
+			JSONObject cancelDetails = orderMessage.getJSONObject("cancelDetails");
+			if (cancelDetails.has("cancelReason") && !cancelDetails.getString("cancelReason").isEmpty()
+					&& cancelDetails.getString("cancelReason").equals(SIAOrderCancelReasons.OUT_OF_STOCK.toString())) {
+				isOutOfStock = true;
+			}
+		}
 		boolean isPublishDuplicatSKUS = false;
 		if (exchange.getProperties().containsKey("publishDuplicatSKUS")) {
 			isPublishDuplicatSKUS = exchange.getProperty("publishDuplicatSKUS", boolean.class);
@@ -142,7 +149,12 @@ public class UpdateInventoryDBQuery implements Processor {
 							// in case of cancel, ideally we should compare with
 							// max allolwed quantity and decide whether to
 							// increment or not. To be done in future.
-							incrementSetter(quantityIncDecModifier, siteName + "." + index + ".noOfItem", quantitySold);
+							if (isOutOfStock) {
+								incrementSetter(quantitySetModifier, siteName + "." + index + ".noOfItem", 0);
+							} else {
+								incrementSetter(quantityIncDecModifier, siteName + "." + index + ".noOfItem",
+										quantitySold);
+							}
 						}
 					}
 				} else { // notification from this site
@@ -167,8 +179,12 @@ public class UpdateInventoryDBQuery implements Processor {
 				}
 			} else if (cancelledOrder) {
 				if (hasSiteSpecificIndex) {
-					incrementSetter(quantityIncDecModifier, siteName + "." + siteSpecificIndex + ".noOfItem",
-							quantitySold);
+					if (isOutOfStock) {
+						incrementSetter(quantitySetModifier, siteName + "." + siteSpecificIndex + ".noOfItem", 0);
+					} else {
+						incrementSetter(quantityIncDecModifier, siteName + "." + siteSpecificIndex + ".noOfItem",
+								quantitySold);
+					}
 					incrementSetter(quantityIncDecModifier, siteName + "." + siteSpecificIndex + ".noOfItemsold",
 							-quantitySold);
 				}
@@ -182,7 +198,11 @@ public class UpdateInventoryDBQuery implements Processor {
 			incrementSetter(quantityIncDecModifier, "noOfItem", -quantitySold);
 			incrementSetter(quantityIncDecModifier, "noOfItemsold", quantitySold);
 		} else if (cancelledOrder) {
-			incrementSetter(quantityIncDecModifier, "noOfItem", quantitySold);
+			if (isOutOfStock) {
+				incrementSetter(quantitySetModifier, "noOfItem", 0);
+			} else {
+				incrementSetter(quantityIncDecModifier, "noOfItem", quantitySold);
+			}
 			incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantitySold);
 		}
 	}

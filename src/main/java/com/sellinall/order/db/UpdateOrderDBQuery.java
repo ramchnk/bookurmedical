@@ -159,6 +159,10 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderAmount = (BasicDBObject) orderRecord.get("orderAmount");
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderAmount.getString("currencyCode"), "USD");
+				if (exchangeRate == 0) {
+					log.error("orderAmountInUSD field is not set for the order Number: " + orderRecord.getString("orderNumber"));
+					return;
+				}
 				long amount = Math.round(orderAmount.getLong("amount") * exchangeRate);
 				DBObject orderAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				orderRecord.put("orderAmountInUSD", orderAmountInUSD);
@@ -183,7 +187,7 @@ public class UpdateOrderDBQuery implements Processor {
 			double exchangeRate = payload.getDouble("exchangeRate");
 			return exchangeRate;
 		} else {
-			log.error("Get " + url + " failed with status code " + httpCode);
+			log.error("Get " + url + " failed with status code " + httpCode + " and the response is: " + response);
 			return 0;
 		}
 	}
@@ -285,6 +289,11 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderSoldAmount = (BasicDBObject) orderRecord.get("orderSoldAmount");
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderSoldAmount.getString("currencyCode"), "USD");
+				if (exchangeRate == 0) {
+					log.error("orderSoldAmountInUSD field is not set for the order Number: "
+							+ orderRecord.getString("orderNumber"));
+					return;
+				}
 				long amount = Math.round(orderSoldAmount.getLong("amount") * exchangeRate);
 				DBObject orderSoldAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				orderRecord.put("orderSoldAmountInUSD", orderSoldAmountInUSD);

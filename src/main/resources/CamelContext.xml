@@ -22,8 +22,7 @@
 	<bean id="convertToJSON" class="com.sellinall.order.util.ByteArrayToJSONTypeConverters" />
 	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
 	<bean id="initOrderItemRoute" class="com.sellinall.order.bl.InitOrderItemRoute" />
-	<bean id="prepareOrderIdDBQuery" class="com.sellinall.order.db.PrepareOrderIdDBQuery" />
-	<bean id="processOrderIdDBQuery" class="com.sellinall.order.db.ProcessOrderIdDBQuery" />
+	<bean id="loadAndProcessOrderFromDB" class="com.sellinall.order.db.LoadAndProcessOrderFromDB" />
 	<bean id="prepareSKUDBQuery" class="com.sellinall.order.db.PrepareSKUDBQuery" />
 	<bean id="processSKUDBQuery" class="com.sellinall.order.db.ProcessSKUDBQuery" />
 	<bean id="prepareDuplicateSKUsDBQuery" class="com.sellinall.order.db.PrepareDuplicateSKUsDBQuery" />
@@ -296,7 +295,7 @@
 
 		<route id="processOrderNotification">
 			<from uri="direct:processOrderNotification" />
-			<to uri="direct:loadOrderData" />
+			<process ref="loadAndProcessOrderFromDB" />
 			<process ref="loadUserDataByNicknameId" />
 			<process ref="processOrderStatus" />
 			<split parallelProcessing="false" strategyRef="aggregatorStrategy">
@@ -402,15 +401,6 @@
 			<from uri="direct:updateAndPublish" />
 			<process ref="updateInventoryDBQuery" />
 			<to uri="direct:publishToMQForItemSync" />
-		</route>
-
-		<route id="loadOrderData">
-			<from uri="direct:loadOrderData" />
-			<process ref="prepareOrderIdDBQuery" />
-			<to
-				uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=order&amp;operation=findOneByQuery"
-				pattern="InOut" />
-			<process ref="processOrderIdDBQuery" />
 		</route>
 
 		<route id="loadInventoryData">

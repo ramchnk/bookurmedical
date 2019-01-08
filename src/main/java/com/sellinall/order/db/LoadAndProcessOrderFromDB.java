@@ -3,31 +3,35 @@ package com.sellinall.order.db;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONException;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.MongoCollection;
+import com.sellinall.database.DbUtilities;
 
 /**
  * @author Mallikarjun
  *
  */
-public class PrepareOrderIdDBQuery implements Processor {
-	static Logger log = Logger.getLogger(PrepareOrderIdDBQuery.class.getName());
-	
+public class LoadAndProcessOrderFromDB implements Processor {
+	static Logger log = Logger.getLogger(LoadAndProcessOrderFromDB.class.getName());
+
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		BasicDBObject outBody = createBody(orderMessage);
-		log.debug("outBody "+ outBody);
-		exchange.getOut().setBody(outBody);
-	}
-
-	private BasicDBObject createBody(JSONObject orderMessage) throws JSONException {
+		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 		searchQuery.put("site.name", orderMessage.getString("site"));
-		return searchQuery;
+		Document dbResult = table.find(searchQuery).first();
+		exchange.setProperty("hasOrderInDB", false);
+		if (dbResult == null) {
+			log.debug("Order Record - not exists in our DB Result: " + dbResult);
+			return;
+		}
+		exchange.setProperty("hasOrderInDB", true);
+		exchange.setProperty("orderDBObject", BasicDBObject.parse(dbResult.toJson()));
 	}
 }

@@ -15,6 +15,9 @@ public class Config {
 	private String InventoryCollectionHostName;
 	private String InventoryCollectionPort;
 	private String InventoryCollectionDBName;
+	private String OrderCollectionHostName;
+	private String OrderCollectionPort;
+	private String OrderCollectionDBName;
 	private String uploadImageUri;
 	private String SIAOrderPageURL;
 	private String Ragasiyam;
@@ -136,6 +139,30 @@ public class Config {
 
 	public void setSIAfeeManagementServerURL(String sIAfeeManagementServerURL) {
 		SIAfeeManagementServerURL = sIAfeeManagementServerURL;
+	}
+
+	public String getOrderCollectionHostName() {
+		return OrderCollectionHostName;
+	}
+
+	public void setOrderCollectionHostName(String orderCollectionHostName) {
+		OrderCollectionHostName = orderCollectionHostName;
+	}
+
+	public String getOrderCollectionPort() {
+		return OrderCollectionPort;
+	}
+
+	public void setOrderCollectionPort(String orderCollectionPort) {
+		OrderCollectionPort = orderCollectionPort;
+	}
+
+	public String getOrderCollectionDBName() {
+		return OrderCollectionDBName;
+	}
+
+	public void setOrderCollectionDBName(String orderCollectionDBName) {
+		OrderCollectionDBName = orderCollectionDBName;
 	}
 
 }

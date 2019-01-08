@@ -45,7 +45,7 @@ public class UpdateCombineOrderStatus implements Processor {
 		updateSet.put("paymentStatus", SIAPaymentStatus.UNSUPPORTED.toString());
 		updateSet.put("shippingStatus", SIAShippingStatus.UNSUPPORTED.toString());
 		updateSet.put("combinedOrderId", orderMessage.getString("orderID"));
-		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
+		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		BasicDBObject update = new BasicDBObject("$set", updateSet);
 		table.updateMany(query, update);
 	}

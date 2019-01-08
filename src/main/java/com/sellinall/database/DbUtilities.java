@@ -12,6 +12,8 @@ public class DbUtilities {
 	static MongoDatabase userDB = (MongoDatabase) userContext.getBean("db");
 	static ApplicationContext inventoryContext = new AnnotationConfigApplicationContext(InventoryCfg.class);
 	static MongoDatabase inventoryDB = (MongoDatabase) inventoryContext.getBean("db");
+	static ApplicationContext orderContext = new AnnotationConfigApplicationContext(OrderCfg.class);
+	static MongoDatabase orderDB = (MongoDatabase) orderContext.getBean("db");
 
 	public static MongoCollection<Document> getDBCollection(String collectionName) {
 		return userDB.getCollection(collectionName);
@@ -19,6 +21,10 @@ public class DbUtilities {
 
 	public static MongoCollection<Document> getInventoryDBCollection(String collectionName) {
 		return inventoryDB.getCollection(collectionName);
+	}
+
+	public static MongoCollection<Document> getOrderDBCollection(String collectionName) {
+		return orderDB.getCollection(collectionName);
 	}
 
 }

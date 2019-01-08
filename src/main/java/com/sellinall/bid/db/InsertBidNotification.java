@@ -32,7 +32,7 @@ public class InsertBidNotification implements Processor {
 	}
 
 	private void insertBidRecord(BasicDBObject bidMessage) throws JSONException {
-		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("bid");
+		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("bid");
 		table.insertOne(new Document(bidMessage));
 	}
 }

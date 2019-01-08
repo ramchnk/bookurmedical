@@ -44,6 +44,9 @@
 		<property name="InventoryCollectionHostName" value="${InventoryCollectionHostName}" />
 		<property name="InventoryCollectionPort" value="${InventoryCollectionPort}" />
 		<property name="InventoryCollectionDBName" value="${InventoryCollectionDBName}" />
+		<property name="OrderCollectionHostName" value="${OrderCollectionHostName}" />
+		<property name="OrderCollectionPort" value="${OrderCollectionPort}" />
+		<property name="OrderCollectionDBName" value="${OrderCollectionDBName}" />
 		<property name="uploadImageUri" value="${uploadImageUri}" />
 		<property name="SIAOrderPageURL" value="${SIAOrderPageURL}" />
 		<property name="SIAAccountingChannels" value="${SIAAccountingChannels}" />

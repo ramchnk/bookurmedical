@@ -134,7 +134,7 @@ public class UpdateOrderDBQuery implements Processor {
 				log.error("Insert - orderItems List is Empty for this orderId: " + orderMessage.getString("orderID"));
 			}
 		}
-		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
+		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", accountNumber);
 		searchQuery.put("orderID", orderID);
@@ -213,7 +213,7 @@ public class UpdateOrderDBQuery implements Processor {
 		searchQuery.put("site.name", siteName);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 
-		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
+		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		if (exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)) {
 			orderRecord.put("isManaged", exchange.getProperty("isManaged", Boolean.class));
 		}
@@ -309,7 +309,7 @@ public class UpdateOrderDBQuery implements Processor {
 			// Append the OrderNotificationID to the database
 			updateObject.put("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID")));
 		}
-		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("order");
+		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
 		options.returnDocument(ReturnDocument.AFTER);
 		BasicDBObject update = new BasicDBObject("timeLastUpdated", DateUtil.getSIADateFormat());

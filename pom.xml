@@ -7,21 +7,20 @@
 	<artifactId>partnernotifserv</artifactId>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<SPRING.RELEASE>4.2.0.RELEASE</SPRING.RELEASE>
-		<CAMEL.RELEASE>2.17.6</CAMEL.RELEASE>
-		<jdk.version>1.8</jdk.version>
+		<SPRING.RELEASE>3.2.2.RELEASE</SPRING.RELEASE>
+		<CAMEL.RELEASE>2.15.2</CAMEL.RELEASE>
 	</properties>
 	<dependencies>
 		<!-- Jetty -->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>9.3.8.v20160314</version>
+			<version>7.6.0.v20120127</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<version>9.3.8.v20160314</version>
+			<version>7.6.0.v20120127</version>
 		</dependency>
 
 		<!-- Jersey -->
@@ -191,15 +190,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.6.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
 			</plugin>
 		</plugins>
 

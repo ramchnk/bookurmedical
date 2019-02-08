@@ -106,6 +106,9 @@ public class LoadUserDataByNicknameId implements Processor {
 			syncMultipleUnitSKUs = (Boolean) queryResult.get("syncMultipleUnitSKUs");
 		}
 		exchange.setProperty("syncMultipleUnitSKUs", syncMultipleUnitSKUs);
+		if(queryResult.containsField("showOnlyManagedOrders")) {
+			exchange.setProperty("showOnlyManagedOrders", queryResult.getBoolean("showOnlyManagedOrders"));
+		}
 	}
 
 	private BasicDBObject runQuery(String accountNumber, String nickNameID, String siteName, String accountingChannel) {
@@ -120,6 +123,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		projection.put("syncDuplicateSKUs", 1);
 		projection.put("syncMultipleUnitSKUs", 1);
 		projection.put("syncInventory", 1);
+		projection.put("showOnlyManagedOrders", 1);
 
 		String[] channels = accountingChannel.split("-");
 		for (String channel : channels) {

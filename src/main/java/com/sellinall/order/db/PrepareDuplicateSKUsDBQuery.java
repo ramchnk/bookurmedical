@@ -29,11 +29,6 @@ public class PrepareDuplicateSKUsDBQuery implements Processor {
 		searchQuery.put("SKU", new BasicDBObject("$ne", SKU));
 		searchQuery.put("customSKU", customSKU);
 		searchQuery.put("variants", new BasicDBObject("$exists", false));
-		String nickNameID = exchange.getProperty("nickNameID", String.class);
-		String siteName = exchange.getProperty("siteName", String.class);
-		BasicDBObject elemMatch = new BasicDBObject("nickNameID", nickNameID);
-		BasicDBObject searchSite = new BasicDBObject("$elemMatch", elemMatch);
-		searchQuery.put(siteName, searchSite);
 
 		BasicDBObject fieldsFilter = new BasicDBObject("SKU", 1);
 		fieldsFilter.put("sync", 1);

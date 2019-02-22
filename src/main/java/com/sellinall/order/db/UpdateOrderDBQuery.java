@@ -40,10 +40,10 @@ import com.sellinall.util.enums.OrderUpdateStatus;
  * 
  */
 public class UpdateOrderDBQuery implements Processor {
+
 	static Logger log = Logger.getLogger(UpdateOrderDBQuery.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-
 		JSONObject inBody = new JSONObject(exchange.getIn().getBody(String.class));
 		exchange.setProperty("stopProcess", false);
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
@@ -327,6 +327,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "paymentType", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderItems", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderStatus", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "shippingCarrierStatus", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "paymentStatus", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "shippingStatus", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderAmount", orderMessage);

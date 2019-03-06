@@ -111,6 +111,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("timeOrderUpdated")) {
 			orderRecord.put("timeOrderUpdated",  orderMessage.getLong("timeOrderUpdated"));
 		}
+		if (orderMessage.containsField("timeOrderReturnRequested")) {
+			orderRecord.put("timeOrderReturnRequested",  orderMessage.getLong("timeOrderReturnRequested"));
+		}
 		if (orderMessage.containsField("shippingAmount")) {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
 		}

@@ -240,6 +240,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("timeOrderUpdated")) {
 			orderRecord.put("timeOrderUpdated", orderMessage.getLong("timeOrderUpdated"));
 		}
+		if (orderMessage.containsField("timeOrderReturnRequested")) {
+			orderRecord.put("timeOrderReturnRequested", orderMessage.getLong("timeOrderReturnRequested"));
+		}
 		if (exchange.getProperties().containsKey("isPartnerLogistics")
 				&& exchange.getProperties().containsKey("airwayBillExists")) {
 			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));

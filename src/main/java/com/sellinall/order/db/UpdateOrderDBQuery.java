@@ -413,6 +413,20 @@ public class UpdateOrderDBQuery implements Processor {
 								JSON.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
 					}
 				}
+				if (orderItem.containsField("totalItemAmount")) {
+					orderItem.put("totalItemSoldAmount", (BasicDBObject) orderItem.get("totalItemAmount"));
+					if (orderItem.containsField("totalSellerDiscountAmount")) {
+						BasicDBObject totalItemAmount = (BasicDBObject) orderItem.get("totalItemAmount");
+						long itemAmount = totalItemAmount.getLong("amount");
+						BasicDBObject totalSellerDiscountAmount = (BasicDBObject) orderItem
+								.get("totalSellerDiscountAmount");
+						long sellerDiscountAmount = totalSellerDiscountAmount.getLong("amount");
+						String currencyCode = totalItemAmount.getString("currencyCode");
+						long itemSoldAmount = itemAmount - sellerDiscountAmount;
+						orderItem.put("totalItemSoldAmount",
+								JSON.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
+					}
+				}
 				if (processOrdersWithSKUOnly && isNewOrder) {
 					if (orderHasInventory) {
 						newOrderItems.add(orderItem);

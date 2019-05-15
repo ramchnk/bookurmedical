@@ -118,9 +118,17 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
 		}
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
+		exchange.setProperty("groupOrderByCartNumber", false);
 		if (orderMessage.containsField("cartNumber")) {
-			orderRecord.put("cartNumber", orderMessage.get("cartNumber"));
-		}
+			String cartNumber = (String) orderMessage.get("cartNumber");
+			orderRecord.put("cartNumber", cartNumber);
+			int totalOrderItemsInCart = 0;
+			if (orderMessage.containsField("totalOrderItemsInCart")) {
+				totalOrderItemsInCart = orderMessage.getInt("totalOrderItemsInCart");
+				orderRecord.put("totalOrderItemsInCart", totalOrderItemsInCart);
+			}
+			checkIfgroupOrderByCartNumberNeeded(exchange,totalOrderItemsInCart,cartNumber);
+		}		
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		fillAdditionDetails(exchange, orderRecord, siteName, true);
 		if (!checkIsValidOrderForAccount(orderRecord)) {
@@ -155,6 +163,15 @@ public class UpdateOrderDBQuery implements Processor {
 		orderRecord.put("_id", new ObjectId(id.getValue().toString()));
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
+	}
+
+	private void checkIfgroupOrderByCartNumberNeeded(Exchange exchange, int totalOrderItemsInCart, String cartNumber) {
+		exchange.setProperty("groupOrderByCartNumber", false);
+		if (totalOrderItemsInCart > 1) {
+			exchange.setProperty("groupOrderByCartNumber", true);
+		}
+		exchange.setProperty("totalOrderItemsInCart", totalOrderItemsInCart);
+		exchange.setProperty("cartNumber", cartNumber);
 	}
 
 	private void fillOrderAmountInUSD(BasicDBObject orderRecord) {
@@ -269,7 +286,11 @@ public class UpdateOrderDBQuery implements Processor {
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
-		exchange.setProperty("orderRecord", updateAndGetLatestUpdatedOrder(searchQuery, orderMessage));
+		BasicDBObject order = updateAndGetLatestUpdatedOrder(searchQuery, orderMessage);
+		if (order.containsField("totalOrderItemsInCart") && order.containsField("cartNumber")) {
+			checkIfgroupOrderByCartNumberNeeded(exchange, order.getInt("totalOrderItemsInCart"), order.getString("cartNumber"));
+		}
+		exchange.setProperty("orderRecord", order);
 		exchange.getOut().setBody(orderMessage);
 	}
 

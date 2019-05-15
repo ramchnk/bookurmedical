@@ -54,5 +54,11 @@ public class PrepareRequestMessage implements Processor {
 		if (isInforWMS) {
 			exchange.setProperty("publishToInfor", true);
 		}
+		// prepare publish message for create & update in satsaco server
+		boolean isSatsacoWMS = exchange.getProperty("isSatsacoWMS", Boolean.class);
+		exchange.setProperty("publishToSatsaco", false);
+		if (isSatsacoWMS) {
+			exchange.setProperty("publishToSatsaco", true);
+		}
 	}
 }

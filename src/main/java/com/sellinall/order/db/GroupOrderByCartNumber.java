@@ -27,6 +27,7 @@ public class GroupOrderByCartNumber implements Processor {
 		if (totalOrderItemsInCart == orderList.size()) {
 			exchange.setProperty("isEligibleToProceed", true);
 			JSONObject orderMessage = groupOrderBycart(orderList);
+			orderMessage.put("requestType", exchange.getProperty("requestType"));
 			exchange.getOut().setBody(orderMessage);
 		}
 	}

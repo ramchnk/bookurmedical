@@ -31,11 +31,16 @@ public class ConstructRequestType implements Processor {
 			// for ninjaVan createOrder & updateOrder
 			// for infor createOrder & updateOrder
 			if (publishTo.equals("ninjaVan") || publishTo.equals("infor") || publishTo.equals("satsaco")) {
+				String requestType = "";
 				if (exchange.getProperty("isNewOrder", boolean.class)) {
-					publishMessage.put("requestType", "createOrder");
+					requestType = "createOrder";
+					publishMessage.put("requestType", requestType);
+					exchange.setProperty("requestType", requestType);
 				}
 				if (!exchange.getProperty("isNewOrder", boolean.class)) {
-					publishMessage.put("requestType", "updateOrder");
+					requestType = "updateOrder";
+					publishMessage.put("requestType", requestType);
+					exchange.setProperty("requestType", requestType);
 				}
 				publishMessage.remove("feeType");
 			}

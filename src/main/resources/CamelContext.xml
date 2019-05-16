@@ -35,6 +35,7 @@
 	<bean id="loadUserDataByNicknameId" class="com.sellinall.order.db.LoadUserDataByNicknameId" />
 	<bean id="loadAccountData" class="com.sellinall.order.db.LoadAccountData" />
 	<bean id="loadInventoryData" class="com.sellinall.order.db.LoadInventoryData" />
+	<bean id="groupOrderByCartNumber" class="com.sellinall.order.db.GroupOrderByCartNumber" />
 	<bean id="myPrint" class="com.sellinall.order.LoggingProcessor" />
 	<bean id="splitterBean" class="com.sellinall.order.splitter.SplitterBean" />
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
@@ -207,6 +208,15 @@
 		<property name="username" value="${infor.username}" />
 		<property name="password" value="${infor.password}" />
 		<property name="virtualHost" value="${infor.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
+	</bean>
+	<bean id="satsacoTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${satsaco.host}" />
+		<property name="port" value="${satsaco.rx.port}" />
+		<property name="username" value="${satsaco.username}" />
+		<property name="password" value="${satsaco.password}" />
+		<property name="virtualHost" value="${satsaco.virtualHost}" />
 		<property name="networkRecoveryInterval" value="0"/>
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
@@ -531,6 +541,32 @@
 				<simple>${exchangeProperty.hasOrderInDB} == false and ${exchangeProperty.isSKUListEmpty} == false</simple>
 				<to uri="direct:lowQuantityNotification" />
 			</when>
+			<when>
+				<simple>${exchangeProperty.publishToSatsaco} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>satsaco</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>satsacoKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{satsaco.host}}:{{satsaco.tx.port}}/satsacoExchange?connectionFactory=#satsacoTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
+			</when>
+		</route>
+
+		<route id="groupOrderByCartNumber">
+		   <from uri="direct:groupOrderByCartNumber" />
+		   <process ref="groupOrderByCartNumber" />
 		</route>
 
 		<route id="lowQuantityNotification">

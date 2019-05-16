@@ -70,6 +70,14 @@ public class LoadUserDataByNicknameId implements Processor {
 				exchange.setProperty("isInforWMS", true);
 			}
 		}
+		exchange.setProperty("isSatsacoWMS", false);
+		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {
+			BasicDBList wms = (BasicDBList) userSiteSpecificObject.get("wms");
+			// Only one satsaco will be present
+			if (wms.contains("satsaco-1")) {
+				exchange.setProperty("isSatsacoWMS", true);
+			}
+		}
 		if (exchange.getProperty("isInforWMS", boolean.class)
 				|| exchange.getProperty("isNinjaVanShippingCarrier", boolean.class)) {
 			exchange.setProperty("isPartnerLogistics", true);

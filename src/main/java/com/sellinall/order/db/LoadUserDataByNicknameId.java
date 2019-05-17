@@ -37,14 +37,20 @@ public class LoadUserDataByNicknameId implements Processor {
 		List<BasicDBObject> userSiteSpecificObjectList = (List<BasicDBObject>) queryResult.get(siteName);
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
 		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
+		String profileID = "";
 		if (userSiteSpecificObject.containsField("invoiceProfile")
 				&& userSiteSpecificObject.get("invoiceProfile") != null
 				&& !userSiteSpecificObject.get("invoiceProfile").equals("null")) {
+			profileID = userSiteSpecificObject.getString("invoiceProfile");
+		} else if (userSiteSpecificObject.containsField("profile") && userSiteSpecificObject.get("profile") != null
+				&& !userSiteSpecificObject.get("profile").equals("null")) {
+			profileID = userSiteSpecificObject.getString("profile");
+		}
+		if (!profileID.isEmpty()) {
 			List<BasicDBObject> userProfileList = (List<BasicDBObject>) queryResult.get("profile");
-			String invoiceNumberPrefix = getinvoiceNumberPrefix(userProfileList,
-					userSiteSpecificObject.getString("invoiceProfile"));
+			String invoiceNumberPrefix = getinvoiceNumberPrefix(userProfileList, profileID);
 			exchange.setProperty("invoiceNumberPrefix", invoiceNumberPrefix);
-			exchange.setProperty("profileID", userSiteSpecificObject.getString("invoiceProfile"));
+			exchange.setProperty("profileID", profileID);
 		}
 
 		exchange.setProperty("isAccountingChannel", false);

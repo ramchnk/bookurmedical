@@ -113,6 +113,8 @@ public class LoadUserDataByNicknameId implements Processor {
 		boolean syncDuplicateSKUs = false;
 		if (queryResult.containsField("syncDuplicateSKUs")) {
 			syncDuplicateSKUs = (Boolean) queryResult.get("syncDuplicateSKUs");
+		} else if (queryResult.containsField("individualSKUPerChannel")) {
+			syncDuplicateSKUs = (Boolean) queryResult.get("individualSKUPerChannel");
 		}
 		exchange.setProperty("syncDuplicateSKUs", syncDuplicateSKUs);
 		boolean syncMultipleUnitSKUs = false;
@@ -135,6 +137,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		projection.put("merchantID", 1);
 		projection.put("profile", 1);
 		projection.put("syncDuplicateSKUs", 1);
+		projection.put("individualSKUPerChannel", 1);
 		projection.put("syncMultipleUnitSKUs", 1);
 		projection.put("syncInventory", 1);
 		projection.put("showOnlyManagedOrders", 1);

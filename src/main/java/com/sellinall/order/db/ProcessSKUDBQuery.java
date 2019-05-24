@@ -100,7 +100,11 @@ public class ProcessSKUDBQuery implements Processor {
 				}
 			}
 		}
-		inventoryValues.put(siteName, site);
+		if (siteName.equals("offline")) {
+			inventoryValues.put(siteName, new BasicDBObject());
+		} else {
+			inventoryValues.put(siteName, site);
+		}
 		for (int i = 0; i < siteSpecificList.length(); i++) {
 			JSONObject channelObj = siteSpecificList.getJSONObject(i);
 			if (channelObj.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {

@@ -58,6 +58,10 @@ public class ProcessSKUDBQuery implements Processor {
 		String siteName = exchange.getProperty("siteName", String.class);
 		BasicDBObject inventoryValues = new BasicDBObject();
 		inventoryValues.put("itemTitle", itemTitle);
+		//  offline is not a channel and  it is not present in inventory, So will add as empty array in inventory.
+		if (siteName.equals("offline")) {
+			inventory.put("offline", new JSONArray());
+		}
 		if (inventory.has("imageURL")) {
 			inventoryValues.put("imageURL", inventory.getString("imageURL"));
 		}
@@ -100,6 +104,7 @@ public class ProcessSKUDBQuery implements Processor {
 				}
 			}
 		}
+		// siteName will be pass as empty object to handle the SKU and imageURL in next bean.
 		if (siteName.equals("offline")) {
 			inventoryValues.put(siteName, new BasicDBObject());
 		} else {

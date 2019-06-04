@@ -368,6 +368,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "sellerDiscountAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "channelDiscountAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "voucherAmount", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "documents", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord);
 	}
 

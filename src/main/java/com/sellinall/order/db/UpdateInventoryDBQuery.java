@@ -37,7 +37,8 @@ public class UpdateInventoryDBQuery implements Processor {
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		String SKU = inventoryDBRecord.getString("SKU");
 		exchange.setProperty("SKU", SKU);
-		
+		boolean isMultipleUnitSKUUpdate = (exchange.getProperties().containsKey("isMultipleUnitSKUUpdate")
+				&& exchange.getProperty("isMultipleUnitSKUUpdate", Boolean.class));
 		int quantity = exchange.getProperty("quantity", Integer.class);
 		boolean syncInventory = exchange.getProperty("syncInventory", Boolean.class);
 		List<String> syncSites = new ArrayList<String>();
@@ -45,7 +46,7 @@ public class UpdateInventoryDBQuery implements Processor {
 		BasicDBObject quantitySetModifier = new BasicDBObject();
 		Map<String,List<String>> siteMap = new HashMap<String,List<String>>();
 		processQuantityUpdates(notificationOrderActionStatus, orderMessage, inventoryDBRecord, quantity, syncSites,
-				quantityIncDecModifier, quantitySetModifier, syncInventory, siteMap, exchange);
+				quantityIncDecModifier, quantitySetModifier, syncInventory, siteMap, exchange, isMultipleUnitSKUUpdate);
 		log.debug("updateInventoryRecord: Quantity: "+quantityIncDecModifier);
 		if ( quantityIncDecModifier.isEmpty()) {
 			syncSites.clear();
@@ -80,7 +81,7 @@ public class UpdateInventoryDBQuery implements Processor {
 	private void processQuantityUpdates(NotificationOrderActionStatus notificationOrderActionStatus,
 			JSONObject orderMessage, BasicDBObject inventoryDBRecord, int quantitySold, List<String> syncSites,
 			BasicDBObject quantityIncDecModifier, BasicDBObject quantitySetModifier, boolean syncInventory,
-			Map<String, List<String>> siteMap, Exchange exchange) throws JSONException {
+			Map<String, List<String>> siteMap, Exchange exchange, boolean isMultipleUnitSKUUpdate) throws JSONException {
 		boolean isOutOfStock = false;
 		boolean newOrder = notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
@@ -124,7 +125,7 @@ public class UpdateInventoryDBQuery implements Processor {
 					continue;
 				}
 				boolean isSameSite = siteSpecific.getString("nickNameID").equals(orderMessage.getString("nickNameID"));
-				if (isPublishDuplicatSKUS || !isSameSite) {
+				if (isPublishDuplicatSKUS || !isSameSite || isMultipleUnitSKUUpdate) {
 					nickNameList.add(siteSpecific.getString("nickNameID"));
 				}
 				if (!isSameSite) {

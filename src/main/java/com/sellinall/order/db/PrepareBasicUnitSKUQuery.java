@@ -29,9 +29,13 @@ public class PrepareBasicUnitSKUQuery implements Processor {
 			basicUnitCustomSKU = basicUnitCustomSKU + splitCustomSKU[i];
 		}
 		exchange.setProperty("customSKU", basicUnitCustomSKU);
-		int lotSize = Integer.parseInt(splitCustomSKU[splitCustomSKU.length - 1]);
+
 		JSONObject orderItemMessage = new JSONObject(exchange.getProperty("orderItemMessage", String.class));
-		int quantity = orderItemMessage.getInt("quantity") * lotSize;
+		int quantity = orderItemMessage.getInt("quantity");
+		if (customSKU.matches(".+(x|X)[1-9]+[0-9]*$")) {
+			int lotSize = Integer.parseInt(splitCustomSKU[splitCustomSKU.length - 1]);
+			quantity = quantity * lotSize;
+		}
 		exchange.setProperty("quantity", quantity);
 		exchange.setProperty("processBasicUnitSKU", true);
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);

@@ -362,6 +362,9 @@
 							<simple>${exchangeProperty.syncMultipleUnitSKUs} == true and
 								${exchangeProperty.customSKU} != null
 							</simple>
+							<setProperty propertyName="isMultipleUnitSKUUpdate">
+								<simple>true</simple>
+							</setProperty>
 							<to uri="direct:loadBasicUnitSKU" />
 							<choice>
 								<when>

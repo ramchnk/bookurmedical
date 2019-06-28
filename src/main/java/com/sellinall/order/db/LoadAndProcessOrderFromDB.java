@@ -19,10 +19,12 @@ public class LoadAndProcessOrderFromDB implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
+		String orderID = orderMessage.getString("orderID");
+		exchange.setProperty("orderID", orderID);
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
-		searchQuery.put("orderID", orderMessage.getString("orderID"));
+		searchQuery.put("orderID", orderID);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 		searchQuery.put("site.name", orderMessage.getString("site"));
 		Document dbResult = table.find(searchQuery).first();

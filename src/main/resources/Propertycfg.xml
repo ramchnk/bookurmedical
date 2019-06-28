@@ -51,5 +51,6 @@
 		<property name="SIAOrderPageURL" value="${SIAOrderPageURL}" />
 		<property name="SIAAccountingChannels" value="${SIAAccountingChannels}" />
 		<property name="SIAfeeManagementServerURL" value="${SIAfeeManagementServerURL}" />
+		<property name="SIAInventoryManagementServerURL" value="${SIAInventoryManagementServerURL}" />
 		</bean>
 </beans>

@@ -31,6 +31,7 @@
 	<bean id="processOrderStatus" class="com.sellinall.order.bl.ProcessOrderStatus" />
 	<bean id="updateCombineOrderStatus" class="com.sellinall.order.db.UpdateCombineOrderStatus" />
 	<bean id="updateOrderDBQuery" class="com.sellinall.order.db.UpdateOrderDBQuery" />
+	<bean id="updateSoldInventoryDetails" class="com.sellinall.order.db.UpdateSoldInventoryDetails" />
 	<bean id="updateInventoryDBQuery" class="com.sellinall.order.db.UpdateInventoryDBQuery" />
 	<bean id="loadUserDataByNicknameId" class="com.sellinall.order.db.LoadUserDataByNicknameId" />
 	<bean id="loadAccountData" class="com.sellinall.order.db.LoadAccountData" />
@@ -41,6 +42,9 @@
 	<bean id="aggregatorStrategy" class="com.sellinall.order.splitter.AggregatorStrategy" />
 	<bean id="constructOrderNotification" class="com.sellinall.order.bl.ConstructOrderNotification" />
 	<bean id="setMultipleUnitQuantity" class="com.sellinall.order.bl.SetMultipleUnitQuantity" />
+	<bean id="initSyncBundleSKUs" class="com.sellinall.order.bl.InitSyncBundleSKUs" />
+	<bean id="buildInventoryAPIHeader" class="com.sellinall.order.request.BuildInventoryAPIHeader" />
+	<bean id="processInventoryUpdateResponse" class="com.sellinall.order.response.ProcessInventoryUpdateResponse" />
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -359,6 +363,11 @@
 					</simple>
 					<choice>
 						<when>
+							<simple>${exchangeProperty.syncBundleSKUs} == true and ${exchangeProperty.customSKU} != null
+							</simple>
+							<to uri="direct:syncBundleSKUs" />
+						</when>
+						<when>
 							<simple>${exchangeProperty.syncMultipleUnitSKUs} == true and
 								${exchangeProperty.customSKU} != null
 							</simple>
@@ -395,6 +404,43 @@
 					</choice>
 				</when>
 			</when>
+		</route>
+
+		<route id="syncBundleSKUs">
+			<from uri="direct:syncBundleSKUs" />
+			<process ref="initSyncBundleSKUs" />
+			<when>
+				<simple>${exchangeProperty.isEligibleToProcess} == true</simple>
+				<to uri="direct:updateInventoryStock" />
+				<process ref="updateSoldInventoryDetails" />
+			</when>
+		</route>
+
+		<route id="updateInventoryStock">
+			<from uri="direct:updateInventoryStock" />
+			<to uri="freemarker:classpath:templates/updateInventory.ftl?contentCache=true" />
+			<choice>
+				<when>
+					<simple>${exchangeProperty.isOutOfStock} == true</simple>
+					<setProperty propertyName="apiName">
+						<constant>quantity</constant>
+					</setProperty>
+				</when>
+				<otherwise>
+					<setProperty propertyName="apiName">
+						<constant>quantityDiff</constant>
+					</setProperty>
+				</otherwise>
+			</choice>
+			<process ref="buildInventoryAPIHeader" />
+			<setHeader headerName="CamelHttpMethod">
+				<constant>PUT</constant>
+			</setHeader>
+			<recipientList>
+				<simple>${exchangeProperty.inventoryUrl}?throwExceptionOnFailure=false
+				</simple>
+			</recipientList>
+			<process ref="processInventoryUpdateResponse" />
 		</route>
 
 		<route id="updateSKUQuantity">

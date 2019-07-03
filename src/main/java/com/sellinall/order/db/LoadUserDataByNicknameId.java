@@ -121,6 +121,18 @@ public class LoadUserDataByNicknameId implements Processor {
 		if (queryResult.containsField("syncMultipleUnitSKUs")) {
 			syncMultipleUnitSKUs = (Boolean) queryResult.get("syncMultipleUnitSKUs");
 		}
+		boolean syncBundleSKUs = false;
+		if (queryResult.containsField("syncBundleSKUs")) {
+			syncBundleSKUs = queryResult.getBoolean("syncBundleSKUs");
+			// Default delimiter
+			String bundleDelimiter = "+";
+			if (queryResult.containsField("bundleDelimiter")) {
+				bundleDelimiter = queryResult.getString("bundleDelimiter");
+			}
+			exchange.setProperty("bundleDelimiter", bundleDelimiter);
+
+		}
+		exchange.setProperty("syncBundleSKUs", syncBundleSKUs);
 		exchange.setProperty("syncMultipleUnitSKUs", syncMultipleUnitSKUs);
 		if(queryResult.containsField("showOnlyManagedOrders")) {
 			exchange.setProperty("showOnlyManagedOrders", queryResult.getBoolean("showOnlyManagedOrders"));
@@ -141,6 +153,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		projection.put("syncMultipleUnitSKUs", 1);
 		projection.put("syncInventory", 1);
 		projection.put("showOnlyManagedOrders", 1);
+		projection.put("syncBundleSKUs", 1);
 
 		String[] channels = accountingChannel.split("-");
 		for (String channel : channels) {

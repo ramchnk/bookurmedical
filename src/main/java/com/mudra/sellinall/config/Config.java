@@ -23,6 +23,15 @@ public class Config {
 	private String Ragasiyam;
 	private String SIAAccountingChannels;
 	private String SIAfeeManagementServerURL;
+	private String SIAInventoryManagementServerURL;
+
+	public String getSIAInventoryManagementServerURL() {
+		return SIAInventoryManagementServerURL;
+	}
+
+	public void setSIAInventoryManagementServerURL(String sIAInventoryManagementServerURL) {
+		SIAInventoryManagementServerURL = sIAInventoryManagementServerURL;
+	}
 
 	public String getRagasiyam() {
 		return Ragasiyam;

@@ -254,6 +254,17 @@
 		<property name="automaticRecoveryEnabled" value="true" />
 	</bean>
 
+	<bean id="bukalapakTxConnectionFactory"
+		class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${bukalapakmq.host}" />
+		<property name="port" value="${bukalapakmq.tx.port}" />
+		<property name="username" value="${bukalapakmq.username}" />
+		<property name="password" value="${bukalapakmq.password}" />
+		<property name="virtualHost" value="${bukalapakmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0" />
+		<property name="automaticRecoveryEnabled" value="true" />
+	</bean>
+
 	<!-- batchprocessor -->
 	<bean id="batchProcessorTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${batchProcessor.host}" />
@@ -801,6 +812,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{99SMEmq.host}}:{{99SMEmq.tx.port}}/99SmeListingExchange?connectionFactory=#99SMETxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.bukalapak} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>bukalapakListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{bukalapakmq.host}}:{{bukalapakmq.tx.port}}/bukalapakListingExchange?connectionFactory=#bukalapakTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 

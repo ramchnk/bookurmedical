@@ -60,18 +60,19 @@ public class InitSyncBundleSKUs implements Processor {
 		Map<String, Integer> baseSKUWithSoldQuantityDetailsObject = new HashMap<String, Integer>();
 		for (String customSKU : customSKUList) {
 			String baseCustomSKU = customSKU;
+			int quantityToUpdate = quantity;
 			if (customSKU.matches(".+(x|X)[1-9]+[0-9]*$")) {
 				String splitCustomSKU[] = customSKU.split("[x|X]");
-				quantity = quantity * Integer.parseInt(splitCustomSKU[splitCustomSKU.length - 1]);
+				quantityToUpdate = quantity * Integer.parseInt(splitCustomSKU[splitCustomSKU.length - 1]);
 				baseCustomSKU = customSKU.substring(0, customSKU.toUpperCase().lastIndexOf("X"));
 			}
 			if (isCancelledOrder) {
 				if (isOutOfStock) {
-					quantity = 0;
+					quantityToUpdate = 0;
 				}
-				baseSKUWithSoldQuantityDetailsObject.put(baseCustomSKU, quantity);
+				baseSKUWithSoldQuantityDetailsObject.put(baseCustomSKU, quantityToUpdate);
 			} else if (isNewOrder) {
-				baseSKUWithSoldQuantityDetailsObject.put(baseCustomSKU, -quantity);
+				baseSKUWithSoldQuantityDetailsObject.put(baseCustomSKU, -quantityToUpdate);
 			}
 		}
 		return baseSKUWithSoldQuantityDetailsObject;

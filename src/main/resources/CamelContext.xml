@@ -265,6 +265,17 @@
 		<property name="automaticRecoveryEnabled" value="true" />
 	</bean>
 
+	<bean id="tokopediaTxConnectionFactory"
+		class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${tokopediamq.host}" />
+		<property name="port" value="${tokopediamq.tx.port}" />
+		<property name="username" value="${tokopediamq.username}" />
+		<property name="password" value="${tokopediamq.password}" />
+		<property name="virtualHost" value="${tokopediamq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0" />
+		<property name="automaticRecoveryEnabled" value="true" />
+	</bean>
+
 	<!-- batchprocessor -->
 	<bean id="batchProcessorTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${batchProcessor.host}" />
@@ -822,6 +833,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{bukalapakmq.host}}:{{bukalapakmq.tx.port}}/bukalapakListingExchange?connectionFactory=#bukalapakTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.tokopedia} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>tokopediaListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{tokopediamq.host}}:{{tokopediamq.tx.port}}/tokopediaListingExchange?connectionFactory=#tokopediaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 

@@ -414,6 +414,9 @@ public class UpdateOrderDBQuery implements Processor {
 						if (site.containsField("categoryID")) {
 							orderItem.put("categoryID", site.get("categoryID"));
 						}
+						if (site.containsField("hsnCode")) {
+							orderItem.put("hsnCode", site.get("hsnCode"));
+						}
 						if (siteName.equals("eBay") && !addOrderItemLocation) {
 							addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);
 						}

@@ -70,6 +70,9 @@ public class ProcessSKUDBQuery implements Processor {
 			inventoryValues.put("customSKU", customSKU);
 			exchange.setProperty("customSKU", customSKU);
 		}
+		if (inventory.has("hsnCode")) {
+			inventoryValues.put("hsnCode", inventory.getString("hsnCode"));
+		}
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		JSONArray siteSpecificList = inventory.getJSONArray(siteName);
 		BasicDBObject site = null;
@@ -99,9 +102,6 @@ public class ProcessSKUDBQuery implements Processor {
 					}
 					if (parentSite.containsField("categoryID")) {
 						site.put("categoryID", parentSite.get("categoryID"));
-					}
-					if (parentSite.containsField("hsnCode")) {
-						site.put("hsnCode", parentSite.get("hsnCode"));
 					}
 					break;
 				}

@@ -402,6 +402,9 @@ public class UpdateOrderDBQuery implements Processor {
 						if (inventoryValue.containsField("customSKU")) {
 							orderItem.put("customSKU", inventoryValue.get("customSKU"));
 						}
+						if (inventoryValue.containsField("hsnCode")) {
+							orderItem.put("hsnCode", inventoryValue.get("hsnCode"));
+						}
 						BasicDBObject site = (BasicDBObject) inventoryValue.get(siteName);
 						if (site.containsKey("isOption")) {
 							orderItem.put("isOption", site.getBoolean("isOption"));
@@ -413,9 +416,6 @@ public class UpdateOrderDBQuery implements Processor {
 						}
 						if (site.containsField("categoryID")) {
 							orderItem.put("categoryID", site.get("categoryID"));
-						}
-						if (site.containsField("hsnCode")) {
-							orderItem.put("hsnCode", site.get("hsnCode"));
 						}
 						if (siteName.equals("eBay") && !addOrderItemLocation) {
 							addOrderItemLocation = getItemLocation(inventoryValue, siteName, orderRecord);

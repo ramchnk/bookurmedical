@@ -154,6 +154,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		projection.put("syncInventory", 1);
 		projection.put("showOnlyManagedOrders", 1);
 		projection.put("syncBundleSKUs", 1);
+		projection.put("bundleDelimiter", 1);
 
 		String[] channels = accountingChannel.split("-");
 		for (String channel : channels) {

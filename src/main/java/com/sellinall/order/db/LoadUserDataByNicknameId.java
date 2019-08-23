@@ -69,19 +69,19 @@ public class LoadUserDataByNicknameId implements Processor {
 			}
 		}
 		exchange.setProperty("isInforWMS", false);
-		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {
-			BasicDBList wms = (BasicDBList) userSiteSpecificObject.get("wms");
-			// Only one infor will be present
-			if (wms.contains("infor-1")) {
-				exchange.setProperty("isInforWMS", true);
-			}
-		}
 		exchange.setProperty("isSatsacoWMS", false);
 		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {
-			BasicDBList wms = (BasicDBList) userSiteSpecificObject.get("wms");
-			// Only one satsaco will be present
-			if (wms.contains("satsaco-1")) {
-				exchange.setProperty("isSatsacoWMS", true);
+			BasicDBList wmsList = (BasicDBList) userSiteSpecificObject.get("wms");
+			for (int i = 0; i < wmsList.size(); i++) {
+				String wms = wmsList.get(i).toString();
+				if (wms.startsWith("satsaco")) {
+					exchange.setProperty("isSatsacoWMS", true);
+					break;
+				}
+				if (wms.startsWith("infor")) {
+					exchange.setProperty("isInforWMS", true);
+					break;
+				}
 			}
 		}
 		if (exchange.getProperty("isInforWMS", boolean.class)

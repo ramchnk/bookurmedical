@@ -45,6 +45,8 @@
 	<bean id="initSyncBundleSKUs" class="com.sellinall.order.bl.InitSyncBundleSKUs" />
 	<bean id="buildInventoryAPIHeader" class="com.sellinall.order.request.BuildInventoryAPIHeader" />
 	<bean id="processInventoryUpdateResponse" class="com.sellinall.order.response.ProcessInventoryUpdateResponse" />
+	<bean id="getRuleList" class="com.sellinall.order.db.GetRuleList"/>
+	<bean id="processRuleList" class="com.sellinall.order.db.ProcessRuleList"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -355,6 +357,10 @@
 			       <stop />
 			</when>
 			<when>
+				<simple>${exchangeProperty.processRule} == true </simple>
+				<to uri="direct:processRuleRoute" />
+			</when>
+			<when>
 				<simple>${exchangeProperty.hasCombinedOrderIds} == true</simple>
 				<to uri="direct:updateCombineOrderIds" />
 			</when>
@@ -364,6 +370,14 @@
 				<simple>${exchangeProperty.isOrderUpdatedByShippingCarrier} == true</simple>
 				<to uri="direct:publishToMQForUpdateOrder" />
 			</when>
+		</route>
+
+		<route id="processRule">
+			<from uri="direct:processRuleRoute" />
+			<process ref="getRuleList" />
+			<to uri="mongodb:mongoInventoryBean?database={{mongo.inventory.database}}&amp;collection=ruleOrder&amp;operation=findAll"
+				pattern="InOut" />
+				<process ref="processRuleList" />
 		</route>
 
 		<route id="updateCombineOrderIds">

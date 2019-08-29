@@ -104,6 +104,12 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isManaged", isManaged);
 
+		Boolean processRule = false;
+		if (userSiteSpecificObject.containsField("processRule")) {
+			processRule = userSiteSpecificObject.getBoolean("processRule");
+		}
+		exchange.setProperty("processRule", processRule);
+
 		boolean isTransactionFee = false;
 		if (userSiteSpecificObject.containsField("isTransactionFee")) {
 			isTransactionFee = userSiteSpecificObject.getBoolean("isTransactionFee");

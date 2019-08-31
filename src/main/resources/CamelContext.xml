@@ -357,8 +357,7 @@
 			       <stop />
 			</when>
 			<when>
-				<simple>${exchangeProperty.processRule} == true and
-					${exchangeProperty.isNewOrder} == true</simple>
+				<simple>${exchangeProperty.processRule} == true</simple>
 				<to uri="direct:processRuleRoute" />
 			</when>
 			<when>

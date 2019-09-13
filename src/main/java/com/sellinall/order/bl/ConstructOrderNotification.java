@@ -77,6 +77,9 @@ public class ConstructOrderNotification implements Processor {
 			if (exchange.getProperties().containsKey("showOnlyManagedOrders")) {
 				message.put("showOnlyManagedOrders", exchange.getProperty("showOnlyManagedOrders", Boolean.class));
 			}
+			if (orderRecord.has("paymentStatus")) {
+				message.put("paymentStatus", orderRecord.get("paymentStatus"));
+			}
 			message.put("orderNumber", orderRecord.get("orderID"));
 			outBody.put("accountNumber", orderRecord.get("accountNumber"));
 			outBody.put("merchantID", exchange.getProperty("merchantID"));

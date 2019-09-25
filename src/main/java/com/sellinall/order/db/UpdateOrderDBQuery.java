@@ -369,7 +369,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "channelDiscountAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "voucherAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "documents", orderMessage);
-		fillOrderTime(notificationOrderActionStatus, orderRecord);
+		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -507,7 +507,7 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
-	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord) {
+	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord, BasicDBObject orderMessage) {
 		// TODO: need to get more insights on how these dates can be used, so as
 		// of now ignoring other state transition timestamps
 		if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
@@ -528,8 +528,15 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED_TO_DELIVERED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERED)) {
-			orderRecord.put("timeDelivered", DateUtil.getSIADateFormat());
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_DELIVERED)) {
+			//for offline orders update timeDelivered by user.
+			if (orderMessage.containsField("timeDelivered")) {
+				orderRecord.put("timeDelivered", orderMessage.get("timeDelivered"));
+			} else {
+				orderRecord.put("timeDelivered", DateUtil.getSIADateFormat());
+			}
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)

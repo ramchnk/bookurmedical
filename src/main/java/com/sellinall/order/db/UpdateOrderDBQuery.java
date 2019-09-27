@@ -523,7 +523,12 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_DISPATCHED)) {
-			orderRecord.put("timeDispatched", DateUtil.getSIADateFormat());
+			// for offline orders update timeDispatched by user.
+			if (orderMessage.containsField("timeDispatched")) {
+				orderRecord.put("timeDispatched", orderMessage.get("timeDispatched"));
+			} else {
+				orderRecord.put("timeDispatched", DateUtil.getSIADateFormat());
+			}
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_DELIVERED)

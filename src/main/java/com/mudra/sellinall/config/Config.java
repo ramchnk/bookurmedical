@@ -24,6 +24,7 @@ public class Config {
 	private String SIAAccountingChannels;
 	private String SIAfeeManagementServerURL;
 	private String SIAInventoryManagementServerURL;
+	private String warehouses;
 
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
@@ -172,6 +173,14 @@ public class Config {
 
 	public void setOrderCollectionDBName(String orderCollectionDBName) {
 		OrderCollectionDBName = orderCollectionDBName;
+	}
+
+	public String getWarehouses() {
+		return warehouses;
+	}
+
+	public void setWarehouses(String warehouses) {
+		this.warehouses = warehouses;
 	}
 
 }

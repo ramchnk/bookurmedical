@@ -399,7 +399,9 @@
 					</simple>
 					<choice>
 						<when>
-							<simple>${exchangeProperty.syncBundleSKUs} == true and ${exchangeProperty.customSKU} != null
+							<simple>${exchangeProperty.isEligibleToProceed} == true and
+								${exchangeProperty.syncBundleSKUs} == true and
+								${exchangeProperty.customSKU} != null
 							</simple>
 							<to uri="direct:syncBundleSKUs" />
 						</when>

@@ -1,5 +1,8 @@
 <#assign baseSKUWithSoldQuantityDetailsObject = exchange.properties.baseSKUWithSoldQuantityDetailsObject>
 {
+  <#if exchange.properties.warehouseName?? && exchange.properties.warehouseName?has_content>
+  "warehouseName" : ${exchange.properties.warehouseName?js_string},
+  </#if>
   "data": [
    
       <#list baseSKUWithSoldQuantityDetailsObject?keys as key>

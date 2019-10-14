@@ -3,7 +3,7 @@
  */
 package com.sellinall.order.db;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.camel.Exchange;
@@ -70,10 +70,34 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isInforWMS", false);
 		exchange.setProperty("isSatsacoWMS", false);
+
+		//Handle warehousebased stock update
+		boolean isEligibleToProceed = true;
+		boolean enableWarehouseBasedStock = false;
+		String[] warehouses = Config.getConfig().getWarehouses().split("-");
+		List<String> siaLinkedWarehouseList = new LinkedList<>();
+		for (String warehouse : warehouses) {
+			if (queryResult.containsField(warehouse)) {
+				siaLinkedWarehouseList.add(warehouse);
+			}
+		}
+		if (queryResult.containsField("enableWarehouseBasedStock")
+				&& queryResult.getBoolean("enableWarehouseBasedStock")) {
+			enableWarehouseBasedStock = true;
+		}
+
 		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {
 			BasicDBList wmsList = (BasicDBList) userSiteSpecificObject.get("wms");
 			for (int i = 0; i < wmsList.size(); i++) {
 				String wms = wmsList.get(i).toString();
+				String warehouseName = wms.split("-")[0];
+				if (enableWarehouseBasedStock) {
+					if (siaLinkedWarehouseList.contains(warehouseName)) {
+						exchange.setProperty("warehouseName", warehouseName);
+					} else {
+						isEligibleToProceed = false;
+					}
+				}
 				if (wms.startsWith("satsaco")) {
 					exchange.setProperty("isSatsacoWMS", true);
 					break;
@@ -83,7 +107,10 @@ public class LoadUserDataByNicknameId implements Processor {
 					break;
 				}
 			}
+		} else if (enableWarehouseBasedStock) {
+			isEligibleToProceed = false;
 		}
+		exchange.setProperty("isEligibleToProceed", isEligibleToProceed);
 		if (exchange.getProperty("isInforWMS", boolean.class)
 				|| exchange.getProperty("isNinjaVanShippingCarrier", boolean.class)) {
 			exchange.setProperty("isPartnerLogistics", true);
@@ -161,10 +188,15 @@ public class LoadUserDataByNicknameId implements Processor {
 		projection.put("showOnlyManagedOrders", 1);
 		projection.put("syncBundleSKUs", 1);
 		projection.put("bundleDelimiter", 1);
+		projection.put("enableWarehouseBasedStock", 1);
 
 		String[] channels = accountingChannel.split("-");
 		for (String channel : channels) {
 			projection.put(channel, 1);
+		}
+		String[] warehouses = Config.getConfig().getWarehouses().split("-");
+		for (String warehouse : warehouses) {
+			projection.put(warehouse, 1);
 		}
 		MongoCollection<Document> table = DbUtilities.getDBCollection("accounts");
 		Document accountDocument = table.find(searchQuery).projection(projection).first();

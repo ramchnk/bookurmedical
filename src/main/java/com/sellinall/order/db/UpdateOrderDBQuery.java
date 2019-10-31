@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.bson.BsonObjectId;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
@@ -457,7 +458,13 @@ public class UpdateOrderDBQuery implements Processor {
 				if (processOrdersWithSKUOnly) {
 					// For managed accounts, add orderItem to list, only it has
 					// SKU
-					if (orderHasInventory) {
+					JSONObject orderDBObject = new JSONObject(exchange.getProperty("orderDBObject").toString());
+					boolean eligebleToInsertItem = false;
+					if (orderItem.containsField("orderItemID")) {
+						eligebleToInsertItem = isEligebleToInsertItem(orderDBObject.getJSONArray("orderItems"),
+								orderItem.getString("orderItemID"));
+					}
+					if (orderHasInventory || eligebleToInsertItem) {
 						newOrderItems.add(orderItem);
 					}
 				} else {
@@ -466,6 +473,16 @@ public class UpdateOrderDBQuery implements Processor {
 			}
 			orderRecord.put("orderItems", newOrderItems);
 		}
+	}
+
+	private boolean isEligebleToInsertItem(JSONArray orderItems, String orderItemID) throws JSONException {
+		for (int i = 0; i < orderItems.length(); i++) {
+			if (orderItems.getJSONObject(i).has("orderItemID")
+					&& orderItems.getJSONObject(i).getString("orderItemID").equals(orderItemID)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean processOrdersWithtSKUOnly(Exchange exchange) {

@@ -381,6 +381,16 @@ public class UpdateOrderDBQuery implements Processor {
 		boolean addOrderItemLocation = false;
 		boolean processOrdersWithSKUOnly = processOrdersWithtSKUOnly(exchange);
 		List<BasicDBObject> newOrderItems = new ArrayList<BasicDBObject>();
+		List<String> orderItemIDListFromDB = new ArrayList<String>();
+		if ((Boolean) exchange.getProperty("hasOrderInDB")) {
+			JSONObject orderDBObject = new JSONObject(exchange.getProperty("orderDBObject").toString());
+			JSONArray items = orderDBObject.getJSONArray("orderItems");
+			for (int i = 0; i < items.length(); i++) {
+				if (items.getJSONObject(i).has("orderItemID")) {
+					orderItemIDListFromDB.add(items.getJSONObject(i).getString("orderItemID"));
+				}
+			}
+		}
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
@@ -458,13 +468,7 @@ public class UpdateOrderDBQuery implements Processor {
 				if (processOrdersWithSKUOnly) {
 					// For managed accounts, add orderItem to list, only it has
 					// SKU
-					JSONObject orderDBObject = new JSONObject(exchange.getProperty("orderDBObject").toString());
-					boolean eligebleToInsertItem = false;
-					if (orderItem.containsField("orderItemID")) {
-						eligebleToInsertItem = isEligebleToInsertItem(orderDBObject.getJSONArray("orderItems"),
-								orderItem.getString("orderItemID"));
-					}
-					if (orderHasInventory || eligebleToInsertItem) {
+					if (orderHasInventory || orderItemIDListFromDB.contains(orderItem.getString("orderItemID"))) {
 						newOrderItems.add(orderItem);
 					}
 				} else {
@@ -473,16 +477,6 @@ public class UpdateOrderDBQuery implements Processor {
 			}
 			orderRecord.put("orderItems", newOrderItems);
 		}
-	}
-
-	private boolean isEligebleToInsertItem(JSONArray orderItems, String orderItemID) throws JSONException {
-		for (int i = 0; i < orderItems.length(); i++) {
-			if (orderItems.getJSONObject(i).has("orderItemID")
-					&& orderItems.getJSONObject(i).getString("orderItemID").equals(orderItemID)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private boolean processOrdersWithtSKUOnly(Exchange exchange) {

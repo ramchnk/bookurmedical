@@ -381,6 +381,7 @@ public class UpdateOrderDBQuery implements Processor {
 		boolean addOrderItemLocation = false;
 		boolean processOrdersWithSKUOnly = processOrdersWithtSKUOnly(exchange);
 		List<BasicDBObject> newOrderItems = new ArrayList<BasicDBObject>();
+		List<BasicDBObject> freeGiftItems = new ArrayList<BasicDBObject>();
 		List<String> orderItemIDListFromDB = new ArrayList<String>();
 		if ((Boolean) exchange.getProperty("hasOrderInDB")) {
 			JSONObject orderDBObject = new JSONObject(exchange.getProperty("orderDBObject").toString());
@@ -388,6 +389,9 @@ public class UpdateOrderDBQuery implements Processor {
 			for (int i = 0; i < items.length(); i++) {
 				if (items.getJSONObject(i).has("orderItemID")) {
 					orderItemIDListFromDB.add(items.getJSONObject(i).getString("orderItemID"));
+				}
+				if(items.getJSONObject(i).has("isFreeGift") && items.getJSONObject(i).getBoolean("isFreeGift")) {
+					freeGiftItems.add(BasicDBObject.parse(items.getJSONObject(i).toString()));
 				}
 			}
 		}
@@ -474,6 +478,9 @@ public class UpdateOrderDBQuery implements Processor {
 				} else {
 					newOrderItems.add(orderItem);
 				}
+			}
+			if(freeGiftItems.size()>0) {
+				newOrderItems.addAll(freeGiftItems);
 			}
 			orderRecord.put("orderItems", newOrderItems);
 		}

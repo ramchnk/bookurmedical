@@ -39,33 +39,48 @@ public class RuleEngine {
 		String currencyCode = orderAmount.getString("currencyCode");
 		for (BasicDBObject freeGift : freeGiftInevntoryListFromDb) {
 			String SKU = freeGift.getString("SKU");
-			for (BasicDBObject object : freeGiftOrderItems) {
-				if (object.getString("SKU").equals(SKU)) {
-					int newQuantity = object.getInt("quantity") + skuAndQuantityMap.get(SKU);
-					object.put("quantity", newQuantity);
-					return;
+			int availableFreeGiftQty = freeGift.getInt("noOfItem");
+			int orderedFreeGiftQty = skuAndQuantityMap.get(SKU);
+			if (availableFreeGiftQty >= orderedFreeGiftQty) {
+				decrementQuantityForGiftItem(order.getString("accountNumber"), SKU, orderedFreeGiftQty);
+				for (BasicDBObject object : freeGiftOrderItems) {
+					if (object.getString("SKU").equals(SKU)) {
+						int newQuantity = object.getInt("quantity") + orderedFreeGiftQty;
+						object.put("quantity", newQuantity);
+						return;
+					}
 				}
+				BasicDBObject freeGiftOrderItem = new BasicDBObject();
+				freeGiftOrderItem.put("SKU", SKU);
+				if (freeGift.containsField("customSKU") && freeGift.get("customSKU") != null) {
+					freeGiftOrderItem.put("customSKU", freeGift.getString("customSKU"));
+				}
+				if (freeGift.containsField("itemTitle") && freeGift.get("itemTitle") != null) {
+					freeGiftOrderItem.put("itemTitle", freeGift.getString("itemTitle"));
+				}
+				BasicDBObject itemAmountObject = new BasicDBObject();
+				itemAmountObject.put("amount", 0);
+				itemAmountObject.put("currencyCode", currencyCode);
+				freeGiftOrderItem.put("itemAmount", itemAmountObject);
+				BasicDBObject itemSoldAmountObject = new BasicDBObject();
+				itemSoldAmountObject.put("amount", 0);
+				itemSoldAmountObject.put("currencyCode", currencyCode);
+				freeGiftOrderItem.put("itemSoldAmount", itemSoldAmountObject);
+				freeGiftOrderItem.put("quantity", orderedFreeGiftQty);
+				freeGiftOrderItem.put("isFreeGift", true);
+				freeGiftOrderItems.add(freeGiftOrderItem);
 			}
-			BasicDBObject freeGiftOrderItem = new BasicDBObject();
-			freeGiftOrderItem.put("SKU", SKU);
-			if (freeGift.containsField("customSKU") && freeGift.get("customSKU") != null) {
-				freeGiftOrderItem.put("customSKU", freeGift.getString("customSKU"));
-			}
-			if (freeGift.containsField("itemTitle") && freeGift.get("itemTitle") != null) {
-				freeGiftOrderItem.put("itemTitle", freeGift.getString("itemTitle"));
-			}
-			BasicDBObject itemAmountObject = new BasicDBObject();
-			itemAmountObject.put("amount", 0);
-			itemAmountObject.put("currencyCode", currencyCode);
-			freeGiftOrderItem.put("itemAmount", itemAmountObject);
-			BasicDBObject itemSoldAmountObject = new BasicDBObject();
-			itemSoldAmountObject.put("amount", 0);
-			itemSoldAmountObject.put("currencyCode", currencyCode);
-			freeGiftOrderItem.put("itemSoldAmount", itemSoldAmountObject);
-			freeGiftOrderItem.put("quantity", skuAndQuantityMap.get(SKU));
-			freeGiftOrderItem.put("isFreeGift", true);
-			freeGiftOrderItems.add(freeGiftOrderItem);
 		}
+	}
+
+	private static void decrementQuantityForGiftItem(String accountNumber, String SKU, int freeGiftQuantity) {
+		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");
+		BasicDBObject searchQuery = new BasicDBObject();
+		searchQuery.put("accountNumber", accountNumber);
+		searchQuery.put("SKU", SKU);
+		BasicDBObject update = new BasicDBObject();
+		update.put("$inc", new BasicDBObject("noOfItem",-freeGiftQuantity));
+		table.updateOne(searchQuery, update);
 	}
 
 	private static List<BasicDBObject> getFreeGiftInvetnoryFromDB(List<BasicDBObject> itemList, String accountNumber,
@@ -85,6 +100,7 @@ public class RuleEngine {
 		projection.put("itemTitle", 1);
 		projection.put("customSKU", 1);
 		projection.put("SKU", 1);
+		projection.put("noOfItem", 1);
 		List<Document> inventoryList = table.find(searchQuery).projection(projection).into(new ArrayList<Document>());
 		List<BasicDBObject> freeGiftInventoryList = new ArrayList<BasicDBObject>();
 		for (Document inventory : inventoryList) {

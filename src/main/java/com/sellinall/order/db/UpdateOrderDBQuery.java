@@ -400,6 +400,11 @@ public class UpdateOrderDBQuery implements Processor {
 			for (int i = 0; i < orderItems.size(); i++) {
 				BasicDBObject orderItem = orderItems.get(i);
 				boolean orderHasInventory = false;
+				if(orderItem.containsField("isFreeGift") && orderItem.getBoolean("isFreeGift")) {
+					//Free gift only set and handled in PNQ.so can be removed if incoming message has freeGift items.
+					//From DB existing free gift items will be retained.
+					continue;
+				}
 				if (orderItem.containsField("SKU")) {
 					String SKU = orderItem.getString("SKU");
 					BasicDBObject inventoryValue = inventoryDetailsMap.get(SKU);
@@ -480,6 +485,7 @@ public class UpdateOrderDBQuery implements Processor {
 				}
 			}
 			if(freeGiftItems.size()>0) {
+				//Retain freegift item from DB.
 				newOrderItems.addAll(freeGiftItems);
 			}
 			orderRecord.put("orderItems", newOrderItems);

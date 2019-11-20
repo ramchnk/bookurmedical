@@ -63,8 +63,12 @@ public class ConstructOrderNotification implements Processor {
 			message.put("items", items);
 			if (orderRecord.has("buyerDetails")) {
 				JSONObject buyerDetails = orderRecord.getJSONObject("buyerDetails");
+				// for shopee only having buyerID
 				if (buyerDetails.has("buyerID")) {
 					message.put("buyerId", buyerDetails.getString("buyerID"));
+				} else if (buyerDetails.has("name")) {
+					// for rest of all channels has name only.
+					message.put("buyerId", buyerDetails.getString("name"));
 				}
 			}
 			message.put("orderPageUrl", orderPageUrl);

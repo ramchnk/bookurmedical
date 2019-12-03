@@ -545,15 +545,25 @@
 
 		<route id="publishOrderNotificationToMQ">
 			<from uri="direct:publishOrderNotificationToMQ" />
-			<when>
-				<simple>${exchangeProperty.hasOrderInDB} == false</simple>
-				<setHeader headerName="userMessageName">
-					<constant>ORDER_CREATED</constant>
-				</setHeader>
-				<process ref="constructOrderNotification" />
-				<to uri="direct:notificationToUser" />
-				<to uri="direct:publishMessageToBuyer" />
-			</when>
+			<choice>
+				<when>
+					<simple>${exchangeProperty.hasOrderInDB} == false</simple>
+					<setHeader headerName="userMessageName">
+						<constant>ORDER_CREATED</constant>
+					</setHeader>
+					<process ref="constructOrderNotification" />
+					<to uri="direct:notificationToUser" />
+					<to uri="direct:publishMessageToBuyer" />
+				</when>
+				<when>
+					<simple>${exchangeProperty.isNotifyOrderUpdates} == true</simple>
+					<setHeader headerName="userMessageName">
+						<simple>${exchangeProperty.userMessageName}</simple>
+					</setHeader>
+					<process ref="constructOrderNotification" />
+					<to uri="direct:notificationToUser" />
+				</when>
+			</choice>
 			<setHeader headerName="rabbitmq.DELIVERY_MODE">
 				<constant>2</constant>
 			</setHeader>

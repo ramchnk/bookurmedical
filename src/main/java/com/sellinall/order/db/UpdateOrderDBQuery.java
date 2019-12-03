@@ -35,6 +35,8 @@ import com.sellinall.util.DateUtil;
 import com.sellinall.util.HttpsURLConnectionUtil;
 import com.sellinall.util.InvoiceSequence;
 import com.sellinall.util.enums.OrderUpdateStatus;
+import com.sellinall.util.enums.SIAOrderStatus;
+import com.sellinall.util.enums.UserMessageName;
 
 /**
  * @author Mallikarjun
@@ -98,6 +100,15 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("isTransactionFee", exchange.getProperty("isTransactionFee", boolean.class));
 		}
 		fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
+		if (orderRecord.containsField("isNotifyOrderUpdates")) {
+			exchange.setProperty("isNotifyOrderUpdates", orderRecord.getBoolean("isNotifyOrderUpdates"));
+			orderRecord.remove("isNotifyOrderUpdates");
+			if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.CANCELLED.toString())) {
+				exchange.setProperty("userMessageName", UserMessageName.ORDER_CANCELLED.toString());
+			} else if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.DELIVERED.toString())) {
+				exchange.setProperty("userMessageName", UserMessageName.ORDER_DELIVERED.toString());
+			}
+		}
 		fillOrderAmountInUSD(orderRecord);
 		List<String> notificationIDList = new ArrayList<String>();
 		if (orderMessage.containsKey("notificationID")) {
@@ -270,6 +281,15 @@ public class UpdateOrderDBQuery implements Processor {
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
 			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
+			if (orderRecord.containsField("isNotifyOrderUpdates")) {
+				exchange.setProperty("isNotifyOrderUpdates", orderRecord.getBoolean("isNotifyOrderUpdates"));
+				orderRecord.remove("isNotifyOrderUpdates");
+				if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.CANCELLED.toString())) {
+					exchange.setProperty("userMessageName", UserMessageName.ORDER_CANCELLED.toString());
+				} else if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.DELIVERED.toString())) {
+					exchange.setProperty("userMessageName", UserMessageName.ORDER_DELIVERED.toString());
+				}
+			}
 			fillAdditionDetails(exchange, orderRecord, siteName);
 			fillOrderAmountInUSD(orderRecord);
 		}
@@ -566,6 +586,7 @@ public class UpdateOrderDBQuery implements Processor {
 			} else {
 				orderRecord.put("timeDelivered", DateUtil.getSIADateFormat());
 			}
+			orderRecord.put("isNotifyOrderUpdates", true);
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)
@@ -575,6 +596,7 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_CANCELLED)) {
 			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());
+			orderRecord.put("isNotifyOrderUpdates", true);
 		}  else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)

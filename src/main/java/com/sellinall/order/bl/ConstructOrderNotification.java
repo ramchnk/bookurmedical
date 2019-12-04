@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
 import com.mudra.sellinall.config.Config;
+import com.sellinall.util.enums.SIAOrderStatus;
 
 public class ConstructOrderNotification implements Processor {
 
@@ -85,6 +86,11 @@ public class ConstructOrderNotification implements Processor {
 				message.put("paymentStatus", orderRecord.get("paymentStatus"));
 			}
 			message.put("orderNumber", orderRecord.get("orderID"));
+			String orderStatus = orderRecord.getString("orderStatus");
+			if ((orderStatus.equals(SIAOrderStatus.ACCEPTED.toString())
+					|| orderStatus.equals(SIAOrderStatus.PROCESSING.toString())) && orderRecord.has("documents")) {
+				message.put("documents", orderRecord.get("documents"));
+			}
 			outBody.put("accountNumber", orderRecord.get("accountNumber"));
 			outBody.put("merchantID", exchange.getProperty("merchantID"));
 			outBody.put("userMessageName", (String) exchange.getIn().getHeader("userMessageName"));

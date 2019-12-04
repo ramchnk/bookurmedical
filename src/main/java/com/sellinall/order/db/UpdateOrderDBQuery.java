@@ -107,6 +107,9 @@ public class UpdateOrderDBQuery implements Processor {
 				exchange.setProperty("userMessageName", UserMessageName.ORDER_CANCELLED.toString());
 			} else if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.DELIVERED.toString())) {
 				exchange.setProperty("userMessageName", UserMessageName.ORDER_DELIVERED.toString());
+			} else if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
+					|| orderRecord.getString("orderStatus").equals(SIAOrderStatus.PROCESSING.toString())) {
+				exchange.setProperty("userMessageName", UserMessageName.ORDER_ACCEPTED.toString());
 			}
 		}
 		fillOrderAmountInUSD(orderRecord);
@@ -288,6 +291,9 @@ public class UpdateOrderDBQuery implements Processor {
 					exchange.setProperty("userMessageName", UserMessageName.ORDER_CANCELLED.toString());
 				} else if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.DELIVERED.toString())) {
 					exchange.setProperty("userMessageName", UserMessageName.ORDER_DELIVERED.toString());
+				} else if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
+						|| orderRecord.getString("orderStatus").equals(SIAOrderStatus.PROCESSING.toString())) {
+					exchange.setProperty("userMessageName", UserMessageName.ORDER_ACCEPTED.toString());
 				}
 			}
 			fillAdditionDetails(exchange, orderRecord, siteName);
@@ -558,10 +564,12 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_PROCESSING)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_PROCESSING)) {
 			orderRecord.put("timeProcessing", DateUtil.getSIADateFormat());
+			orderRecord.put("isNotifyOrderUpdates", true);
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_ACCEPTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_ACCEPTED)) {
 			orderRecord.put("timeAccepted", DateUtil.getSIADateFormat());
+			orderRecord.put("isNotifyOrderUpdates", true);
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DISPATCHED)

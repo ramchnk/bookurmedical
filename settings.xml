@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.o
 <servers>
 <server>
 <id>ftp-repository</id>
-<username>ram@sellonall.com</username>
+<username>ram</username>
 <password>11111111</password>
 </server>
 </servers>
@@ -17,7 +17,7 @@ xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.o
 <repositories>
 <repository>
 <id>ftp-repository</id>
-<name>com.mudra.sellinall.util</name>
+<name>com.sellinall.util</name>
 <url>ftp://ftp.sellonall.com/repo/</url>
 </repository>
 </repositories>

@@ -121,6 +121,14 @@ public class RuleEngine {
 				if (!processCondition(condition, order, "orderSoldAmount")) {
 					return false;
 				}
+			} else if (condition.getString("leftOperand").equals("paymentStatus")) {
+				if (!processCondition(condition, order, "paymentStatus")) {
+					return false;
+				}
+			} else if (condition.getString("leftOperand").equals("timeOrderCreated")) {
+				if (!processCondition(condition, order, "timeOrderCreated")) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -143,11 +151,19 @@ public class RuleEngine {
 				}
 			}
 			return orderItems.stream().filter(x -> x.getBoolean("isConditionSatisfied")).count() > 0;
-		} else if (data instanceof BasicDBObject) {
+		} else if (data instanceof BasicDBObject && fieldName.equals("orderSoldAmount")) {
 			BasicDBObject order = (BasicDBObject) data;
 			BasicDBObject orderSoldAmountObj = (BasicDBObject) order.get(fieldName);
 			long amount = orderSoldAmountObj.getLong("amount");
 			return processOperands(amount, condition.get("rightOperand"), condition.getString("operator"));
+		} else if (data instanceof BasicDBObject && fieldName.equals("paymentStatus")) {
+			BasicDBObject order = (BasicDBObject) data;
+			return processOperands(order.getString("paymentStatus"), condition.get("rightOperand"),
+					condition.getString("operator"));
+		} else if (data instanceof BasicDBObject && fieldName.equals("timeOrderCreated")) {
+			BasicDBObject order = (BasicDBObject) data;
+			return processOperands(order.getLong("timeOrderCreated"), condition.get("rightOperand"),
+					condition.getString("operator"));
 		}
 		return false;
 	}
@@ -168,6 +184,11 @@ public class RuleEngine {
 			return false;
 		case "LESS_THAN":
 			if (Long.parseLong(leftOperand.toString()) < Long.parseLong(rightOperand.toString())) {
+				return true;
+			}
+		return false;
+		case "GREATER_THAN_OR_EQUAL":
+			if (Long.parseLong(leftOperand.toString()) >= Long.parseLong(rightOperand.toString())) {
 				return true;
 			}
 			return false;

@@ -19,6 +19,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
@@ -426,6 +427,9 @@ public class UpdateOrderDBQuery implements Processor {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
 				BasicDBObject orderItem = orderItems.get(i);
+				if (!orderItem.containsField("settlementAmount")) {
+					processSettlementAmountOrderItem(orderItem, i, exchange);
+				}
 				boolean orderHasInventory = false;
 				if(orderItem.containsField("isFreeGift") && orderItem.getBoolean("isFreeGift")) {
 					//Free gift only set and handled in PNQ.so can be removed if incoming message has freeGift items.
@@ -516,6 +520,27 @@ public class UpdateOrderDBQuery implements Processor {
 				newOrderItems.addAll(freeGiftItems);
 			}
 			orderRecord.put("orderItems", newOrderItems);
+		}
+	}
+
+	private void processSettlementAmountOrderItem(BasicDBObject orderItem, int orderItemIndex, Exchange exchange) {
+		if (exchange.getProperty("hasOrderInDB", Boolean.class)) {
+			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			if (orderDBObject.containsField("orderItems")) {
+				BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
+				BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
+				if (orderItemDB.containsField("settlementAmount")) {
+					fillTransactionKeyValuePair(orderItem, "settlementAmount", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "settlementStatus", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "transactionPeriod", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "timeSettled", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "timeSettlementProcessed", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "shippingFeeRebateFromChannel", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "buyerPaidAmount", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "shippingFeePaidToChannel", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "shippingFeeRebateFromChannel", orderItemDB);
+				}
+			}
 		}
 	}
 

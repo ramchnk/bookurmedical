@@ -52,6 +52,7 @@
 		<property name="SIAAccountingChannels" value="${SIAAccountingChannels}" />
 		<property name="SIAfeeManagementServerURL" value="${SIAfeeManagementServerURL}" />
 		<property name="SIAInventoryManagementServerURL" value="${SIAInventoryManagementServerURL}" />
-               <property name="warehouses" value="${warehouses}"/>
+		<property name="warehouses" value="${warehouses}"/>
+		<property name="whatsAppEnabled" value="${whatsAppEnabled}"/>
 		</bean>
 </beans>

@@ -101,7 +101,8 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("isTransactionFee", exchange.getProperty("isTransactionFee", boolean.class));
 		}
 		fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
-		if (orderRecord.containsField("isNotifyOrderUpdates")) {
+		//TODO: need to remove isWhatsAppEnabled after whatsapp approval
+		if (orderRecord.containsField("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
 			exchange.setProperty("isNotifyOrderUpdates", orderRecord.getBoolean("isNotifyOrderUpdates"));
 			orderRecord.remove("isNotifyOrderUpdates");
 			if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.CANCELLED.toString())) {
@@ -285,7 +286,8 @@ public class UpdateOrderDBQuery implements Processor {
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
 			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
-			if (orderRecord.containsField("isNotifyOrderUpdates")) {
+			//TODO: need to remove isWhatsAppEnabled after whatsapp approval
+			if (orderRecord.containsField("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
 				exchange.setProperty("isNotifyOrderUpdates", orderRecord.getBoolean("isNotifyOrderUpdates"));
 				orderRecord.remove("isNotifyOrderUpdates");
 				if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.CANCELLED.toString())) {

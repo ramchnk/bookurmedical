@@ -306,9 +306,14 @@ public class UpdateOrderDBQuery implements Processor {
 		orderRecord.put("updateStatus", updateStatus);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		if (orderRecord.containsField("orderItems")) {
-			List<BasicDBObject> orderItems = (List<BasicDBObject>) orderRecord.get("orderItems");
-			if (orderItems.size() == 0) {
-				log.error("Update - orderItems List is Empty for this orderId: " + orderMessage.getString("orderID"));
+			if (orderRecord.get("orderItems") != null) {
+				List<BasicDBObject> orderItems = (List<BasicDBObject>) orderRecord.get("orderItems");
+				if (orderItems.size() == 0) {
+					log.error("Update - orderItems List is Empty for this orderId: "
+						+ orderMessage.getString("orderID"));
+				}
+			} else {
+				log.error("Null orderItem came for orderID : " + orderMessage.getString("orderID"));
 			}
 		}
 		// if we pass true then will modified data

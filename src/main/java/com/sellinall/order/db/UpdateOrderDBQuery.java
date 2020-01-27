@@ -199,7 +199,7 @@ public class UpdateOrderDBQuery implements Processor {
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderAmount.getString("currencyCode"), "USD");
 				if (exchangeRate == 0) {
-					log.error("orderAmountInUSD field is not set for the order Number: " + orderRecord.getString("orderNumber"));
+					log.error("orderAmountInUSD field is not set for the orderID: " + orderRecord.getString("orderID"));
 					return;
 				}
 				long amount = Math.round(orderAmount.getLong("amount") * exchangeRate);
@@ -354,8 +354,8 @@ public class UpdateOrderDBQuery implements Processor {
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderSoldAmount.getString("currencyCode"), "USD");
 				if (exchangeRate == 0) {
-					log.error("orderSoldAmountInUSD field is not set for the order Number: "
-							+ orderRecord.getString("orderNumber"));
+					log.error("orderSoldAmountInUSD field is not set for the orderID: "
+							+ orderRecord.getString("orderID"));
 					return;
 				}
 				long amount = Math.round(orderSoldAmount.getLong("amount") * exchangeRate);

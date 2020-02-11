@@ -143,17 +143,19 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isTransactionFee", isTransactionFee);
 
-		boolean syncDuplicateSKUs = false;
-		if (queryResult.containsField("syncDuplicateSKUs")) {
-			syncDuplicateSKUs = (Boolean) queryResult.get("syncDuplicateSKUs");
-		} else if (queryResult.containsField("individualSKUPerChannel")) {
-			syncDuplicateSKUs = (Boolean) queryResult.get("individualSKUPerChannel");
-		}
-		exchange.setProperty("syncDuplicateSKUs", syncDuplicateSKUs);
 		boolean syncMultipleUnitSKUs = false;
 		if (queryResult.containsField("syncMultipleUnitSKUs")) {
 			syncMultipleUnitSKUs = (Boolean) queryResult.get("syncMultipleUnitSKUs");
 		}
+		boolean syncDuplicateSKUs = false;
+		if (queryResult.containsField("syncDuplicateSKUs")) {
+			syncDuplicateSKUs = (Boolean) queryResult.get("syncDuplicateSKUs");
+		} else if ((queryResult.containsField("individualSKUPerChannel")
+				&& queryResult.getBoolean("individualSKUPerChannel") && queryResult.getBoolean("syncInventory"))
+				|| syncMultipleUnitSKUs) {
+			syncDuplicateSKUs = true;
+		}
+		exchange.setProperty("syncDuplicateSKUs", syncDuplicateSKUs);
 		boolean syncBundleSKUs = false;
 		if (queryResult.containsField("syncBundleSKUs")) {
 			syncBundleSKUs = queryResult.getBoolean("syncBundleSKUs");

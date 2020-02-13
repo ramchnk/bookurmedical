@@ -30,12 +30,6 @@ public class PrepareMultipleUnitSKUsQuery implements Processor {
 		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		searchQuery.put("customSKU", Pattern.compile(customSKU + "(x|X)[1-9]+[0-9]*$"));
 		searchQuery.put("variants", new BasicDBObject("$exists", false));
-		String nickNameID = exchange.getProperty("nickNameID", String.class);
-		String siteName = exchange.getProperty("siteName", String.class);
-		BasicDBObject elemMatch = new BasicDBObject("nickNameID", nickNameID);
-		BasicDBObject searchSite = new BasicDBObject("$elemMatch", elemMatch);
-		searchQuery.put(siteName, searchSite);
-
 		BasicDBObject fieldsFilter = new BasicDBObject("SKU", 1);
 		fieldsFilter.put("sync", 1);
 		fieldsFilter.put("customSKU", 1);

@@ -129,7 +129,7 @@ public class UpdateInventoryDBQuery implements Processor {
 					nickNameList.add(siteSpecific.getString("nickNameID"));
 				}
 				if (!isSameSite) {
-					if (inventoryDBRecord.getBoolean("sync") && syncInventory) {
+					if ((inventoryDBRecord.getBoolean("sync") && syncInventory) || isMultipleUnitSKUUpdate) {
 						// Update other sites only if sync is true. Skip if the
 						// site specific quantity is lesser than (overall
 						// quantity - quantity sold).

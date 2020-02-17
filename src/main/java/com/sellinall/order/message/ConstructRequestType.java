@@ -3,6 +3,8 @@ package com.sellinall.order.message;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 /**
@@ -22,6 +24,9 @@ public class ConstructRequestType implements Processor {
 			// for feemanagement createOrder & updateOrder
 			if (publishTo.equals("feeManagement")) {
 				publishMessage.put("feeType", "order");
+				if (exchange.getProperty("isReconciliation", boolean.class)) {
+					parseOrderItems(publishMessage, exchange.getProperty("orderItemList", JSONArray.class));
+				}
 			}
 			// for quickBooks createInvoice
 			if (publishTo.equals("quickbooks")) {
@@ -48,5 +53,17 @@ public class ConstructRequestType implements Processor {
 		log.debug("publishMessage " + publishMessage);
 		exchange.getOut().setBody(publishMessage);
 
+	}
+
+	private void parseOrderItems(JSONObject publishMessage, JSONArray jsonArray) throws JSONException {
+		JSONArray orderItems = publishMessage.getJSONArray("orderItems");
+		for (int index = 0; index < orderItems.length(); index++) {
+			JSONObject orderItem = orderItems.getJSONObject(index);
+			JSONObject object = jsonArray.getJSONObject(index);
+			if (object.has("expectedMarketPlaceCommission")) {
+				orderItem.put("expectedMarketPlaceCommission", object.getJSONObject("expectedMarketPlaceCommission"));
+			}
+			orderItems.put(index, orderItem);
+		}
 	}
 }

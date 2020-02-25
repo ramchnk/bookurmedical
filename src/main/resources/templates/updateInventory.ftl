@@ -2,6 +2,7 @@
 {
   <#if exchange.properties.warehouseName?? && exchange.properties.warehouseName?has_content>
   "warehouseName" : ${exchange.properties.warehouseName?js_string},
+  "isQuantityUpdateByNewOrder": true,
   </#if>
   "data": [
    

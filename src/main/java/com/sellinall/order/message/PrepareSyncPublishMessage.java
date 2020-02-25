@@ -30,6 +30,7 @@ public class PrepareSyncPublishMessage implements Processor {
 		publishMessage.put("requestType", "updateItem");
 		List<String> syncFieldsToUpdate = new ArrayList<String>();
 		syncFieldsToUpdate.add("quantity");
+		publishMessage.put("isQuantityUpdateByNewOrder", true);
 		publishMessage.put("fieldsToUpdate", syncFieldsToUpdate);
 		publishMessage.put("SKU", inventoryDBRecord.getString("SKU"));
 		publishMessage.put("accountNumber", inventoryDBRecord.getString("accountNumber"));

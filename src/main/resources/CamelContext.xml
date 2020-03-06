@@ -267,6 +267,17 @@
 		<property name="automaticRecoveryEnabled" value="true" />
 	</bean>
 
+	<bean id="blibliTxConnectionFactory"
+		class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${bliblimq.host}" />
+		<property name="port" value="${bliblimq.tx.port}" />
+		<property name="username" value="${bliblimq.username}" />
+		<property name="password" value="${bliblimq.password}" />
+		<property name="virtualHost" value="${bliblimq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0" />
+		<property name="automaticRecoveryEnabled" value="true" />
+	</bean>
+
 	<bean id="tokopediaTxConnectionFactory"
 		class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${tokopediamq.host}" />
@@ -859,6 +870,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{bukalapakmq.host}}:{{bukalapakmq.tx.port}}/bukalapakListingExchange?connectionFactory=#bukalapakTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.blibli} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>blibliListingKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{bliblimq.host}}:{{bliblimq.tx.port}}/blibliListingExchange?connectionFactory=#blibliTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

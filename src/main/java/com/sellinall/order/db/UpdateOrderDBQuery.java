@@ -261,6 +261,10 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("updateStatus")) {
 			updateStatus = orderMessage.getString("updateStatus");
 		}
+		if (orderMessage.getBoolean("isReconciliation")) {
+			exchange.setProperty("isReconciliation", orderMessage.getBoolean("isReconciliation"));
+			exchange.setProperty("orderItemList", new JSONArray(orderMessage.get("orderItems").toString()));
+		}
 		if (orderMessage.containsField("timeSettled")) {
 			orderRecord.put("timeSettled", orderMessage.getLong("timeSettled"));
 		}
@@ -521,6 +525,7 @@ public class UpdateOrderDBQuery implements Processor {
 				} else {
 					newOrderItems.add(orderItem);
 				}
+				orderItem.remove("expectedMarketPlaceCommission");
 			}
 			if(freeGiftItems.size()>0) {
 				//Retain freegift item from DB.

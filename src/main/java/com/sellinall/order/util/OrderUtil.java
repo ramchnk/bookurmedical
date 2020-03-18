@@ -1,0 +1,54 @@
+package com.sellinall.order.util;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONObject;
+
+import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.util.enums.SIAOrderStatus;
+
+public class OrderUtil {
+	static Logger log = Logger.getLogger(OrderUtil.class.getName());
+
+	public static NotificationOrderActionStatus handleExistingOrderStatus(SIAOrderStatus notificationOrderStatus,
+			SIAOrderStatus orderDBStatus, JSONObject orderMessage, String orderID, String type) throws Exception {
+		if (notificationOrderStatus.equals(orderDBStatus)) {
+			return NotificationOrderActionStatus.NO_ACTION;
+		}
+		String orderStateTransition = orderDBStatus + "_TO_" + notificationOrderStatus;
+		try {
+			if (orderStateTransition.equals(NotificationOrderActionStatus.valueOf(orderStateTransition).toString())) {
+				if (orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_INITIATED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_COMBINED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED.toString())
+						|| orderStateTransition
+								.equals(NotificationOrderActionStatus.DISPATCHED_TO_PROCESSING.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_DISPATCHED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_CANCELLED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED.toString())
+						|| orderStateTransition
+								.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_ACCEPTED.toString())) {
+					if (type.equals("order")) {
+						log.warn(" The backward transistion came for orderID is " + orderID
+								+ " and orderStateTransistion " + orderStateTransition);
+					} else {
+						log.warn(" The backward transistion came for orderID is " + orderID + "and orderItemID is "
+								+ orderMessage.getString("orderItemID") + " and orderStateTransistion "
+								+ orderStateTransition);
+					}
+				}
+				return NotificationOrderActionStatus.valueOf(orderStateTransition);
+			}
+		} catch (Exception e) {
+			// TODO Activity logging for Invalid State Transitions
+			String errMsg = "Some Invalid Order state transition : " + orderStateTransition + " Exception Message : "
+					+ e.getMessage() + " orderMessage: " + orderMessage;
+			log.warn(errMsg);
+			if (type.equals("order")) {
+				throw new Exception(errMsg);
+			}
+		}
+		return NotificationOrderActionStatus.NO_ACTION;
+	}
+
+}

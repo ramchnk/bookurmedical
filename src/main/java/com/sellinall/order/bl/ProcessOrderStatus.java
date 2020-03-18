@@ -10,6 +10,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.SIAOrderStatus;
 
 public class ProcessOrderStatus implements Processor {
@@ -17,6 +18,7 @@ public class ProcessOrderStatus implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
+		String orderID = exchange.getProperty("orderID", String.class);
 		if (orderMessage.has("shippingDetails")) {
 			JSONObject shippingObj = orderMessage.getJSONObject("shippingDetails");
 			if (shippingObj.has("shippingTrackingDetails")) {
@@ -30,6 +32,11 @@ public class ProcessOrderStatus implements Processor {
 			}
 		}
 		SIAOrderStatus notificationOrderStatus = SIAOrderStatus.valueOf(orderMessage.getString("orderStatus"));
+		boolean isStatusHandledInOrderItem = false;
+		if (orderMessage.has("orderStatuses")) {
+			isStatusHandledInOrderItem = true;
+		}
+		exchange.setProperty("isStatusHandledInOrderItem", isStatusHandledInOrderItem);
 		NotificationOrderActionStatus notificationOrderActionStatus = NotificationOrderActionStatus.NO_ACTION;
 		exchange.setProperty("hasCombinedOrderIds", false);
 		if ( orderMessage.has("combinedOrderIds") && !orderMessage.isNull("combinedOrderIds")) {
@@ -45,7 +52,8 @@ public class ProcessOrderStatus implements Processor {
 		if (hasOrderInDB) {
 			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
 			SIAOrderStatus orderDBStatus = SIAOrderStatus.valueOf(orderDBObject.getString("orderStatus"));
-			notificationOrderActionStatus = handleExistingOrderStatus(exchange, notificationOrderStatus, orderDBStatus, orderMessage);
+			notificationOrderActionStatus = OrderUtil.handleExistingOrderStatus(notificationOrderStatus, orderDBStatus,
+					orderMessage, orderID, "order");
 		} 
 		log.debug("OrderActionStatus	: " + notificationOrderActionStatus);
 		exchange.setProperty("notificationOrderActionStatus", notificationOrderActionStatus);
@@ -55,39 +63,5 @@ public class ProcessOrderStatus implements Processor {
 		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);
 
 		exchange.getOut().setBody(orderMessage);
-	}
-	
-	private NotificationOrderActionStatus handleExistingOrderStatus(
-			Exchange exchange, SIAOrderStatus notificationOrderStatus, 
-			SIAOrderStatus orderDBStatus, JSONObject orderMessage) throws Exception {
-		if (notificationOrderStatus.equals(orderDBStatus)) {
-			return NotificationOrderActionStatus.NO_ACTION;
-		}
-		String orderStateTransition = orderDBStatus+"_TO_"+notificationOrderStatus;	
-		try {
-			if (orderStateTransition.equals(NotificationOrderActionStatus.valueOf(orderStateTransition).toString())) {
-				if (orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_INITIATED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_COMBINED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED.toString())
-						|| orderStateTransition
-								.equals(NotificationOrderActionStatus.DISPATCHED_TO_PROCESSING.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_DISPATCHED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_CANCELLED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED.toString())
-						|| orderStateTransition
-								.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_ACCEPTED.toString())) {
-					log.warn(" The backward transistion came for orderID is " + orderMessage.getString("orderID")
-							+ " and orderStateTransistion " + orderStateTransition);
-				}
-				return NotificationOrderActionStatus.valueOf(orderStateTransition);
-			}
-		} catch ( Exception e) {
-		//   TODO Activity logging for Invalid State Transitions
-			String errMsg = "Some Invalid Order state transition : "+ orderStateTransition + " Exception Message : " + e.getMessage() + " orderMessage: " + orderMessage;
-			log.warn(errMsg);
-			throw new Exception(errMsg);
-		}
-		return NotificationOrderActionStatus.NO_ACTION;
 	}
 }

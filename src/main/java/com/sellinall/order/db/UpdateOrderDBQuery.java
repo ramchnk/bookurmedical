@@ -5,6 +5,7 @@ package com.sellinall.order.db;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.CurrencyUtil;
 import com.sellinall.util.DateUtil;
 import com.sellinall.util.HttpsURLConnectionUtil;
@@ -70,7 +72,7 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	private void insertOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
-			BasicDBObject orderMessage, JSONObject inBody) throws JSONException {
+			BasicDBObject orderMessage, JSONObject inBody) throws Exception {
 		BasicDBObject site = new BasicDBObject();
 		String nickNameID = orderMessage.getString("nickNameID");
 		String accountNumber = orderMessage.getString("accountNumber");
@@ -243,7 +245,7 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	private void updateOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
-			BasicDBObject orderMessage) throws JSONException {
+			BasicDBObject orderMessage) throws Exception {
 		BasicDBObject orderRecord = new BasicDBObject();
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
@@ -398,6 +400,9 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "shippingCarrierStatus", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "paymentStatus", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "shippingStatus", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "orderStatuses", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "paymentStatuses", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "shippingStatuses", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "shippingDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "pickUpDetails", orderMessage);
@@ -414,14 +419,16 @@ public class UpdateOrderDBQuery implements Processor {
 
 	@SuppressWarnings("unchecked")
 	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord, String siteName)
-			throws JSONException {
+			throws Exception {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
+		String orderID = exchange.getProperty("orderID", String.class);
 		boolean addOrderItemLocation = false;
 		boolean processOrdersWithSKUOnly = processOrdersWithtSKUOnly(exchange);
 		List<BasicDBObject> newOrderItems = new ArrayList<BasicDBObject>();
 		List<BasicDBObject> freeGiftItems = new ArrayList<BasicDBObject>();
 		List<String> orderItemIDListFromDB = new ArrayList<String>();
+		Map<String, String> orderItemsStatusMap = new HashMap<String, String>();
 		if ((Boolean) exchange.getProperty("hasOrderInDB")) {
 			JSONObject orderDBObject = new JSONObject(exchange.getProperty("orderDBObject").toString());
 			JSONArray items = orderDBObject.getJSONArray("orderItems");
@@ -432,12 +439,34 @@ public class UpdateOrderDBQuery implements Processor {
 				if(items.getJSONObject(i).has("isFreeGift") && items.getJSONObject(i).getBoolean("isFreeGift")) {
 					freeGiftItems.add(BasicDBObject.parse(items.getJSONObject(i).toString()));
 				}
+				if (exchange.getProperties().containsKey("isStatusHandledInOrderItem")
+						&& exchange.getProperty("isStatusHandledInOrderItem", Boolean.class)
+						&& items.getJSONObject(i).has("orderStatus") && items.getJSONObject(i).has("orderItemID")) {
+					orderItemsStatusMap.put(items.getJSONObject(i).getString("orderItemID"),
+							items.getJSONObject(i).getString("orderStatus"));
+				}
 			}
 		}
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			for (int i = 0; i < orderItems.size(); i++) {
 				BasicDBObject orderItem = orderItems.get(i);
+				if (exchange.getProperties().containsKey("isStatusHandledInOrderItem")
+						&& exchange.getProperty("isStatusHandledInOrderItem", Boolean.class)
+						&& orderItem.containsField("orderStatus") && orderItem.containsField("orderItemID")) {
+					String orderItemID = orderItem.getString("orderItemID");
+					if (orderItemsStatusMap.containsKey(orderItemID)) {
+						SIAOrderStatus orderItemDBStatus = SIAOrderStatus.valueOf(orderItemsStatusMap.get(orderItemID));
+						SIAOrderStatus notificationOrderStatus = SIAOrderStatus
+								.valueOf(orderItem.getString("orderStatus"));
+						NotificationOrderActionStatus notificationOrderActionStatus = OrderUtil
+								.handleExistingOrderStatus(notificationOrderStatus, orderItemDBStatus,
+										new JSONObject(orderItem.toString()), orderID, "orderItem");
+						if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.NO_ACTION)) {
+							orderItem.put("orderStatus", orderItemDBStatus.toString());
+						}
+					}
+				}
 				if (!orderItem.containsField("settlementAmount")) {
 					processSettlementAmountOrderItem(orderItem, i, exchange);
 				}

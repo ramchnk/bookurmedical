@@ -29,6 +29,7 @@
 	<bean id="prepareBasicUnitSKUQuery" class="com.sellinall.order.db.PrepareBasicUnitSKUQuery" />
 	<bean id="prepareMultipleUnitSKUsQuery" class="com.sellinall.order.db.PrepareMultipleUnitSKUsQuery" />
 	<bean id="processOrderStatus" class="com.sellinall.order.bl.ProcessOrderStatus" />
+	<bean id="processOrderItemStatus" class="com.sellinall.order.bl.ProcessOrderItemStatus" />
 	<bean id="updateCombineOrderStatus" class="com.sellinall.order.db.UpdateCombineOrderStatus" />
 	<bean id="updateOrderDBQuery" class="com.sellinall.order.db.UpdateOrderDBQuery" />
 	<bean id="updateSoldInventoryDetails" class="com.sellinall.order.db.UpdateSoldInventoryDetails" />
@@ -400,6 +401,10 @@
 		<route id="processOrderItem">
 			<from uri="direct:processOrderItem" />
 			<process ref="initOrderItemRoute" />
+			<when>
+				<simple>${exchangeProperty.isStatusHandledInOrderItem} == true</simple>
+				<process ref="processOrderItemStatus" />
+			</when>
 			<when>
 				<simple>${exchangeProperty.hasSKU} == true</simple>
 				<to uri="direct:loadInventoryData" />

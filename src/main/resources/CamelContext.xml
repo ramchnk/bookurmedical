@@ -191,6 +191,13 @@
 		<property name="networkRecoveryInterval" value="0"/>
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
+	<bean id="rocketecomadaptorTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${rocketecomadaptor.host}" />
+		<property name="port" value="${rocketecomadaptor.tx.port}" />
+		<property name="username" value="${rocketecomadaptor.username}" />
+		<property name="password" value="${rocketecomadaptor.password}" />
+		<property name="virtualHost" value="${rocketecomadaptor.virtualHost}" />
+	</bean>
 	<bean id="quickBooksTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${quickBooks.host}" />
 		<property name="port" value="${quickBooks.tx.port}" />
@@ -815,6 +822,16 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{lazada.host}}:{{lazada.tx.port}}/lazadaListingExchange?connectionFactory=#lazadaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<when>
+				<simple>${header.zalora} == true</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>rocketEComAdaptorKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{rocketecomadaptor.host}}:{{rocketecomadaptor.tx.port}}/rocketEComAdaptorExchange?connectionFactory=#rocketecomadaptorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

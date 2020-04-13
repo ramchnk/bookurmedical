@@ -406,6 +406,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "orderAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "shippingDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "pickUpDetails", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "dropoffBranchList", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "refundDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "cancelDetails", orderMessage);

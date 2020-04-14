@@ -418,7 +418,8 @@
 				<when>
 					<simple>${exchangeProperty.ignoreSoldEvent} == false and
 						${exchangeProperty.hasCombinedOrderIds} == false and
-						${exchangeProperty.hasInventoryInDB} == true
+						${exchangeProperty.hasInventoryInDB} == true  and 
+						${exchangeProperty.updateStock} == true
 					</simple>
 					<choice>
 						<when>

@@ -20,6 +20,7 @@ import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.SIAInventoryStatus;
 import com.sellinall.util.enums.SIAOrderCancelReasons;
 
@@ -37,6 +38,7 @@ public class UpdateInventoryDBQuery implements Processor {
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		String SKU = inventoryDBRecord.getString("SKU");
 		exchange.setProperty("SKU", SKU);
+
 		boolean isMultipleUnitSKUUpdate = (exchange.getProperties().containsKey("isMultipleUnitSKUUpdate")
 				&& exchange.getProperty("isMultipleUnitSKUUpdate", Boolean.class));
 		int quantity = exchange.getProperty("quantity", Integer.class);
@@ -73,9 +75,12 @@ public class UpdateInventoryDBQuery implements Processor {
 					&& exchange.getProperty("processBasicUnitSKU", Boolean.class) && result != null) {
 				exchange.setProperty("basicUnitQuantity", result.getInt("noOfItem"));
 			}
+
 		}
 		exchange.getOut().setBody(syncSites);
 	}
+
+
 
 	@SuppressWarnings("unchecked")
 	private void processQuantityUpdates(NotificationOrderActionStatus notificationOrderActionStatus,
@@ -83,22 +88,8 @@ public class UpdateInventoryDBQuery implements Processor {
 			BasicDBObject quantityIncDecModifier, BasicDBObject quantitySetModifier, boolean syncInventory,
 			Map<String, List<String>> siteMap, Exchange exchange, boolean isMultipleUnitSKUUpdate) throws JSONException {
 		boolean isOutOfStock = false;
-		boolean newOrder = notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED);
-		boolean cancelledOrder = notificationOrderActionStatus
-				.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)
-				||notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED);
+		boolean newOrder = OrderUtil.checkIsNewOrder(notificationOrderActionStatus);
+		boolean cancelledOrder = OrderUtil.checkIsCancelledOrder(notificationOrderActionStatus);
 		if (cancelledOrder && orderMessage.has("cancelDetails")) {
 			JSONObject cancelDetails = orderMessage.getJSONObject("cancelDetails");
 			if (cancelDetails.has("cancelReason") && !cancelDetails.getString("cancelReason").isEmpty()

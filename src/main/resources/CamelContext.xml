@@ -48,6 +48,7 @@
 	<bean id="processInventoryUpdateResponse" class="com.sellinall.order.response.ProcessInventoryUpdateResponse" />
 	<bean id="getRuleList" class="com.sellinall.order.db.GetRuleList"/>
 	<bean id="processRuleList" class="com.sellinall.order.db.ProcessRuleList"/>
+	<bean id="updateProductMaster" class="com.sellinall.order.db.UpdateProductMaster"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -421,6 +422,10 @@
 						${exchangeProperty.hasInventoryInDB} == true  and 
 						${exchangeProperty.updateStock} == true
 					</simple>
+					<when>
+						<simple>${exchangeProperty.isNeedtoUpdateProductMaster} == true</simple>
+						<process ref="updateProductMaster" />
+					</when>
 					<choice>
 						<when>
 							<simple>${exchangeProperty.isEligibleToProceed} == true and

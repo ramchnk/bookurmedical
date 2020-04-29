@@ -3,6 +3,7 @@
  */
 package com.sellinall.order.db;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -172,6 +173,16 @@ public class LoadUserDataByNicknameId implements Processor {
 		if(queryResult.containsField("showOnlyManagedOrders")) {
 			exchange.setProperty("showOnlyManagedOrders", queryResult.getBoolean("showOnlyManagedOrders"));
 		}
+		boolean isNeedtoUpdateProductMaster = false;
+		ArrayList<String> wmsList = new ArrayList<String>();
+		if (queryResult.containsField("wmsList")) {
+			wmsList = (ArrayList<String>) queryResult.get("wmsList");
+			if (wmsList.size() == 1) {
+				isNeedtoUpdateProductMaster = true;
+				exchange.setProperty("wmsList", wmsList);
+			}
+		}
+		exchange.setProperty("isNeedtoUpdateProductMaster", isNeedtoUpdateProductMaster);
 	}
 
 	private BasicDBObject runQuery(String accountNumber, String nickNameID, String siteName, String accountingChannel) {
@@ -191,6 +202,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		projection.put("syncBundleSKUs", 1);
 		projection.put("bundleDelimiter", 1);
 		projection.put("enableWarehouseBasedStock", 1);
+		projection.put("wmsList", 1);
 
 		String[] channels = accountingChannel.split("-");
 		for (String channel : channels) {

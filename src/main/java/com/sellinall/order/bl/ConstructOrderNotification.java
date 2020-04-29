@@ -47,7 +47,10 @@ public class ConstructOrderNotification implements Processor {
 				JSONObject orderItem = orderItems.getJSONObject(i);
 				itemDetails.put("title", orderItem.getString("itemTitle"));
 				itemDetails.put("quantity", orderItem.getInt("quantity"));
-				if(orderItem.has("imageURL")) {
+				if (orderItem.has("customSKU")) {
+					itemDetails.put("customSKU", orderItem.getString("customSKU"));
+				}
+				if (orderItem.has("imageURL")) {
 					itemDetails.put("imageUrl", orderItem.getString("imageURL"));
 				}
 				if (orderItem.has("SKU")) {

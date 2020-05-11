@@ -413,6 +413,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "sellerDiscountAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "channelDiscountAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerCartDiscount", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "channelCartDiscount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "voucherAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "documents", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "shippingAmount", orderMessage);

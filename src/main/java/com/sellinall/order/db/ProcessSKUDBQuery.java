@@ -65,8 +65,17 @@ public class ProcessSKUDBQuery implements Processor {
 		if (inventory.has("imageURL")) {
 			inventoryValues.put("imageURL", inventory.getString("imageURL"));
 		}
-		if (inventory.has("customSKU")) {
-			String customSKU = inventory.getString("customSKU");
+		JSONObject orderItemMessage = new JSONObject();
+		if (exchange.getProperty("messageType", String.class).equals("order")) {
+			orderItemMessage = new JSONObject(exchange.getProperty("orderItemMessage", String.class));
+		}
+		String customSKU = "";
+		if (orderItemMessage.has("customSKU")) {
+			customSKU = orderItemMessage.getString("customSKU");
+		} else if (inventory.has("customSKU")) {
+			customSKU = inventory.getString("customSKU");
+		}
+		if (!customSKU.isEmpty()) {
 			inventoryValues.put("customSKU", customSKU);
 			exchange.setProperty("customSKU", customSKU);
 		}

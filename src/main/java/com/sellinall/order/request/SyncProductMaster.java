@@ -31,6 +31,10 @@ public class SyncProductMaster implements Processor {
 					+ ", nickNameID : " + exchange.getProperty("nickNameID", String.class));
 			return;
 		}
+		if (exchange.getProperty("processOrdersWithSKUOnly", Boolean.class)
+				&& !exchange.getProperty("hasSKU", Boolean.class)) {
+			return;
+		}
 		int quantitySold = orderItemMessage.getInt("quantity");
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");

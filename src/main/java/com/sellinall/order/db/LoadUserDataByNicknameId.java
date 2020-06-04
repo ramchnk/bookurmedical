@@ -183,6 +183,27 @@ public class LoadUserDataByNicknameId implements Processor {
 			}
 		}
 		exchange.setProperty("isNeedtoUpdateProductMaster", isNeedtoUpdateProductMaster);
+		boolean isProductMasterReady = false;
+		if (queryResult.containsField("isProductMasterReady")) {
+			isProductMasterReady = queryResult.getBoolean("isProductMasterReady");
+		}
+		exchange.setProperty("isProductMasterReady", isProductMasterReady);
+		BasicDBList channelList = (BasicDBList) queryResult.get(siteName);
+		BasicDBObject channelObj = (BasicDBObject) channelList.get(0);
+		boolean isWmsSelected = false;
+		if (channelObj.containsField("wms")) {
+			ArrayList<String> wmsListinChannel = (ArrayList<String>) channelObj.get("wms");
+			if (wmsListinChannel.size() == 1) {
+				isWmsSelected = true;
+				exchange.setProperty("selectedWMS", wmsListinChannel.get(0));
+			} else {
+				log.error("WMS not selected / more than one WMS selected  for accountNumber : " + accountNumber
+						+ ", nickName: " + nickNameID);
+			}
+		} else {
+			log.error("WMS not found for accountNumber : " + accountNumber + ", nickName: " + nickNameID);
+		}
+		exchange.setProperty("isWmsSelected", isWmsSelected);
 	}
 
 	private BasicDBObject runQuery(String accountNumber, String nickNameID, String siteName, String accountingChannel) {
@@ -203,6 +224,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		projection.put("bundleDelimiter", 1);
 		projection.put("enableWarehouseBasedStock", 1);
 		projection.put("wmsList", 1);
+		projection.put("isProductMasterReady", 1);
 
 		String[] channels = accountingChannel.split("-");
 		for (String channel : channels) {

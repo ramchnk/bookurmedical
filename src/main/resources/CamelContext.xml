@@ -49,6 +49,7 @@
 	<bean id="getRuleList" class="com.sellinall.order.db.GetRuleList"/>
 	<bean id="processRuleList" class="com.sellinall.order.db.ProcessRuleList"/>
 	<bean id="updateProductMaster" class="com.sellinall.order.db.UpdateProductMaster"/>
+	<bean id="syncProductMaster" class="com.sellinall.order.request.SyncProductMaster"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -413,64 +414,72 @@
 				<simple>${exchangeProperty.isStatusHandledInOrderItem} == true</simple>
 				<process ref="processOrderItemStatus" />
 			</when>
-			<when>
-				<simple>${exchangeProperty.hasSKU} == true</simple>
-				<to uri="direct:loadInventoryData" />
+			<choice>
 				<when>
-					<simple>${exchangeProperty.ignoreSoldEvent} == false and
-						${exchangeProperty.hasCombinedOrderIds} == false and
-						${exchangeProperty.hasInventoryInDB} == true  and 
-						${exchangeProperty.updateStock} == true
-					</simple>
-					<when>
-						<simple>${exchangeProperty.isNeedtoUpdateProductMaster} == true</simple>
-						<process ref="updateProductMaster" />
-					</when>
-					<choice>
-						<when>
-							<simple>${exchangeProperty.isEligibleToProceed} == true and
-								${exchangeProperty.syncBundleSKUs} == true and
-								${exchangeProperty.customSKU} != null
-							</simple>
-							<to uri="direct:syncBundleSKUs" />
-						</when>
-						<when>
-							<simple>${exchangeProperty.syncMultipleUnitSKUs} == true and
-								${exchangeProperty.customSKU} != null
-							</simple>
-							<setProperty propertyName="isMultipleUnitSKUUpdate">
-								<simple>true</simple>
-							</setProperty>
-							<to uri="direct:loadBasicUnitSKU" />
-							<choice>
-								<when>
-									<simple>${body} != null</simple>
-									<setProperty propertyName="inventory">
-										<simple>${body}</simple>
-									</setProperty>
-									<to uri="direct:updateAndPublish" />
-									<when>
-										<simple>${exchangeProperty.quantityModified} == true</simple>
-										<to uri="direct:syncDuplicateSKUs" />
-										<to uri="direct:loadMultipleUnitSKUs" />
-										<split parallelProcessing="false">
-											<simple>${body}</simple>
-											<process ref="setMultipleUnitQuantity" />
-											<to uri="direct:updateAndPublish" />
-										</split>
-									</when>
-								</when>
-								<otherwise>
-									<to uri="direct:updateSKUQuantity" />
-								</otherwise>
-							</choice>
-						</when>
-						<otherwise>
-							<to uri="direct:updateSKUQuantity" />
-						</otherwise>
-					</choice>
+					<simple>${exchangeProperty.isProductMasterReady} == true</simple>
+					<process ref="syncProductMaster" />
 				</when>
-			</when>
+				<otherwise>
+				<when>
+					<simple>${exchangeProperty.hasSKU} == true</simple>
+					<to uri="direct:loadInventoryData" />
+					<when>
+						<simple>${exchangeProperty.ignoreSoldEvent} == false and
+							${exchangeProperty.hasCombinedOrderIds} == false and
+							${exchangeProperty.hasInventoryInDB} == true  and
+							${exchangeProperty.updateStock} == true
+						</simple>
+						<when>
+							<simple>${exchangeProperty.isNeedtoUpdateProductMaster} == true</simple>
+							<process ref="updateProductMaster" />
+						</when>
+						<choice>
+							<when>
+								<simple>${exchangeProperty.isEligibleToProceed} == true and
+									${exchangeProperty.syncBundleSKUs} == true and
+									${exchangeProperty.customSKU} != null
+								</simple>
+								<to uri="direct:syncBundleSKUs" />
+							</when>
+							<when>
+								<simple>${exchangeProperty.syncMultipleUnitSKUs} == true and
+									${exchangeProperty.customSKU} != null
+								</simple>
+								<setProperty propertyName="isMultipleUnitSKUUpdate">
+									<simple>true</simple>
+								</setProperty>
+								<to uri="direct:loadBasicUnitSKU" />
+								<choice>
+									<when>
+										<simple>${body} != null</simple>
+										<setProperty propertyName="inventory">
+											<simple>${body}</simple>
+										</setProperty>
+										<to uri="direct:updateAndPublish" />
+										<when>
+											<simple>${exchangeProperty.quantityModified} == true</simple>
+											<to uri="direct:syncDuplicateSKUs" />
+											<to uri="direct:loadMultipleUnitSKUs" />
+											<split parallelProcessing="false">
+												<simple>${body}</simple>
+												<process ref="setMultipleUnitQuantity" />
+												<to uri="direct:updateAndPublish" />
+											</split>
+										</when>
+									</when>
+									<otherwise>
+										<to uri="direct:updateSKUQuantity" />
+									</otherwise>
+								</choice>
+							</when>
+							<otherwise>
+								<to uri="direct:updateSKUQuantity" />
+							</otherwise>
+						</choice>
+					</when>
+				</when>
+				</otherwise>
+			</choice>
 		</route>
 
 		<route id="syncBundleSKUs">

@@ -188,11 +188,9 @@ public class LoadUserDataByNicknameId implements Processor {
 			isProductMasterReady = queryResult.getBoolean("isProductMasterReady");
 		}
 		exchange.setProperty("isProductMasterReady", isProductMasterReady);
-		BasicDBList channelList = (BasicDBList) queryResult.get(siteName);
-		BasicDBObject channelObj = (BasicDBObject) channelList.get(0);
 		boolean isWmsSelected = false;
-		if (channelObj.containsField("wms")) {
-			ArrayList<String> wmsListinChannel = (ArrayList<String>) channelObj.get("wms");
+		if (userSiteSpecificObject.containsField("wms")) {
+			ArrayList<String> wmsListinChannel = (ArrayList<String>) userSiteSpecificObject.get("wms");
 			if (wmsListinChannel.size() == 1) {
 				isWmsSelected = true;
 				exchange.setProperty("selectedWMS", wmsListinChannel.get(0));
@@ -204,6 +202,11 @@ public class LoadUserDataByNicknameId implements Processor {
 			log.error("WMS not found for accountNumber : " + accountNumber + ", nickName: " + nickNameID);
 		}
 		exchange.setProperty("isWmsSelected", isWmsSelected);
+		boolean processOrdersWithSKUOnly = false;
+		if (userSiteSpecificObject.containsField("processOrdersWithSKUOnly")) {
+			processOrdersWithSKUOnly = userSiteSpecificObject.getBoolean("processOrdersWithSKUOnly");
+		}
+		exchange.setProperty("processOrdersWithSKUOnly", processOrdersWithSKUOnly);
 	}
 
 	private BasicDBObject runQuery(String accountNumber, String nickNameID, String siteName, String accountingChannel) {

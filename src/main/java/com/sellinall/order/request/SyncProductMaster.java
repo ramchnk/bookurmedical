@@ -17,7 +17,9 @@ import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.AuthConstant;
 import com.sellinall.util.HttpsURLConnectionUtil;
+import com.sellinall.util.enums.Actor;
 import com.sellinall.util.enums.SIAOrderCancelReasons;
+import com.sellinall.util.enums.StockEventType;
 
 public class SyncProductMaster implements Processor {
 	static Logger log = Logger.getLogger(SyncProductMaster.class.getName());
@@ -53,10 +55,14 @@ public class SyncProductMaster implements Processor {
 			String selectedWMS = exchange.getProperty("selectedWMS", String.class);
 			String urlPath = "";
 			JSONObject payload = new JSONObject();
+			String actor = Actor.SALES_CHANNEL.toString();
+			String stockEventType = null;
 			if (isNewOrder) {
 				payload = constructPayload(sellerSKU, -quantitySold, selectedWMS, true);
 				urlPath = "quantityDiffs";
+				stockEventType = StockEventType.NEW_ORDER.toString();
 			} else if (isCancelledOrder) {
+				stockEventType = StockEventType.CANCELLED_ORDER.toString();
 				if (isOutOfStock) {
 					payload = constructPayload(sellerSKU, 0, selectedWMS, false);
 					urlPath = "quantities";
@@ -66,6 +72,12 @@ public class SyncProductMaster implements Processor {
 				}
 			}
 			if (payload.length() != 0) {
+				payload.put("actor", actor);
+				payload.put("stockEventType", stockEventType);
+				JSONObject addendum = new JSONObject();
+				addendum.put("orderID", orderMessage.getString("orderID"));
+				addendum.put("nickNameID", orderMessage.getString("nickNameID"));
+				payload.put("addendum", addendum);
 				String url = Config.getConfig().getSIAInventoryManagementServerURL() + "/productMaster/" + urlPath;
 				updateProductMaster(payload, accountNumber, url);
 			}

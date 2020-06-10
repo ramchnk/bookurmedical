@@ -417,6 +417,10 @@
 			<choice>
 				<when>
 					<simple>${exchangeProperty.isProductMasterReady} == true</simple>
+					<when>
+						<simple>${exchangeProperty.hasSKU} == true</simple>
+						<to uri="direct:loadInventoryData" />
+					</when>
 					<process ref="syncProductMaster" />
 				</when>
 				<otherwise>

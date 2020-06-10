@@ -27,6 +27,7 @@ public class SyncProductMaster implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderItemMessage = exchange.getProperty("orderItemMessage", JSONObject.class);
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
+		String orderID = orderMessage.getString("orderID");
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		if (!exchange.getProperty("isWmsSelected", Boolean.class)) {
 			log.error("productMaster is not synced, since no wms chosen for accountNumber : " + accountNumber
@@ -50,8 +51,17 @@ public class SyncProductMaster implements Processor {
 				isOutOfStock = true;
 			}
 		}
+		JSONObject inventoryDBRecordJSON = new JSONObject();
+		if (exchange.getProperties().containsKey("inventory")) {
+			inventoryDBRecordJSON = new JSONObject(exchange.getProperty("inventory", String.class));
+		}
+		String sellerSKU = "";
 		if (orderItemMessage.has("customSKU")) {
-			String sellerSKU = orderItemMessage.getString("customSKU");
+			sellerSKU = orderItemMessage.getString("customSKU");
+		} else if (inventoryDBRecordJSON.has("customSKU")) {
+			sellerSKU = inventoryDBRecordJSON.getString("customSKU");
+		}
+		if (!sellerSKU.isEmpty()) {
 			String selectedWMS = exchange.getProperty("selectedWMS", String.class);
 			String urlPath = "";
 			JSONObject payload = new JSONObject();
@@ -75,12 +85,15 @@ public class SyncProductMaster implements Processor {
 				payload.put("actor", actor);
 				payload.put("stockEventType", stockEventType);
 				JSONObject addendum = new JSONObject();
-				addendum.put("orderID", orderMessage.getString("orderID"));
+				addendum.put("orderID", orderID);
 				addendum.put("nickNameID", orderMessage.getString("nickNameID"));
 				payload.put("addendum", addendum);
 				String url = Config.getConfig().getSIAInventoryManagementServerURL() + "/productMaster/" + urlPath;
 				updateProductMaster(payload, accountNumber, url);
 			}
+		} else {
+			log.error("customSKU not found / empty for orderID : " + orderID + " and accountNumber : " + accountNumber
+					+ ", nickNameID : " + exchange.getProperty("nickNameID", String.class));
 		}
 
 	}

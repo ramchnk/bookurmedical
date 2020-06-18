@@ -26,7 +26,6 @@ public class Config {
 	private String SIAInventoryManagementServerURL;
 	private String warehouses;
 	private boolean whatsAppEnabled;
-	private String noImageURL;
 
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
@@ -191,14 +190,6 @@ public class Config {
 
 	public void setWhatsAppEnabled(boolean whatsAppEnabled) {
 		this.whatsAppEnabled = whatsAppEnabled;
-	}
-
-	public String getNoImageURL() {
-		return noImageURL;
-	}
-
-	public void setNoImageURL(String noImageURL) {
-		this.noImageURL = noImageURL;
 	}
 
 }

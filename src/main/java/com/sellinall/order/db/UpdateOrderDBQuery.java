@@ -492,8 +492,6 @@ public class UpdateOrderDBQuery implements Processor {
 						}
 						if (!getImageURL(inventoryValue, siteName).isEmpty()) {
 							orderItem.put("imageURL", getImageURL(inventoryValue, siteName));
-						} else {
-							orderItem.put("imageURL", Config.getConfig().getNoImageURL());
 						}
 						if (inventoryValue.containsField("variantDetails")) {
 							orderItem.put("variantDetails", inventoryValue.get("variantDetails"));
@@ -522,10 +520,8 @@ public class UpdateOrderDBQuery implements Processor {
 					} else {
 						// If inventory deleted then
 						orderItem.remove("SKU");
-						orderItem.put("imageURL", Config.getConfig().getNoImageURL());
+						orderItem.remove("imageURL");
 					}
-				} else {
-					orderItem.put("imageURL", Config.getConfig().getNoImageURL());
 				}
 				if (orderItem.containsField("itemAmount")) {
 					orderItem.put("itemSoldAmount", (BasicDBObject) orderItem.get("itemAmount"));

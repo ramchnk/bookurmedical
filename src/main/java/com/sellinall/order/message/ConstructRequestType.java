@@ -26,6 +26,7 @@ public class ConstructRequestType implements Processor {
 				publishMessage.put("feeType", "order");
 				if (exchange.getProperty("isReconciliation", boolean.class)) {
 					parseOrderItems(publishMessage, exchange.getProperty("orderItemList", JSONArray.class));
+					publishMessage.put("isReconciliation", true);
 				}
 			}
 			// for quickBooks createInvoice

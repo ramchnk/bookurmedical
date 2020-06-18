@@ -276,6 +276,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("settlementStatus")) {
 			orderRecord.put("settlementStatus", orderMessage.getString("settlementStatus"));
 		}
+		if (orderMessage.containsField("returnSettlementStatus")) {
+			orderRecord.put("returnSettlementStatus", orderMessage.getString("returnSettlementStatus"));
+		}
 		if (orderMessage.containsField("transactionPeriod")) {
 			orderRecord.put("transactionPeriod", orderMessage.getString("transactionPeriod"));
 		}
@@ -579,6 +582,7 @@ public class UpdateOrderDBQuery implements Processor {
 				if (orderItemDB.containsField("settlementAmount")) {
 					fillTransactionKeyValuePair(orderItem, "settlementAmount", orderItemDB);
 					fillTransactionKeyValuePair(orderItem, "settlementStatus", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "returnSettlementStatus", orderItemDB);
 					fillTransactionKeyValuePair(orderItem, "transactionPeriod", orderItemDB);
 					fillTransactionKeyValuePair(orderItem, "timeSettled", orderItemDB);
 					fillTransactionKeyValuePair(orderItem, "timeSettlementProcessed", orderItemDB);
@@ -586,6 +590,7 @@ public class UpdateOrderDBQuery implements Processor {
 					fillTransactionKeyValuePair(orderItem, "buyerPaidAmount", orderItemDB);
 					fillTransactionKeyValuePair(orderItem, "shippingFeePaidToChannel", orderItemDB);
 					fillTransactionKeyValuePair(orderItem, "shippingFeeRebateFromChannel", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "settlementDetails", orderItemDB);
 				}
 			}
 		}

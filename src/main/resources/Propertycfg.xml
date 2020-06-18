@@ -54,5 +54,6 @@
 		<property name="SIAInventoryManagementServerURL" value="${SIAInventoryManagementServerURL}" />
 		<property name="warehouses" value="${warehouses}"/>
 		<property name="whatsAppEnabled" value="${whatsAppEnabled}"/>
+		<property name="noImageURL" value="${noImageURL}" />
 		</bean>
 </beans>

@@ -9,15 +9,15 @@ public class Config {
 
 	private String DbUserName;
 	private String DbPassword;
+	private String orderConfigDBURI;
+	private String orderConfigDBName;
 	private String UserCollectionHostName;
 	private String UserCollectionPort;
 	private String UserCollectionDBName;
 	private String InventoryCollectionHostName;
 	private String InventoryCollectionPort;
 	private String InventoryCollectionDBName;
-	private String OrderCollectionHostName;
-	private String OrderCollectionPort;
-	private String OrderCollectionDBName;
+
 	private String uploadImageUri;
 	private String SIAOrderPageURL;
 	private String Ragasiyam;
@@ -50,7 +50,7 @@ public class Config {
 	public void setFbTokenExchangeUri(String fbTokenExchangeUri) {
 		FbTokenExchangeUri = fbTokenExchangeUri;
 	}
-
+	
 	public String getDbUserName() {
 		return DbUserName;
 	}
@@ -67,6 +67,22 @@ public class Config {
 		DbPassword = dbPassword;
 	}
 
+	public String getOrderConfigDBURI() {
+		return orderConfigDBURI;
+	}
+
+	public void setOrderConfigDBURI(String orderConfigDBURI) {
+		this.orderConfigDBURI = orderConfigDBURI;
+	}
+
+	public String getOrderConfigDBName() {
+		return orderConfigDBName;
+	}
+
+	public void setOrderConfigDBName(String orderConfigDBName) {
+		this.orderConfigDBName = orderConfigDBName;
+	}
+	
 	public String getUserCollectionHostName() {
 		return UserCollectionHostName;
 	}
@@ -95,8 +111,7 @@ public class Config {
 		return InventoryCollectionHostName;
 	}
 
-	public void setInventoryCollectionHostName(
-			String inventoryCollectionHostName) {
+	public void setInventoryCollectionHostName(String inventoryCollectionHostName) {
 		InventoryCollectionHostName = inventoryCollectionHostName;
 	}
 
@@ -150,30 +165,6 @@ public class Config {
 
 	public void setSIAfeeManagementServerURL(String sIAfeeManagementServerURL) {
 		SIAfeeManagementServerURL = sIAfeeManagementServerURL;
-	}
-
-	public String getOrderCollectionHostName() {
-		return OrderCollectionHostName;
-	}
-
-	public void setOrderCollectionHostName(String orderCollectionHostName) {
-		OrderCollectionHostName = orderCollectionHostName;
-	}
-
-	public String getOrderCollectionPort() {
-		return OrderCollectionPort;
-	}
-
-	public void setOrderCollectionPort(String orderCollectionPort) {
-		OrderCollectionPort = orderCollectionPort;
-	}
-
-	public String getOrderCollectionDBName() {
-		return OrderCollectionDBName;
-	}
-
-	public void setOrderCollectionDBName(String orderCollectionDBName) {
-		OrderCollectionDBName = orderCollectionDBName;
 	}
 
 	public String getWarehouses() {

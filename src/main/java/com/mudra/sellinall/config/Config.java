@@ -11,12 +11,10 @@ public class Config {
 	private String DbPassword;
 	private String orderConfigDBURI;
 	private String orderConfigDBName;
-	private String UserCollectionHostName;
-	private String UserCollectionPort;
-	private String UserCollectionDBName;
-	private String InventoryCollectionHostName;
-	private String InventoryCollectionPort;
-	private String InventoryCollectionDBName;
+	private String userConfigDBURI;
+	private String userConfigDBName;
+	private String inventoryConfigDBURI;
+	private String inventoryConfigDBName;
 
 	private String uploadImageUri;
 	private String SIAOrderPageURL;
@@ -83,52 +81,36 @@ public class Config {
 		this.orderConfigDBName = orderConfigDBName;
 	}
 	
-	public String getUserCollectionHostName() {
-		return UserCollectionHostName;
+	public String getUserConfigDBURI() {
+		return userConfigDBURI;
 	}
 
-	public void setUserCollectionHostName(String userCollectionHostName) {
-		UserCollectionHostName = userCollectionHostName;
+	public void setUserConfigDBURI(String userConfigDBURI) {
+		this.userConfigDBURI = userConfigDBURI;
 	}
 
-	public String getUserCollectionPort() {
-		return UserCollectionPort;
+	public String getUserConfigDBName() {
+		return userConfigDBName;
 	}
 
-	public void setUserCollectionPort(String userCollectionPort) {
-		UserCollectionPort = userCollectionPort;
+	public void setUserConfigDBName(String userConfigDBName) {
+		this.userConfigDBName = userConfigDBName;
 	}
 
-	public String getUserCollectionDBName() {
-		return UserCollectionDBName;
+	public String getInventoryConfigDBURI() {
+		return inventoryConfigDBURI;
 	}
 
-	public void setUserCollectionDBName(String userCollectionDBName) {
-		UserCollectionDBName = userCollectionDBName;
+	public void setInventoryConfigDBURI(String inventoryConfigDBURI) {
+		this.inventoryConfigDBURI = inventoryConfigDBURI;
 	}
 
-	public String getInventoryCollectionHostName() {
-		return InventoryCollectionHostName;
+	public String getInventoryConfigDBName() {
+		return inventoryConfigDBName;
 	}
 
-	public void setInventoryCollectionHostName(String inventoryCollectionHostName) {
-		InventoryCollectionHostName = inventoryCollectionHostName;
-	}
-
-	public String getInventoryCollectionPort() {
-		return InventoryCollectionPort;
-	}
-
-	public void setInventoryCollectionPort(String inventoryCollectionPort) {
-		InventoryCollectionPort = inventoryCollectionPort;
-	}
-
-	public String getInventoryCollectionDBName() {
-		return InventoryCollectionDBName;
-	}
-
-	public void setInventoryCollectionDBName(String inventoryCollectionDBName) {
-		InventoryCollectionDBName = inventoryCollectionDBName;
+	public void setInventoryConfigDBName(String inventoryConfigDBName) {
+		this.inventoryConfigDBName = inventoryConfigDBName;
 	}
 
 	public String getUploadImageUri() {

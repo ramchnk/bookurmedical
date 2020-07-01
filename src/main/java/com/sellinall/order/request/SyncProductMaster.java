@@ -130,7 +130,7 @@ public class SyncProductMaster implements Processor {
 		quantityArray.put(quantityObj);
 		payload.put("sellerSKU", sellerSKU);
 		if (isUpdateByQtyDiff) {
-			payload.put("quantityDiff", quantityArray);
+			payload.put("quantityDiffs", quantityArray);
 		} else {
 			payload.put("quantities", quantityArray);
 		}

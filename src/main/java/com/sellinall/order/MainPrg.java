@@ -64,8 +64,7 @@ public class MainPrg {
 		PartnerNotification.setProducerTemplate(template);
 
 		Config config = Config.getConfig();
-		InvoiceSequence.init(config.getInventoryCollectionDBName(), config.getInventoryCollectionHostName(),
-				config.getInventoryCollectionPort(), config.getDbUserName(), config.getDbPassword());
+		InvoiceSequence.init(config.getInventoryConfigDBURI(), config.getInventoryConfigDBName());
 		config.setRagasiyam(System.getenv(AuthConstant.RAGASIYAM_KEY));
 		server.start();
 		server.join();

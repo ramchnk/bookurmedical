@@ -126,7 +126,7 @@ public class SyncProductMaster implements Processor {
 		JSONArray quantityArray = new JSONArray();
 		JSONObject quantityObj = new JSONObject();
 		quantityObj.put("warehouseID", selectedWMS);
-		quantityObj.put("quantity", quantitySold);
+		quantityObj.put(isUpdateByQtyDiff ? "quantityDiff" : "quantity" , quantitySold);
 		quantityArray.put(quantityObj);
 		payload.put("sellerSKU", sellerSKU);
 		if (isUpdateByQtyDiff) {

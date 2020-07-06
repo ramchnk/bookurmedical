@@ -83,6 +83,9 @@ public class UpdateOrderDBQuery implements Processor {
 		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
 		orderRecord.put("orderID", orderID);
+		if(orderMessage.containsKey("returnOrderID")) {
+			orderRecord.put("returnOrderID",orderMessage.getString("returnOrderID"));
+		}
 		if (orderMessage.containsField("invoiceNumber")) {
 			orderRecord.put("invoiceNumber", orderMessage.get("invoiceNumber"));
 		} else if (exchange.getProperties().containsKey("profileID")) {

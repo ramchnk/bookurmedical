@@ -83,9 +83,6 @@ public class UpdateOrderDBQuery implements Processor {
 		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
 		orderRecord.put("orderID", orderID);
-		if(orderMessage.containsKey("returnOrderID")) {
-			orderRecord.put("returnOrderID",orderMessage.getString("returnOrderID"));
-		}
 		if (orderMessage.containsField("invoiceNumber")) {
 			orderRecord.put("invoiceNumber", orderMessage.get("invoiceNumber"));
 		} else if (exchange.getProperties().containsKey("profileID")) {
@@ -399,6 +396,7 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderMessage) {
 		fillTransactionKeyValuePair(orderRecord, "buyerDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderNumber", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "returnOrderID", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "paymentMethods", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "paymentType", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderItems", orderMessage);

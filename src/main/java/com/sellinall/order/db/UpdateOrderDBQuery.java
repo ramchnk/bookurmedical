@@ -177,6 +177,8 @@ public class UpdateOrderDBQuery implements Processor {
 		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", orderRecord), options);
 		if (result.getMatchedCount() > 0) {
 			log.info("Order Insert - Duplicate message received for orderID: " + orderID);
+			exchange.setProperty("needToLoadOrderFromDB", true);
+			exchange.setProperty("isNewOrder", false);
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
@@ -328,7 +330,8 @@ public class UpdateOrderDBQuery implements Processor {
 		// if we pass true then will modified data
 		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", orderRecord));
 		if (result.getModifiedCount() == 0) {
-			log.info("Order :"+orderMessage.getString("orderID")+" is already updated. this is duplicate message.");
+			log.info("Order :" + orderMessage.getString("orderID") + " is already updated. this is duplicate message.");
+			exchange.setProperty("needToLoadOrderFromDB", true);
 			exchange.setProperty("stopProcess", true);
 			return;
 		}

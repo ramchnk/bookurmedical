@@ -21,11 +21,6 @@ public class ProcessOrderItemStatus implements Processor {
 		exchange.getOut().setBody(orderItemMessage);
 		SIAOrderStatus notificationOrderStatus = SIAOrderStatus.valueOf(orderItemMessage.getString("orderStatus"));
 		NotificationOrderActionStatus notificationOrderActionStatus = NotificationOrderActionStatus.NO_ACTION;
-		if ((SIAOrderStatus.UNKNOWN.equals(notificationOrderStatus)
-				|| SIAOrderStatus.UNSUPPORTED.equals(notificationOrderStatus))) {
-			log.warn("Notification Order Status : " + notificationOrderStatus);
-			throw new Exception("Unknown Notification Order Status");
-		}
 		notificationOrderActionStatus = NotificationOrderActionStatus
 				.valueOf(orderItemMessage.getString("orderStatus"));
 		String orderID = exchange.getProperty("orderID", String.class);

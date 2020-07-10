@@ -29,7 +29,9 @@
 	<bean id="prepareBasicUnitSKUQuery" class="com.sellinall.order.db.PrepareBasicUnitSKUQuery" />
 	<bean id="prepareMultipleUnitSKUsQuery" class="com.sellinall.order.db.PrepareMultipleUnitSKUsQuery" />
 	<bean id="processOrderStatus" class="com.sellinall.order.bl.ProcessOrderStatus" />
+	<bean id="recheckOrderActionStatus" class="com.sellinall.order.bl.RecheckOrderActionStatus" />
 	<bean id="processOrderItemStatus" class="com.sellinall.order.bl.ProcessOrderItemStatus" />
+	<bean id="validateOrderItemStatus" class="com.sellinall.order.bl.ValidateOrderItemStatus" />
 	<bean id="updateCombineOrderStatus" class="com.sellinall.order.db.UpdateCombineOrderStatus" />
 	<bean id="updateOrderDBQuery" class="com.sellinall.order.db.UpdateOrderDBQuery" />
 	<bean id="updateSoldInventoryDetails" class="com.sellinall.order.db.UpdateSoldInventoryDetails" />
@@ -370,9 +372,20 @@
 			<process ref="processOrderStatus" />
 			<split parallelProcessing="false" strategyRef="aggregatorStrategy">
 				<method ref="splitterBean" method="splitOrders" />
-				<to uri="direct:processOrderItem" />
+				<to uri="direct:validateOrderItem" />
 			</split>
 			<process ref="updateOrderDBQuery" />
+			<when><simple>${exchangeProperty.needToLoadOrderFromDB} == true</simple>
+				<process ref="loadAndProcessOrderFromDB" />
+				<process ref="recheckOrderActionStatus" />
+			</when>
+			<setBody>
+			        <simple>${exchangeProperty.message}</simple>
+			</setBody>
+			<split parallelProcessing="false" strategyRef="aggregatorStrategy">
+				<method ref="splitterBean" method="splitOrders" />
+				<to uri="direct:processOrderItem" />
+			</split>
 			<when>
 			       <simple>${exchangeProperty.stopProcess} == true</simple>
 			       <stop />
@@ -406,7 +419,17 @@
 			<!-- TODO update feeManagement about this combined invoice -->
 			<process ref="updateCombineOrderStatus" />
 		</route>
-
+		<route id="validateOrderItem">
+			<from uri="direct:validateOrderItem" />
+			<process ref="initOrderItemRoute" />
+			<when><simple>${exchangeProperty.isStatusHandledInOrderItem} == true</simple>
+				<process ref="validateOrderItemStatus" />
+			</when>
+			<when>
+				<simple>${exchangeProperty.hasSKU} == true</simple>
+				<to uri="direct:loadInventoryData" />
+			</when>
+		</route>
 		<route id="processOrderItem">
 			<from uri="direct:processOrderItem" />
 			<process ref="initOrderItemRoute" />

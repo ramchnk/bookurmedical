@@ -375,21 +375,14 @@
 				<to uri="direct:validateOrderItem" />
 			</split>
 			<process ref="updateOrderDBQuery" />
-			<when><simple>${exchangeProperty.needToLoadOrderFromDB} == true</simple>
-				<process ref="loadAndProcessOrderFromDB" />
-				<process ref="recheckOrderActionStatus" />
-			</when>
-			<setBody>
-			        <simple>${exchangeProperty.message}</simple>
-			</setBody>
-			<split parallelProcessing="false" strategyRef="aggregatorStrategy">
-				<method ref="splitterBean" method="splitOrders" />
-				<to uri="direct:processOrderItem" />
-			</split>
 			<when>
 			       <simple>${exchangeProperty.stopProcess} == true</simple>
 			       <stop />
 			</when>
+			<split parallelProcessing="false" strategyRef="aggregatorStrategy">
+				<method ref="splitterBean" method="splitOrders" />
+				<to uri="direct:processOrderItem" />
+			</split>
 			<when>
 				<simple>${exchangeProperty.processRule} == true and ${exchangeProperty.isNewOrder} == true</simple>
 				<to uri="direct:processRuleRoute" />

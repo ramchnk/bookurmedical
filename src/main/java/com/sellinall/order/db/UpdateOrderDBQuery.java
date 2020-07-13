@@ -12,9 +12,7 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
-import org.bson.BsonObjectId;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -23,6 +21,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
@@ -174,16 +173,16 @@ public class UpdateOrderDBQuery implements Processor {
 		searchQuery.put("site.name", siteName);
 		UpdateOptions options = new UpdateOptions();
 		options.upsert(true);
-		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", orderRecord), options);
-		if (result.getMatchedCount() > 0) {
+		try {
+			Document orderDocument = getDocument(orderRecord);
+			table.insertOne(orderDocument);
+			orderRecord.put("_id", orderDocument.getObjectId("_id"));
+		} catch (MongoWriteException e) {
 			log.info("Order Insert - Duplicate message received for orderID: " + orderID);
-			exchange.setProperty("needToLoadOrderFromDB", true);
-			exchange.setProperty("isNewOrder", false);
 			exchange.setProperty("stopProcess", true);
 			return;
+
 		}
-		BsonObjectId id = (BsonObjectId) result.getUpsertedId();
-		orderRecord.put("_id", new ObjectId(id.getValue().toString()));
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
 	}
@@ -331,7 +330,6 @@ public class UpdateOrderDBQuery implements Processor {
 		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", orderRecord));
 		if (result.getModifiedCount() == 0) {
 			log.info("Order :" + orderMessage.getString("orderID") + " is already updated. this is duplicate message.");
-			exchange.setProperty("needToLoadOrderFromDB", true);
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
@@ -379,6 +377,11 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
+	public static Document getDocument(BasicDBObject doc) {
+		if (doc == null)
+			return null;
+		return new Document(doc.toMap());
+	}
 	private BasicDBObject updateAndGetLatestUpdatedOrder(BasicDBObject searchQuery, BasicDBObject orderMessage) {
 		BasicDBObject updateObject = new BasicDBObject();
 		if (orderMessage.containsKey("notificationID")) {

@@ -7,10 +7,12 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class InitOrderItemRoute implements Processor {
 	static Logger log = Logger.getLogger(InitOrderItemRoute.class.getName());
+
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderItemMessage = new JSONObject(exchange.getIn().getBody(String.class));
 		exchange.setProperty("orderItemMessage", orderItemMessage);
-		if (orderItemMessage.has("SKU")){
+		exchange.setProperty("hasSKU", false);
+		if (orderItemMessage.has("SKU")) {
 			exchange.setProperty("hasSKU", true);
 		}
 		exchange.getOut().setBody(orderItemMessage);

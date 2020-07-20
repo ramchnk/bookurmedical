@@ -7,12 +7,16 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.MongoCollection;
 import com.mudra.sellinall.config.Config;
+import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.AuthConstant;
@@ -29,6 +33,8 @@ public class SyncProductMaster implements Processor {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		String orderID = orderMessage.getString("orderID");
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
+		String nickNameID = exchange.getProperty("nickNameID", String.class);
+		String siteName = nickNameID.split("-")[0];
 		if (!exchange.getProperty("isWmsSelected", Boolean.class)) {
 			log.error("productMaster is not synced, since no wms chosen for accountNumber : " + accountNumber
 					+ ", nickNameID : " + exchange.getProperty("nickNameID", String.class));
@@ -93,9 +99,29 @@ public class SyncProductMaster implements Processor {
 			}
 		} else {
 			log.error("customSKU not found / empty for orderID : " + orderID + " and accountNumber : " + accountNumber
-					+ ", nickNameID : " + exchange.getProperty("nickNameID", String.class));
+					+ ", nickNameID : " + nickNameID);
 		}
-
+		//to update Sold count
+		if (orderItemMessage.has("SKU") && (isNewOrder || isCancelledOrder)) {
+			BasicDBObject searchQuery = new BasicDBObject();
+			searchQuery.put("accountNumber", accountNumber);
+			searchQuery.put("SKU", orderItemMessage.getString("SKU"));
+			searchQuery.put(siteName + ".nickNameID", nickNameID);
+			BasicDBObject updateobject = new BasicDBObject();
+			BasicDBObject incObject = new BasicDBObject();
+			if (isNewOrder) {
+				incObject.put("noOfItemsold", quantitySold);
+				incObject.put(siteName + ".$.noOfItemsold", quantitySold);
+			} else if (isCancelledOrder) {
+				incObject.put("noOfItemsold", -quantitySold);
+				incObject.put(siteName + ".$.noOfItemsold", -quantitySold);
+			}
+			if (!incObject.isEmpty()) {
+				updateobject.put("$inc", incObject);
+			}
+			MongoCollection<Document> productMasterTable = DbUtilities.getInventoryDBCollection("inventory");
+			productMasterTable.findOneAndUpdate(searchQuery, updateobject);
+		}
 	}
 
 	private void updateProductMaster(JSONObject payload, String accountNumber, String url) {

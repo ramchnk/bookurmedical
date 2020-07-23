@@ -69,9 +69,13 @@ public class ConstructRequestType implements Processor {
 						JSONObject settlementDetailsObject = orderItem.getJSONObject("settlementDetails");
 						if (settlementDetailsObject.has("refunded")) {
 							JSONObject refundedObject = settlementDetails.getJSONObject("refunded");
-							refundedObject.put("expectedMarketPlaceCommission",
-									refunded.get("expectedMarketPlaceCommission"));
-							refundedObject.put("feesFieldsToUpdate", refunded.get("feesFieldsToUpdate"));
+							if (refunded.has("expectedMarketPlaceCommission")) {
+								refundedObject.put("expectedMarketPlaceCommission",
+										refunded.get("expectedMarketPlaceCommission"));
+							}
+							if (refunded.has("feesFieldsToUpdate")) {
+								refundedObject.put("feesFieldsToUpdate", refunded.getJSONArray("feesFieldsToUpdate"));
+							}
 						}
 					}
 				}
@@ -80,7 +84,7 @@ public class ConstructRequestType implements Processor {
 				orderItem.put("expectedMarketPlaceCommission", object.getJSONObject("expectedMarketPlaceCommission"));
 			}
 			if (object.has("feesFieldsToUpdate")) {
-				orderItem.put("feesFieldsToUpdate", object.getJSONObject("feesFieldsToUpdate"));
+				orderItem.put("feesFieldsToUpdate", object.getJSONArray("feesFieldsToUpdate"));
 			}
 			orderItems.put(index, orderItem);
 		}

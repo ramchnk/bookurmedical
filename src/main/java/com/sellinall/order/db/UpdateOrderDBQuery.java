@@ -570,7 +570,21 @@ public class UpdateOrderDBQuery implements Processor {
 				} else {
 					newOrderItems.add(orderItem);
 				}
+				if(orderItem.containsField("settlementDetails"))
+				{
+					BasicDBObject settlementDetails = (BasicDBObject) orderItem.get("settlementDetails");
+					if (settlementDetails.containsField("refunded")) {
+						BasicDBObject refunded = (BasicDBObject) settlementDetails.get("refunded");
+						if (refunded.containsField("expectedMarketPlaceCommission")) {
+							refunded.remove("expectedMarketPlaceCommission");
+						}
+						if (refunded.containsField("feesFieldsToUpdate")) {
+							refunded.remove("feesFieldsToUpdate");
+						}
+					}
+				}
 				orderItem.remove("expectedMarketPlaceCommission");
+				orderItem.remove("feesFieldsToUpdate");
 			}
 			if(freeGiftItems.size()>0) {
 				//Retain freegift item from DB.

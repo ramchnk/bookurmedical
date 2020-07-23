@@ -61,8 +61,26 @@ public class ConstructRequestType implements Processor {
 		for (int index = 0; index < orderItems.length(); index++) {
 			JSONObject orderItem = orderItems.getJSONObject(index);
 			JSONObject object = jsonArray.getJSONObject(index);
+			if (object.has("settlementDetails")) {
+				JSONObject settlementDetails = object.getJSONObject("settlementDetails");
+				if (settlementDetails.has("refunded")) {
+					JSONObject refunded = settlementDetails.getJSONObject("refunded");
+					if (orderItem.has("settlementDetails")) {
+						JSONObject settlementDetailsObject = orderItem.getJSONObject("settlementDetails");
+						if (settlementDetailsObject.has("refunded")) {
+							JSONObject refundedObject = settlementDetails.getJSONObject("refunded");
+							refundedObject.put("expectedMarketPlaceCommission",
+									refunded.get("expectedMarketPlaceCommission"));
+							refundedObject.put("feesFieldsToUpdate", refunded.get("feesFieldsToUpdate"));
+						}
+					}
+				}
+			}
 			if (object.has("expectedMarketPlaceCommission")) {
 				orderItem.put("expectedMarketPlaceCommission", object.getJSONObject("expectedMarketPlaceCommission"));
+			}
+			if (object.has("feesFieldsToUpdate")) {
+				orderItem.put("feesFieldsToUpdate", object.getJSONObject("feesFieldsToUpdate"));
 			}
 			orderItems.put(index, orderItem);
 		}

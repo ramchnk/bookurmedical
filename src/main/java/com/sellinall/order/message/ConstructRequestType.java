@@ -76,6 +76,8 @@ public class ConstructRequestType implements Processor {
 							if (refunded.has("feesFieldsToUpdate")) {
 								refundedObject.put("feesFieldsToUpdate", refunded.getJSONArray("feesFieldsToUpdate"));
 							}
+							settlementDetailsObject.put("refunded", refundedObject);
+							orderItem.put("settlementDetails", settlementDetailsObject);
 						}
 					}
 				}

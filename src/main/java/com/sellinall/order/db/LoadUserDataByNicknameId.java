@@ -207,6 +207,12 @@ public class LoadUserDataByNicknameId implements Processor {
 			processOrdersWithSKUOnly = userSiteSpecificObject.getBoolean("processOrdersWithSKUOnly");
 		}
 		exchange.setProperty("processOrdersWithSKUOnly", processOrdersWithSKUOnly);
+
+		boolean cancelledOrderStockSync = true;
+		if (queryResult.containsField("cancelledOrderStockSync")) {
+			cancelledOrderStockSync = queryResult.getBoolean("cancelledOrderStockSync");
+		}
+		exchange.setProperty("cancelledOrderStockSync", cancelledOrderStockSync);
 	}
 
 	private BasicDBObject runQuery(String accountNumber, String nickNameID, String siteName, String accountingChannel) {
@@ -228,6 +234,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		projection.put("enableWarehouseBasedStock", 1);
 		projection.put("wmsList", 1);
 		projection.put("isProductMasterReady", 1);
+		projection.put("cancelledOrderStockSync", 1);
 
 		String[] channels = accountingChannel.split("-");
 		for (String channel : channels) {

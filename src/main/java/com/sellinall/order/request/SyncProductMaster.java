@@ -33,7 +33,6 @@ public class SyncProductMaster implements Processor {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		String orderID = orderMessage.getString("orderID");
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
-		boolean cancelledOrderStockSync = exchange.getProperty("cancelledOrderStockSync", Boolean.class);
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = nickNameID.split("-")[0];
 		if (!exchange.getProperty("isWmsSelected", Boolean.class)) {
@@ -48,7 +47,6 @@ public class SyncProductMaster implements Processor {
 		int quantitySold = orderItemMessage.getInt("quantity");
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
-
 		boolean isOutOfStock = false;
 		boolean isNewOrder = OrderUtil.checkIsNewOrder(notificationOrderActionStatus);
 		boolean isCancelledOrder = OrderUtil.checkIsCancelledOrder(notificationOrderActionStatus);
@@ -81,7 +79,7 @@ public class SyncProductMaster implements Processor {
 				stockEventType = StockEventType.NEW_ORDER.toString();
 			} else if (isCancelledOrder) {
 				stockEventType = StockEventType.CANCELLED_ORDER.toString();
-				if (isOutOfStock || !cancelledOrderStockSync) {
+				if (isOutOfStock) {
 					payload = constructPayload(sellerSKU, 0, selectedWMS, false);
 					urlPath = "quantities";
 				} else {

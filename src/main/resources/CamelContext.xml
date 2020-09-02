@@ -435,7 +435,7 @@
 			</when>
 			<choice>
 				<when>
-					<simple>${exchangeProperty.isProductMasterReady} == true</simple>
+					<simple>${exchangeProperty.isProductMasterReady} == true and ${exchangeProperty.isOldOrder} == false</simple>
 					<when>
 						<simple>${exchangeProperty.hasSKU} == true</simple>
 						<to uri="direct:loadInventoryData" />
@@ -444,7 +444,7 @@
 				</when>
 				<otherwise>
 				<when>
-					<simple>${exchangeProperty.hasSKU} == true</simple>
+					<simple>${exchangeProperty.hasSKU} == true and ${exchangeProperty.isOldOrder} == false</simple>
 					<to uri="direct:loadInventoryData" />
 					<when>
 						<simple>${exchangeProperty.ignoreSoldEvent} == false and

@@ -19,6 +19,14 @@ public class ProcessOrderStatus implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		String orderID = exchange.getProperty("orderID", String.class);
+		exchange.setProperty("isOldOrder", false);
+		if (exchange.getProperties().containsKey("timeLinked")) {
+			long timeLinked = exchange.getProperty("timeLinked", Long.class);
+			long timeOrderCreated = orderMessage.getLong("timeOrderCreated");
+			if (timeOrderCreated < timeLinked) {
+				exchange.setProperty("isOldOrder", true);
+			}
+		}
 		if (orderMessage.has("shippingDetails")) {
 			JSONObject shippingObj = orderMessage.getJSONObject("shippingDetails");
 			if (shippingObj.has("shippingTrackingDetails")) {

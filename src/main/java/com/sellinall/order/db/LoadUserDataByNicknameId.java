@@ -53,6 +53,9 @@ public class LoadUserDataByNicknameId implements Processor {
 			exchange.setProperty("invoiceNumberPrefix", invoiceNumberPrefix);
 			exchange.setProperty("profileID", profileID);
 		}
+		if (userSiteSpecificObject.containsField("timeLinked") && userSiteSpecificObject.get("timeLinked") != null) {
+			exchange.setProperty("timeLinked", userSiteSpecificObject.getLong("timeLinked"));
+		}
 
 		exchange.setProperty("isAccountingChannel", false);
 		String[] channels = accountingChannel.split("-");

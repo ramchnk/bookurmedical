@@ -7,8 +7,6 @@ public class Config {
 
 	private String FbTokenExchangeUri;
 
-	private String DbUserName;
-	private String DbPassword;
 	private String orderConfigDBURI;
 	private String orderConfigDBName;
 	private String userConfigDBURI;
@@ -49,22 +47,6 @@ public class Config {
 		FbTokenExchangeUri = fbTokenExchangeUri;
 	}
 	
-	public String getDbUserName() {
-		return DbUserName;
-	}
-
-	public void setDbUserName(String dbUserName) {
-		DbUserName = dbUserName;
-	}
-
-	public String getDbPassword() {
-		return DbPassword;
-	}
-
-	public void setDbPassword(String dbPassword) {
-		DbPassword = dbPassword;
-	}
-
 	public String getOrderConfigDBURI() {
 		return orderConfigDBURI;
 	}

@@ -36,8 +36,6 @@
 		<property name="FbTokenExchangeUri" value="${FbTokenExchangeUri}" />
 		
 		<!-- DB Values -->
-		<property name="DbUserName" value="${DbUserName}" />
-		<property name="DbPassword" value="${DbPassword}" />
 		<property name="userConfigDBURI" value="${userConfigDBURI}" />
 		<property name="userConfigDBName" value="${userConfigDBName}" />
 		<property name="inventoryConfigDBURI" value="${inventoryConfigDBURI}" />

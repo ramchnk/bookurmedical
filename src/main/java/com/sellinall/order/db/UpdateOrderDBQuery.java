@@ -599,21 +599,19 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
 			if (orderDBObject.containsField("orderItems")) {
 				BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
-				if (orderItems.size() > orderItemIndex) {
-					BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
-					if (orderItemDB.containsField("settlementAmount")) {
-						fillTransactionKeyValuePair(orderItem, "settlementAmount", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "settlementStatus", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "returnSettlementStatus", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "transactionPeriod", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "timeSettled", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "timeSettlementProcessed", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "shippingFeeRebateFromChannel", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "buyerPaidAmount", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "shippingFeePaidToChannel", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "shippingFeeRebateFromChannel", orderItemDB);
-						fillTransactionKeyValuePair(orderItem, "settlementDetails", orderItemDB);
-					}
+				BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
+				if (orderItemDB.containsField("settlementAmount")) {
+					fillTransactionKeyValuePair(orderItem, "settlementAmount", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "settlementStatus", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "returnSettlementStatus", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "transactionPeriod", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "timeSettled", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "timeSettlementProcessed", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "shippingFeeRebateFromChannel", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "buyerPaidAmount", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "shippingFeePaidToChannel", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "shippingFeeRebateFromChannel", orderItemDB);
+					fillTransactionKeyValuePair(orderItem, "settlementDetails", orderItemDB);
 				}
 			}
 		}

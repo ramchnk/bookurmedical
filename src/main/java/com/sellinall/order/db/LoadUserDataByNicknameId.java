@@ -74,6 +74,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isInforWMS", false);
 		exchange.setProperty("isSatsacoWMS", false);
+		exchange.setProperty("isNetSuite", false);
 
 		//Handle warehousebased stock update
 		boolean isEligibleToProceed = true;
@@ -108,6 +109,10 @@ public class LoadUserDataByNicknameId implements Processor {
 				}
 				if (wms.startsWith("infor")) {
 					exchange.setProperty("isInforWMS", true);
+					break;
+				}
+				if (wms.startsWith("netSuite")) {
+					exchange.setProperty("isNetSuite", true);
 					break;
 				}
 			}

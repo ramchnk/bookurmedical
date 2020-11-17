@@ -18,7 +18,6 @@ public class PrepareRequestMessage implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderRecord = new JSONObject(exchange.getProperty("orderRecord", BasicDBObject.class).toString());
-
 		orderRecord.put("merchantID", exchange.getProperty("merchantID", String.class));
 		if(exchange.getProperties().containsKey("countryCode")){
 			orderRecord.put("countryCode", exchange.getProperty("countryCode"));
@@ -59,6 +58,12 @@ public class PrepareRequestMessage implements Processor {
 		exchange.setProperty("publishToSatsaco", false);
 		if (isSatsacoWMS) {
 			exchange.setProperty("publishToSatsaco", true);
+		}
+		// prepare publish message for create & update in netSuite server
+		boolean isNetSuite = exchange.getProperty("isNetSuite", Boolean.class);
+		exchange.setProperty("publishToNetSuite", false);
+		if (isNetSuite) {
+			exchange.setProperty("publishToNetSuite", true);
 		}
 	}
 }

@@ -44,6 +44,10 @@ public class SyncProductMaster implements Processor {
 				&& !exchange.getProperty("hasSKU", Boolean.class)) {
 			return;
 		}
+		boolean isPromotionItem = false;
+		if (orderItemMessage.has("promotionType") && orderItemMessage.getString("promotionType").equals("flashSale")) {
+			isPromotionItem = true;
+		}
 		int quantitySold = orderItemMessage.getInt("quantity");
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
@@ -93,6 +97,10 @@ public class SyncProductMaster implements Processor {
 			if (payload.length() != 0) {
 				payload.put("actor", actor);
 				payload.put("stockEventType", stockEventType);
+				if (isPromotionItem && orderItemMessage.has("SKU")) {
+					payload.put("SKU", orderItemMessage.getString("SKU"));
+				}
+				payload.put("isPromotionItem", isPromotionItem);
 				JSONObject addendum = new JSONObject();
 				addendum.put("orderID", orderID);
 				addendum.put("nickNameID", orderMessage.getString("nickNameID"));

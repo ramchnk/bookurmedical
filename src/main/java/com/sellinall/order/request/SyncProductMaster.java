@@ -97,13 +97,13 @@ public class SyncProductMaster implements Processor {
 			if (payload.length() != 0) {
 				payload.put("actor", actor);
 				payload.put("stockEventType", stockEventType);
-				if (isPromotionItem && orderItemMessage.has("SKU")) {
-					payload.put("SKU", orderItemMessage.getString("SKU"));
-				}
 				payload.put("isPromotionItem", isPromotionItem);
 				JSONObject addendum = new JSONObject();
 				addendum.put("orderID", orderID);
 				addendum.put("nickNameID", orderMessage.getString("nickNameID"));
+				if (isPromotionItem && orderItemMessage.has("SKU")) {
+					addendum.put("SKU", orderItemMessage.getString("SKU"));
+				}
 				payload.put("addendum", addendum);
 				String url = Config.getConfig().getSIAInventoryManagementServerURL() + "/productMaster/" + urlPath;
 				updateProductMaster(payload, accountNumber, url);

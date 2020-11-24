@@ -137,6 +137,7 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("shippingAmount")) {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
 		}
+		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		exchange.setProperty("groupOrderByCartNumber", false);
 		if (orderMessage.containsField("cartNumber")) {
@@ -430,6 +431,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "sellerVoucherCodes", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerVoucherAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "bundledPromotionItems", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
 	}
 

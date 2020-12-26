@@ -420,6 +420,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "dropoffBranchList", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "refundDetails", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "returnDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "cancelDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerDiscountAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "channelDiscountAmount", orderMessage);
@@ -428,8 +429,9 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "voucherAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "documents", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "shippingAmount", orderMessage);
-		fillTransactionKeyValuePair(orderRecord, "sellerVoucherCodes", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerVoucherAmount", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "sellerVoucherCodes", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "channelVoucherCodes", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "bundledPromotionItems", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);

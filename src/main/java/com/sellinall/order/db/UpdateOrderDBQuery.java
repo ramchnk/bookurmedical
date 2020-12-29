@@ -449,9 +449,11 @@ public class UpdateOrderDBQuery implements Processor {
 		List<BasicDBObject> freeGiftItems = new ArrayList<BasicDBObject>();
 		List<String> orderItemIDListFromDB = new ArrayList<String>();
 		Map<String, String> orderItemsStatusMap = new HashMap<String, String>();
+		int orderDBObjectSize = 0;
 		if ((Boolean) exchange.getProperty("hasOrderInDB")) {
 			JSONObject orderDBObject = new JSONObject(exchange.getProperty("orderDBObject").toString());
 			JSONArray items = orderDBObject.getJSONArray("orderItems");
+			orderDBObjectSize = items.length();
 			for (int i = 0; i < items.length(); i++) {
 				if (items.getJSONObject(i).has("orderItemID")) {
 					orderItemIDListFromDB.add(items.getJSONObject(i).getString("orderItemID"));
@@ -467,8 +469,14 @@ public class UpdateOrderDBQuery implements Processor {
 				}
 			}
 		}
+
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
+			if (orderRecord.containsField("orderStatus")
+					&& orderRecord.getString("orderStatus").equals(SIAOrderStatus.INITIATED.toString())
+					&& exchange.getProperty("hasOrderInDB", Boolean.class) && orderDBObjectSize != orderItems.size()) {
+				return;
+			}
 			for (int i = 0; i < orderItems.size(); i++) {
 				BasicDBObject orderItem = orderItems.get(i);
 				if (exchange.getProperties().containsKey("isStatusHandledInOrderItem")

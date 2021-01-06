@@ -69,26 +69,39 @@ public class ConstructRequestType implements Processor {
 						JSONObject settlementDetailsObject = orderItem.getJSONObject("settlementDetails");
 						if (settlementDetailsObject.has("refunded")) {
 							JSONObject refundedObject = settlementDetails.getJSONObject("refunded");
-							if (refunded.has("expectedMarketPlaceCommission")) {
-								refundedObject.put("expectedMarketPlaceCommission",
-										refunded.get("expectedMarketPlaceCommission"));
-							}
-							if (refunded.has("feesFieldsToUpdate")) {
-								refundedObject.put("feesFieldsToUpdate", refunded.getJSONArray("feesFieldsToUpdate"));
-							}
+							fillUpFeesDetails(refunded, refundedObject);
 							settlementDetailsObject.put("refunded", refundedObject);
 							orderItem.put("settlementDetails", settlementDetailsObject);
 						}
 					}
 				}
 			}
-			if (object.has("expectedMarketPlaceCommission")) {
-				orderItem.put("expectedMarketPlaceCommission", object.getJSONObject("expectedMarketPlaceCommission"));
-			}
-			if (object.has("feesFieldsToUpdate")) {
-				orderItem.put("feesFieldsToUpdate", object.getJSONArray("feesFieldsToUpdate"));
-			}
+			fillUpFeesDetails(object,orderItem);
 			orderItems.put(index, orderItem);
+		}
+	}
+
+	private void fillUpFeesDetails(JSONObject object, JSONObject orderItem) throws JSONException {
+		if (object.has("expectedMarketPlaceCommission")) {
+			orderItem.put("expectedMarketPlaceCommission", object.get("expectedMarketPlaceCommission"));
+		}
+		if (object.has("feesFieldsToUpdate")) {
+			orderItem.put("feesFieldsToUpdate", object.get("feesFieldsToUpdate"));
+		}
+		if (object.has("sponsoredAffiliatesFee")) {
+			orderItem.put("sponsoredAffiliatesFee", object.get("sponsoredAffiliatesFee"));
+		}
+		if (object.has("sponsoredAffiliatesFeeVAT")) {
+			orderItem.put("sponsoredAffiliatesFeeVAT", object.get("sponsoredAffiliatesFeeVAT"));
+		}
+		if (object.has("shippingFeePaidToChannelVAT")) {
+			orderItem.put("shippingFeePaidToChannelVAT", object.get("shippingFeePaidToChannelVAT"));
+		}
+		if (object.has("refundSponsoredAffiliates")) {
+			orderItem.put("refundSponsoredAffiliates", object.get("refundSponsoredAffiliates"));
+		}
+		if (object.has("refundSponsoredAffiliatesVAT")) {
+			orderItem.put("refundSponsoredAffiliatesVAT", object.get("refundSponsoredAffiliatesVAT"));
 		}
 	}
 }

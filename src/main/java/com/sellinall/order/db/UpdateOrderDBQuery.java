@@ -587,16 +587,10 @@ public class UpdateOrderDBQuery implements Processor {
 					BasicDBObject settlementDetails = (BasicDBObject) orderItem.get("settlementDetails");
 					if (settlementDetails.containsField("refunded")) {
 						BasicDBObject refunded = (BasicDBObject) settlementDetails.get("refunded");
-						if (refunded.containsField("expectedMarketPlaceCommission")) {
-							refunded.remove("expectedMarketPlaceCommission");
-						}
-						if (refunded.containsField("feesFieldsToUpdate")) {
-							refunded.remove("feesFieldsToUpdate");
-						}
+						removeFeesFields(refunded);
 					}
 				}
-				orderItem.remove("expectedMarketPlaceCommission");
-				orderItem.remove("feesFieldsToUpdate");
+				removeFeesFields(orderItem);
 			}
 			if(freeGiftItems.size()>0) {
 				//Retain freegift item from DB.
@@ -604,6 +598,16 @@ public class UpdateOrderDBQuery implements Processor {
 			}
 			orderRecord.put("orderItems", newOrderItems);
 		}
+	}
+
+	private void removeFeesFields(BasicDBObject refunded) {
+		refunded.remove("expectedMarketPlaceCommission");
+		refunded.remove("feesFieldsToUpdate");
+		refunded.remove("shippingFeePaidToChannelVAT");
+		refunded.remove("sponsoredAffiliatesFee");
+		refunded.remove("sponsoredAffiliatesFeeVAT");
+		refunded.remove("refundSponsoredAffiliatesFee");
+		refunded.remove("refundSponsoredAffiliatesFeeVAT");
 	}
 
 	private void processSettlementAmountOrderItem(BasicDBObject orderItem, int orderItemIndex, Exchange exchange) {

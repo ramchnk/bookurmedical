@@ -88,20 +88,5 @@ public class ConstructRequestType implements Processor {
 		if (object.has("feesFieldsToUpdate")) {
 			orderItem.put("feesFieldsToUpdate", object.get("feesFieldsToUpdate"));
 		}
-		if (object.has("sponsoredAffiliatesFee")) {
-			orderItem.put("sponsoredAffiliatesFee", object.get("sponsoredAffiliatesFee"));
-		}
-		if (object.has("sponsoredAffiliatesFeeVAT")) {
-			orderItem.put("sponsoredAffiliatesFeeVAT", object.get("sponsoredAffiliatesFeeVAT"));
-		}
-		if (object.has("shippingFeePaidToChannelVAT")) {
-			orderItem.put("shippingFeePaidToChannelVAT", object.get("shippingFeePaidToChannelVAT"));
-		}
-		if (object.has("refundSponsoredAffiliates")) {
-			orderItem.put("refundSponsoredAffiliates", object.get("refundSponsoredAffiliates"));
-		}
-		if (object.has("refundSponsoredAffiliatesVAT")) {
-			orderItem.put("refundSponsoredAffiliatesVAT", object.get("refundSponsoredAffiliatesVAT"));
-		}
 	}
 }

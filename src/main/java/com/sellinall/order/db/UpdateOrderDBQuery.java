@@ -604,11 +604,6 @@ public class UpdateOrderDBQuery implements Processor {
 	private void removeFeesFields(BasicDBObject refunded) {
 		refunded.remove("expectedMarketPlaceCommission");
 		refunded.remove("feesFieldsToUpdate");
-		refunded.remove("shippingFeePaidToChannelVAT");
-		refunded.remove("sponsoredAffiliatesFee");
-		refunded.remove("sponsoredAffiliatesFeeVAT");
-		refunded.remove("refundSponsoredAffiliatesFee");
-		refunded.remove("refundSponsoredAffiliatesFeeVAT");
 	}
 
 	private void processSettlementAmountOrderItem(BasicDBObject orderItem, int orderItemIndex, Exchange exchange) {

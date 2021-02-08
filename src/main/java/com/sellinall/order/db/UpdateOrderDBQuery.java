@@ -435,6 +435,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "bundledPromotionItems", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerRemarks", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "buyerRemarks", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
 	}
 

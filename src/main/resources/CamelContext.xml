@@ -735,7 +735,11 @@
 				</setProperty>
 				<process ref="constructRequestType" />
 				<when>
-					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
 					<setHeader headerName="rabbitmq.ROUTING_KEY">
 						<constant>netSuiteKey</constant>
 					</setHeader>

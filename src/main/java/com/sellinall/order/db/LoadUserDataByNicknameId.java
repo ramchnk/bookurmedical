@@ -111,10 +111,6 @@ public class LoadUserDataByNicknameId implements Processor {
 					exchange.setProperty("isInforWMS", true);
 					break;
 				}
-				if (wms.startsWith("netSuite")) {
-					exchange.setProperty("isNetSuite", true);
-					break;
-				}
 			}
 		} else if (enableWarehouseBasedStock) {
 			isEligibleToProceed = false;
@@ -123,6 +119,16 @@ public class LoadUserDataByNicknameId implements Processor {
 		if (exchange.getProperty("isInforWMS", boolean.class)
 				|| exchange.getProperty("isNinjaVanShippingCarrier", boolean.class)) {
 			exchange.setProperty("isPartnerLogistics", true);
+		}
+		if (userSiteSpecificObject.containsKey("erp") && userSiteSpecificObject.get("erp") != null) {
+			BasicDBList erpList = (BasicDBList) userSiteSpecificObject.get("erp");
+			for (int i = 0; i < erpList.size(); i++) {
+				String erp = erpList.get(i).toString();
+				if (erp.startsWith("netSuite")) {
+					exchange.setProperty("isNetSuite", true);
+					break;
+				}
+			}
 		}
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
 		if(userSiteSpecificObject.containsField("countryCode")){

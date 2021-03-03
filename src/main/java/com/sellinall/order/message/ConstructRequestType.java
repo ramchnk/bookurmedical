@@ -36,7 +36,8 @@ public class ConstructRequestType implements Processor {
 			}
 			// for ninjaVan createOrder & updateOrder
 			// for infor createOrder & updateOrder
-			if (publishTo.equals("ninjaVan") || publishTo.equals("infor") || publishTo.equals("satsaco") || publishTo.equals("netSuite")) {
+			if (publishTo.equals("ninjaVan") || publishTo.equals("infor") || publishTo.equals("satsaco")
+					|| publishTo.equals("netSuite") || publishTo.equals("odoo")) {
 				String requestType = "";
 				if (exchange.getProperty("isNewOrder", boolean.class)) {
 					requestType = "createOrder";

@@ -65,5 +65,12 @@ public class PrepareRequestMessage implements Processor {
 		if (isNetSuite) {
 			exchange.setProperty("publishToNetSuite", true);
 		}
+		// prepare publish message for create & update in odoo server
+		boolean isOdoo = exchange.getProperty("isOdoo", Boolean.class);
+		exchange.setProperty("publishToOdoo", false);
+		if (isOdoo) {
+			exchange.setProperty("publishToOdoo", true);
+		}
+
 	}
 }

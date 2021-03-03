@@ -75,6 +75,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isInforWMS", false);
 		exchange.setProperty("isSatsacoWMS", false);
 		exchange.setProperty("isNetSuite", false);
+		exchange.setProperty("isOdoo", false);
 
 		//Handle warehousebased stock update
 		boolean isEligibleToProceed = true;
@@ -126,6 +127,9 @@ public class LoadUserDataByNicknameId implements Processor {
 				String erp = erpList.get(i).toString();
 				if (erp.startsWith("netSuite")) {
 					exchange.setProperty("isNetSuite", true);
+					break;
+				} else if(erp.startsWith("odoo")) {
+					exchange.setProperty("isOdoo", true);
 					break;
 				}
 			}

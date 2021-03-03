@@ -247,6 +247,15 @@
 		<property name="networkRecoveryInterval" value="0"/>
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
+	<bean id="odooTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${odoo.host}" />
+		<property name="port" value="${odoo.rx.port}" />
+		<property name="username" value="${odoo.username}" />
+		<property name="password" value="${odoo.password}" />
+		<property name="virtualHost" value="${odoo.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
+	</bean>
 	<bean id="magentoTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${magentomq.host}" />
 		<property name="port" value="${magentomq.tx.port}" />
@@ -746,6 +755,27 @@
 					<convertBodyTo type="java.lang.String" />
 					<to
 							uri="rabbitmq://{{netSuite.host}}:{{netSuite.tx.port}}/netSuiteExchange?connectionFactory=#netSuiteTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+							pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToOdoo} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>odoo</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>odooKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+							uri="rabbitmq://{{odoo.host}}:{{odoo.tx.port}}/odooExchange?connectionFactory=#odooTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 							pattern="InOut" />
 				</when>
 			</when>

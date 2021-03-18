@@ -730,6 +730,8 @@ public class UpdateOrderDBQuery implements Processor {
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DAMAGE_BY_3PL)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DAMAGE_BY_3PL)) {
 			orderRecord.put("timeDamageBy3PL", DateUtil.getSIADateFormat());
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERY_FAILED)) {
+			orderRecord.put("timeDeliveryFailed", DateUtil.getSIADateFormat());
 		}
 	}
 

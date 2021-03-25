@@ -7,11 +7,13 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONObject;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mudra.sellinall.config.Config;
+import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.SIAOrderStatus;
 
 public class ConstructOrderNotification implements Processor {
@@ -20,7 +22,8 @@ public class ConstructOrderNotification implements Processor {
 
 	public void process(Exchange exchange) {
 
-		JSONObject orderRecord = new JSONObject(exchange.getProperty("orderRecord", BasicDBObject.class).toString());
+		JSONObject orderRecord = OrderUtil
+				.parseToJsonObject((DBObject) exchange.getProperty("orderRecord", BasicDBObject.class));
 		JSONObject outBody = new JSONObject();
 
 		try {

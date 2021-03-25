@@ -8,9 +8,11 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
+import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.DateUtil;
 import com.sellinall.util.enums.SIAInventoryStatus;
 
@@ -22,7 +24,8 @@ public class UpdateInventoryWithBidAmount implements Processor {
 	static Logger log = Logger.getLogger(UpdateInventoryWithBidAmount.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getProperty("inventory", String.class));
+		JSONObject inventoryDBRecordJSON = OrderUtil
+				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		JSONObject bidMessage = exchange.getProperty("message", JSONObject.class);
 		processBidAmountUpdateQuery(exchange, inventoryDBRecord, bidMessage);

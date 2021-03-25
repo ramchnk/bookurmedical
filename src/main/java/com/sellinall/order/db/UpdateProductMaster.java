@@ -8,7 +8,9 @@ import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
@@ -19,7 +21,8 @@ public class UpdateProductMaster implements Processor {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getProperty("inventory", String.class));
+		JSONObject inventoryDBRecordJSON = OrderUtil
+				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);

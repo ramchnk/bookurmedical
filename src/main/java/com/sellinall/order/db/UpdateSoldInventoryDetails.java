@@ -10,6 +10,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
@@ -17,6 +18,7 @@ import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.SIAInventoryStatus;
 
 public class UpdateSoldInventoryDetails implements Processor {
@@ -25,7 +27,8 @@ public class UpdateSoldInventoryDetails implements Processor {
 	static String siteNames[] = PostingSites.getConfig().getSitesList();
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inventoryDBRecordJSON = new JSONObject(exchange.getProperty("inventory", String.class));
+		JSONObject inventoryDBRecordJSON = OrderUtil
+				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
 		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());

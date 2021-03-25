@@ -6,6 +6,8 @@ import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.sellinall.order.util.OrderUtil;
 
 /**
  * 
@@ -17,7 +19,8 @@ public class PrepareRequestMessage implements Processor {
 	static Logger log = Logger.getLogger(PrepareRequestMessage.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject orderRecord = new JSONObject(exchange.getProperty("orderRecord", BasicDBObject.class).toString());
+		JSONObject orderRecord = OrderUtil
+				.parseToJsonObject((DBObject) exchange.getProperty("orderRecord", BasicDBObject.class));
 		orderRecord.put("merchantID", exchange.getProperty("merchantID", String.class));
 		if(exchange.getProperties().containsKey("countryCode")){
 			orderRecord.put("countryCode", exchange.getProperty("countryCode"));

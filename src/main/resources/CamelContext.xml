@@ -220,6 +220,15 @@
 		<property name="networkRecoveryInterval" value="0"/>
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
+	<bean id="singPostTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${singPost.host}" />
+		<property name="port" value="${singPost.tx.port}" />
+		<property name="username" value="${singPost.username}" />
+		<property name="password" value="${singPost.password}" />
+		<property name="virtualHost" value="${singPost.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
+	</bean>
 	<bean id="inforTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${infor.host}" />
 		<property name="port" value="${infor.rx.port}" />
@@ -692,6 +701,23 @@
 					<convertBodyTo type="java.lang.String" />
 					<to
 						uri="rabbitmq://{{ninjaVan.host}}:{{ninjaVan.tx.port}}/ninjaVanExchange?connectionFactory=#ninjaVanTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToSingPost} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>singPost</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>singPostKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{singPost.host}}:{{singPost.tx.port}}/singPostExchange?connectionFactory=#singPostTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 						pattern="InOut" />
 				</when>
 			</when>

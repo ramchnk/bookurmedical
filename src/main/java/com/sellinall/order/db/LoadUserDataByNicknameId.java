@@ -6,6 +6,7 @@ package com.sellinall.order.db;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -71,8 +72,11 @@ public class LoadUserDataByNicknameId implements Processor {
 			BasicDBList shippingCarrier = (BasicDBList) userSiteSpecificObject.get("shippingCarrier");
 			if (shippingCarrier.contains("ninjaVan")) {
 				exchange.setProperty("isNinjaVanShippingCarrier", true);
-			} else if (shippingCarrier.contains("singPost")) {
-				exchange.setProperty("isSingPostShippingCarrier", true);
+			} else {
+				Pattern singPostPattern = Pattern.compile(".*singPost.*");
+				if (singPostPattern.matcher(shippingCarrier.toString()).matches()) {
+					exchange.setProperty("isSingPostShippingCarrier", true);
+				}
 			}
 		}
 		exchange.setProperty("isInforWMS", false);

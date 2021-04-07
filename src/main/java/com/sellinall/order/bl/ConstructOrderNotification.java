@@ -7,8 +7,9 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.json.JSONArray;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -20,7 +21,7 @@ public class ConstructOrderNotification implements Processor {
 
 	static Logger log = Logger.getLogger(ConstructOrderNotification.class.getName());
 
-	public void process(Exchange exchange) {
+	public void process(Exchange exchange) throws JSONException {
 
 		JSONObject orderRecord = OrderUtil
 				.parseToJsonObject((DBObject) exchange.getProperty("orderRecord", BasicDBObject.class));

@@ -49,7 +49,7 @@ public class UpdateOrderDBQuery implements Processor {
 	static Logger log = Logger.getLogger(UpdateOrderDBQuery.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inBody = new JSONObject(exchange.getIn().getBody(String.class));
+		JSONObject inBody = OrderUtil.parseToJsonObject((DBObject) JSON.parse(exchange.getIn().getBody(String.class)));
 		exchange.setProperty("stopProcess", false);
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
@@ -453,7 +453,7 @@ public class UpdateOrderDBQuery implements Processor {
 		Map<String, String> orderItemsStatusMap = new HashMap<String, String>();
 		int orderDBObjectSize = 0;
 		if ((Boolean) exchange.getProperty("hasOrderInDB")) {
-			JSONObject orderDBObject = new JSONObject(exchange.getProperty("orderDBObject").toString());
+			JSONObject orderDBObject = OrderUtil.parseToJsonObject((DBObject) exchange.getProperty("orderDBObject"));
 			JSONArray items = orderDBObject.getJSONArray("orderItems");
 			orderDBObjectSize = items.length();
 			for (int i = 0; i < items.length(); i++) {
@@ -491,7 +491,7 @@ public class UpdateOrderDBQuery implements Processor {
 								.valueOf(orderItem.getString("orderStatus"));
 						NotificationOrderActionStatus notificationOrderActionStatus = OrderUtil
 								.handleExistingOrderStatus(notificationOrderStatus, orderItemDBStatus,
-										new JSONObject(orderItem.toString()), orderID, "orderItem");
+										OrderUtil.parseToJsonObject((DBObject) orderItem), orderID, "orderItem");
 						if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.NO_ACTION)) {
 							orderItem.put("orderStatus", orderItemDBStatus.toString());
 						}

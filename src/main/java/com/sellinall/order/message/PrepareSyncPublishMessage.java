@@ -9,11 +9,16 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
+import com.sellinall.order.util.OrderUtil;
+
 public class PrepareSyncPublishMessage implements Processor {
 
 	@SuppressWarnings("unchecked")
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inventoryDBRecord = new JSONObject(exchange.getProperty("inventory", String.class));
+		JSONObject inventoryDBRecord = OrderUtil
+				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
 		JSONObject publishMessage = new JSONObject();
 		Object body = exchange.getIn().getBody();
 		// publish updateItem msg to site

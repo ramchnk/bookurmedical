@@ -15,6 +15,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
+import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.CurrencyUtil;
 
 public class GroupOrderByCartNumber implements Processor {
@@ -60,31 +61,31 @@ public class GroupOrderByCartNumber implements Processor {
 			}
 			if (relatedOrder.containsField("orderAmount")) {
 				orderAmountObj = CurrencyUtil.addAmountObject(orderAmountObj,
-						new JSONObject(relatedOrder.get("orderAmount").toString()));
+						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("orderAmount").toString())));
 			}
 			if (relatedOrder.containsField("orderAmountInUSD")) {
 				orderAmountInUSDObj = CurrencyUtil.addAmountObject(orderAmountInUSDObj,
-						new JSONObject(relatedOrder.get("orderAmountInUSD").toString()));
+						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("orderAmountInUSD").toString())));
 			}
 			if (relatedOrder.containsField("orderSoldAmount")) {
 				orderSoldAmountObj = CurrencyUtil.addAmountObject(orderSoldAmountObj,
-						new JSONObject(relatedOrder.get("orderSoldAmount").toString()));
+						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("orderSoldAmount").toString())));
 			}
 			if (relatedOrder.containsField("orderSoldAmountInUSD")) {
 				orderSoldAmountInUSDObj = CurrencyUtil.addAmountObject(orderSoldAmountInUSDObj,
-						new JSONObject(relatedOrder.get("orderSoldAmountInUSD").toString()));
+						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("orderSoldAmountInUSD").toString())));
 			}
 			if (relatedOrder.containsField("sellerDiscountAmount")) {
 				sellerDiscountAmountObj = CurrencyUtil.addAmountObject(sellerDiscountAmountObj,
-						new JSONObject(relatedOrder.get("sellerDiscountAmount").toString()));
+						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("sellerDiscountAmount").toString())));
 			}
 			if (relatedOrder.containsField("shippingAmount")) {
 				shippingAmountObj = CurrencyUtil.addAmountObject(shippingAmountObj,
-						new JSONObject(relatedOrder.get("shippingAmount").toString()));
+						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("shippingAmount").toString())));
 			}
 			if (relatedOrder.containsField("channelDiscountAmount")) {
 				channelDiscountAmountObj = CurrencyUtil.addAmountObject(channelDiscountAmountObj,
-						new JSONObject(relatedOrder.get("channelDiscountAmount").toString()));
+						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("channelDiscountAmount").toString())));
 			}
 		}
 		order.put("orderNumber", orderNumber);
@@ -97,7 +98,7 @@ public class GroupOrderByCartNumber implements Processor {
 		order.put("sellerDiscountAmount", BasicDBObject.parse(sellerDiscountAmountObj.toString()));
 		order.put("channelDiscountAmount", BasicDBObject.parse(channelDiscountAmountObj.toString()));
 		order.put("shippingAmount", BasicDBObject.parse(shippingAmountObj.toString()));
-		return new JSONObject(order.toString());
+		return OrderUtil.parseToJsonObject(order);
 	}	
 
 	private List<BasicDBObject> getOrderList(String cartNumber, String accountNumber) {

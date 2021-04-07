@@ -6,6 +6,8 @@ import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.sellinall.order.util.OrderUtil;
 
 /**
  * 
@@ -17,7 +19,8 @@ public class PrepareUpdateOrderPublishMessage implements Processor {
 	static Logger log = Logger.getLogger(PrepareUpdateOrderPublishMessage.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject publishMessage = new JSONObject(exchange.getProperty("orderRecord", BasicDBObject.class).toString());
+		JSONObject publishMessage = OrderUtil
+				.parseToJsonObject((DBObject) exchange.getProperty("orderRecord", BasicDBObject.class));
 		if (!publishMessage.has("site")) {
 			log.error("siteName not found in order message");
 			return;

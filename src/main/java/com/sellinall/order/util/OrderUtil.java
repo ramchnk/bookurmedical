@@ -1,8 +1,15 @@
 package com.sellinall.order.util;
 
 import org.apache.log4j.Logger;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.util.enums.SIAOrderStatus;
 
@@ -73,6 +80,25 @@ public class OrderUtil {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED);
+	}
+
+	public static JSONArray parseToJsonArray(DBCursor myList) throws JSONException {
+		JSONArray jsonArray = new JSONArray();
+		while (myList.hasNext()) {
+			BasicDBObject doc = (BasicDBObject) myList.next();
+			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+			jsonArray.put(new JSONObject(doc.toJson(writerSettings)));
+		}
+		return jsonArray;
+	}
+
+	public static JSONObject parseToJsonObject(DBObject findOneObject) throws JSONException {
+		if (findOneObject == null) {
+			return new JSONObject();
+		}
+		BasicDBObject doc = (BasicDBObject) findOneObject;
+		JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+		return new JSONObject(doc.toJson(writerSettings));
 	}
 
 }

@@ -436,6 +436,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerRemarks", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "buyerRemarks", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "gstAmount", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
 	}
 

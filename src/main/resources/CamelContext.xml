@@ -361,6 +361,17 @@
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
 
+	<!-- buyer management server -->
+	<bean id="finopsTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${finopsmq.host}" />
+		<property name="port" value="${finopsmq.tx.port}" />
+		<property name="username" value="${finopsmq.username}" />
+		<property name="password" value="${finopsmq.password}" />
+		<property name="virtualHost" value="${finopsmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
+	</bean>
+
 	<!-- mongo db bean -->
 	<bean id="mongoInventoryBean" class="com.mongodb.MongoClient">
 		<constructor-arg index="0">
@@ -668,6 +679,21 @@
 				<convertBodyTo type="java.lang.String" />
 				<to
 					uri="rabbitmq://{{feemanagementmq.host}}:{{feemanagementmq.tx.port}}/feeManagementExchange?connectionFactory=#feeManagementTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+					pattern="InOut" />
+			</when>
+			<!-- we are going to publish message to finops always -->
+			<setProperty propertyName="publishTo">
+				<constant>finops</constant>
+			</setProperty>
+			<process ref="constructRequestType" />
+			<when>
+				<simple>${exchangeProperty.publishMessage} != null</simple>
+				<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<constant>finopsKey</constant>
+				</setHeader>
+				<convertBodyTo type="java.lang.String" />
+				<to
+					uri="rabbitmq://{{finopsmq.host}}:{{finopsmq.tx.port}}/finopsExchange?connectionFactory=#finopsTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 					pattern="InOut" />
 			</when>
 			<when>

@@ -29,6 +29,10 @@ public class ConstructRequestType implements Processor {
 					publishMessage.put("isReconciliation", true);
 				}
 			}
+			// for finops createOrder & updateOrder
+			if (publishTo.equals("finops")) {
+				publishMessage.put("requestType", "order");
+			}
 			// for quickBooks createInvoice
 			if (publishTo.equals("quickbooks")) {
 				publishMessage.put("requestType", "createInvoice");

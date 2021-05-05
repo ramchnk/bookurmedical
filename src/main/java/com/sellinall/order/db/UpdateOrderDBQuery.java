@@ -137,6 +137,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("shippingAmount")) {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
 		}
+		if (orderMessage.containsField("isPosOrder")) {
+			orderRecord.put("isPosOrder", orderMessage.getBoolean("isPosOrder"));
+		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		exchange.setProperty("groupOrderByCartNumber", false);
@@ -293,6 +296,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (exchange.getProperties().containsKey("isPartnerLogistics")
 				&& exchange.getProperties().containsKey("airwayBillExists")) {
 			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));
+		}
+		if (orderMessage.containsField("isPosOrder")) {
+			orderRecord.put("isPosOrder", orderMessage.getBoolean("isPosOrder"));
 		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {

@@ -79,5 +79,12 @@ public class PrepareRequestMessage implements Processor {
 			exchange.setProperty("publishToOdoo", true);
 		}
 
+		// prepare publish message for create & update in vend server
+		boolean isVend = exchange.getProperty("isVend", Boolean.class);
+		exchange.setProperty("publishToVend", false);
+		if (isVend) {
+			exchange.setProperty("publishToVend", true);
+		}
+
 	}
 }

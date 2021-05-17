@@ -83,7 +83,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isSatsacoWMS", false);
 		exchange.setProperty("isNetSuite", false);
 		exchange.setProperty("isOdoo", false);
-		exchange.setProperty("isVend", false);
+		exchange.setProperty("isAramexWMS", false);
 
 		//Handle warehousebased stock update
 		boolean isEligibleToProceed = true;
@@ -120,6 +120,10 @@ public class LoadUserDataByNicknameId implements Processor {
 					exchange.setProperty("isInforWMS", true);
 					break;
 				}
+				if (wms.startsWith("aramex")) {
+					exchange.setProperty("isAramexWMS", true);
+					break;
+				}
 			}
 		} else if (enableWarehouseBasedStock) {
 			isEligibleToProceed = false;
@@ -138,9 +142,6 @@ public class LoadUserDataByNicknameId implements Processor {
 					break;
 				} else if(erp.startsWith("odoo")) {
 					exchange.setProperty("isOdoo", true);
-					break;
-				} else if (erp.startsWith("vend")) {
-					exchange.setProperty("isVend", true);
 					break;
 				}
 			}

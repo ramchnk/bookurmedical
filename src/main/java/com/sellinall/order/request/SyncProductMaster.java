@@ -109,7 +109,7 @@ public class SyncProductMaster implements Processor {
 				updateProductMaster(payload, accountNumber, url);
 			}
 		} else {
-			log.error("customSKU not found / empty for orderID : " + orderID + " and accountNumber : " + accountNumber
+			log.info("customSKU not found / empty for orderID : " + orderID + " and accountNumber : " + accountNumber
 					+ ", nickNameID : " + nickNameID);
 		}
 		//to update Sold count

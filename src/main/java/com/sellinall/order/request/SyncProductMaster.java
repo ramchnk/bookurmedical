@@ -144,9 +144,9 @@ public class SyncProductMaster implements Processor {
 		try {
 			response = HttpsURLConnectionUtil.doPut(url, payload.toString(), headers);
 			if (response.getInt("httpCode") != HttpStatus.OK_200) {
-				log.error("syncProductMaster failed for accountNumber : " + accountNumber + ", sellerSKU : "
-						+ payload.getString("sellerSKU"));
-				log.error(response.get("payload"));
+				log.error("SyncProductMaster failed with HttpStatus code : " + response.getInt("httpCode")
+						+ " for accountNumber : " + accountNumber + ", sellerSKU : " + payload.getString("sellerSKU")
+						+ " and response payload: " + response.get("payload"));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

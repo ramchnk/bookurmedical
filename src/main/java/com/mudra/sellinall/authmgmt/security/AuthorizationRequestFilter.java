@@ -27,6 +27,9 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 		if (arg0.getMethod().equals("OPTIONS")) {
 			throw new WebApplicationException(Status.ACCEPTED);
 		}
+		if(arg0.getPath().contains("health")) {
+			log.debug("No Need To authorize this url because it is from PARTNERNOTIFSERV / health service ");
+		}
 		/*
 		 * if (arg0.getAbsolutePath().getHost().equals("localhost")) { return
 		 * arg0; }

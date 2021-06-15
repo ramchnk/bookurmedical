@@ -229,6 +229,15 @@
 		<property name="networkRecoveryInterval" value="0"/>
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
+	<bean id="jtExpressTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${jtExpress.host}" />
+		<property name="port" value="${jtExpress.tx.port}" />
+		<property name="username" value="${jtExpress.username}" />
+		<property name="password" value="${jtExpress.password}" />
+		<property name="virtualHost" value="${jtExpress.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0" />
+		<property name="automaticRecoveryEnabled" value="true" />
+	</bean>
 	<bean id="inforTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${infor.host}" />
 		<property name="port" value="${infor.rx.port}" />
@@ -762,6 +771,23 @@
 					<convertBodyTo type="java.lang.String" />
 					<to
 						uri="rabbitmq://{{singPost.host}}:{{singPost.tx.port}}/singPostExchange?connectionFactory=#singPostTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToJTExpress} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>jtExpress</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>jtExpressKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{jtExpress.host}}:{{jtExpress.tx.port}}/jtExpressExchange?connectionFactory=#jtExpressTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 						pattern="InOut" />
 				</when>
 			</when>

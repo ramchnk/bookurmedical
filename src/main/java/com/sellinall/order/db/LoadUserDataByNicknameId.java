@@ -67,14 +67,17 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isNinjaVanShippingCarrier", false);
 		exchange.setProperty("isSingPostShippingCarrier", false);
+		exchange.setProperty("isJTExpressShippingCarrier", false);
 		if (userSiteSpecificObject.containsKey("shippingCarrier")
 				&& userSiteSpecificObject.get("shippingCarrier") != null) {
 			BasicDBList shippingCarrier = (BasicDBList) userSiteSpecificObject.get("shippingCarrier");
 			if (shippingCarrier.contains("ninjaVan")) {
 				exchange.setProperty("isNinjaVanShippingCarrier", true);
-			} else {
-				Pattern singPostPattern = Pattern.compile(".*singPost.*");
-				if (singPostPattern.matcher(shippingCarrier.toString()).matches()) {
+			} else if (shippingCarrier.size() > 0) {
+				String shippingCarrierName = shippingCarrier.get(0).toString();
+				if (shippingCarrierName.startsWith("jtExpress")) {
+					exchange.setProperty("isJTExpressShippingCarrier", true);
+				} else if (shippingCarrierName.startsWith("singPost")) {
 					exchange.setProperty("isSingPostShippingCarrier", true);
 				}
 			}

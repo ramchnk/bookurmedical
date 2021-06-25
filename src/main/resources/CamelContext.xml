@@ -764,6 +764,10 @@
 				</setProperty>
 				<process ref="constructRequestType" />
 				<when>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
+				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
 					<setHeader headerName="rabbitmq.ROUTING_KEY">
 						<constant>singPostKey</constant>
@@ -780,6 +784,10 @@
 					<constant>jtExpress</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
 				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
 					<setHeader headerName="rabbitmq.ROUTING_KEY">

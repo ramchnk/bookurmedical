@@ -45,8 +45,12 @@ public class SyncProductMaster implements Processor {
 			return;
 		}
 		boolean isPromotionItem = false;
+		String promotionID = null;
 		if (orderItemMessage.has("promotionType") && orderItemMessage.getString("promotionType").equals("flashSale")) {
 			isPromotionItem = true;
+		}
+		if (orderItemMessage.has("promotionID")) {
+			promotionID = orderItemMessage.getString("promotionID");
 		}
 		int quantitySold = orderItemMessage.getInt("quantity");
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
@@ -100,6 +104,10 @@ public class SyncProductMaster implements Processor {
 				payload.put("isPromotionItem", isPromotionItem);
 				JSONObject addendum = new JSONObject();
 				addendum.put("orderID", orderID);
+				if (promotionID != null) {
+					payload.put("promotionID", promotionID);
+					addendum.put("promotionID", promotionID);
+				}
 				addendum.put("nickNameID", orderMessage.getString("nickNameID"));
 				if (isPromotionItem && orderItemMessage.has("SKU")) {
 					addendum.put("SKU", orderItemMessage.getString("SKU"));

@@ -238,6 +238,15 @@
 		<property name="networkRecoveryInterval" value="0" />
 		<property name="automaticRecoveryEnabled" value="true" />
 	</bean>
+	<bean id="aramexShippingTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${aramexShipping.host}" />
+		<property name="port" value="${aramexShipping.tx.port}" />
+		<property name="username" value="${aramexShipping.username}" />
+		<property name="password" value="${aramexShipping.password}" />
+		<property name="virtualHost" value="${aramexShipping.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0" />
+		<property name="automaticRecoveryEnabled" value="true" />
+	</bean>	
 	<bean id="inforTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${infor.host}" />
 		<property name="port" value="${infor.rx.port}" />
@@ -796,6 +805,27 @@
 					<convertBodyTo type="java.lang.String" />
 					<to
 						uri="rabbitmq://{{jtExpress.host}}:{{jtExpress.tx.port}}/jtExpressExchange?connectionFactory=#jtExpressTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToAramexShipping} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>aramexShipping</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>aramexShippingKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{aramexShipping.host}}:{{aramexShipping.tx.port}}/aramexShippingExchange?connectionFactory=#aramexShippingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 						pattern="InOut" />
 				</when>
 			</when>

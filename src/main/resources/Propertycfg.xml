@@ -49,5 +49,10 @@
 		<property name="SIAInventoryManagementServerURL" value="${SIAInventoryManagementServerURL}" />
 		<property name="warehouses" value="${warehouses}"/>
 		<property name="whatsAppEnabled" value="${whatsAppEnabled}"/>
+
+		<!-- memcached -->
+		<property name="MemcachedCloudUsername" value="${MemcachedCloudUsername}" />
+		<property name="MemcachedCloudPassword" value="${MemcachedCloudPassword}" />
+		<property name="MemcachedCloudServers" value="${MemcachedCloudServers}" />
 		</bean>
 </beans>

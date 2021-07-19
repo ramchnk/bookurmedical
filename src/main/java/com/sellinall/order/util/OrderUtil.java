@@ -1,5 +1,7 @@
 package com.sellinall.order.util;
 
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
@@ -10,11 +12,19 @@ import org.codehaus.jettison.json.JSONObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mudra.sellinall.config.Config;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.util.enums.SIAOrderStatus;
 
+import net.spy.memcached.AddrUtil;
+import net.spy.memcached.ConnectionFactoryBuilder;
+import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.auth.PlainCallbackHandler;
+
 public class OrderUtil {
 	static Logger log = Logger.getLogger(OrderUtil.class.getName());
+	private static MemcachedClient memcachedClient;
 
 	public static NotificationOrderActionStatus handleExistingOrderStatus(SIAOrderStatus notificationOrderStatus,
 			SIAOrderStatus orderDBStatus, JSONObject orderMessage, String orderID, String type) throws Exception {
@@ -99,6 +109,56 @@ public class OrderUtil {
 		BasicDBObject doc = (BasicDBObject) findOneObject;
 		JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 		return new JSONObject(doc.toJson(writerSettings));
+	}
+
+	public static void initMemoryCached() {
+		try {
+			AuthDescriptor ad = new AuthDescriptor(new String[] { "PLAIN" }, new PlainCallbackHandler(Config
+					.getConfig().getMemcachedCloudUsername(), Config.getConfig().getMemcachedCloudPassword()));
+			MemcachedClient mc = new MemcachedClient(new ConnectionFactoryBuilder()
+					.setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setAuthDescriptor(ad).build(),
+					AddrUtil.getAddresses(Config.getConfig().getMemcachedCloudServers()));
+			memcachedClient = mc;
+		} catch (IOException ex) {
+			log.error("Memcached client could not be initialized");
+			ex.printStackTrace();
+		}
+	}
+
+	public static MemcachedClient getMemcachedClient(){
+		return memcachedClient;
+	}
+
+	public static String getMCkeyforGcStatusWaitingSKUS(String fromCurrency, String toCurrency) {
+		return fromCurrency + "-" + toCurrency + "-ExchangeRate";
+	}
+
+	public static Object getValueFromMemcache(String MCkey, boolean retry) {
+		try {
+			Object mcValue = memcachedClient.get(MCkey);
+			if (mcValue != null) {
+				return mcValue;
+			}
+		} catch (Exception e) {
+			if (retry) {
+				try {
+					log.error("Retrying to read value from  memcache, key:"+MCkey);
+					memcachedClient.shutdown();
+					initMemoryCached();
+					return getValueFromMemcache(MCkey, false);
+				} catch (Exception i) {
+					i.printStackTrace();
+				}
+			} else {
+				log.error("unable to get value from memcache, key :"+MCkey);
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	public static void updateMemcache(String MCKey, int MC_MAX_EXPIRE_TIME, double exchangeRate) {
+		memcachedClient.set(MCKey, MC_MAX_EXPIRE_TIME, exchangeRate);
 	}
 
 }

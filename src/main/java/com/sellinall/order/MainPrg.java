@@ -12,6 +12,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.mudra.sellinall.config.Config;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.order.services.PartnerNotification;
+import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.AuthConstant;
 import com.sellinall.util.InvoiceSequence;
 
@@ -57,6 +58,8 @@ public class MainPrg {
 		root.setParentLoaderPriority(true);
 
 		server.setHandler(root);
+		// Init memory cache
+		OrderUtil.initMemoryCached();
 		ApplicationContext appContext = new ClassPathXmlApplicationContext("CamelContext.xml");
 		CamelContext camelContext = SpringCamelContext.springCamelContext(appContext, false);
 		camelContext.start();

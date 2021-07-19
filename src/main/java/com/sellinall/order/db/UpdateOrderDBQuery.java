@@ -47,6 +47,7 @@ import com.sellinall.util.enums.UserMessageName;
 public class UpdateOrderDBQuery implements Processor {
 
 	static Logger log = Logger.getLogger(UpdateOrderDBQuery.class.getName());
+	public static final int MC_MAX_EXPIRE_TIME = 15 * 60;
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject inBody = OrderUtil.parseToJsonObject((DBObject) JSON.parse(exchange.getIn().getBody(String.class)));
@@ -223,18 +224,25 @@ public class UpdateOrderDBQuery implements Processor {
 		if (fromCurrency.equals(toCurrency)) {
 			return 1;
 		}
-		String url = Config.getConfig().getSIAfeeManagementServerURL() + "/exchange?fromCurrency=" + fromCurrency
-				+ "&toCurrency=" + toCurrency;
-		JSONObject response = HttpsURLConnectionUtil.doGet(url, null);
-		log.debug("exchange rate:" + response);
-		int httpCode = response.getInt("httpCode");
-		if (httpCode == HttpStatus.OK_200) {
-			JSONObject payload = new JSONObject(response.getString("payload"));
-			double exchangeRate = payload.getDouble("exchangeRate");
-			return exchangeRate;
+		String MCKey = OrderUtil.getMCkeyforGcStatusWaitingSKUS(fromCurrency, toCurrency);
+		Object mcValue = OrderUtil.getValueFromMemcache(MCKey, true);
+		if (mcValue != null) {
+			return (double) mcValue;
 		} else {
-			log.error("Get " + url + " failed with status code " + httpCode + " and the response is: " + response);
-			return 0;
+			String url = Config.getConfig().getSIAfeeManagementServerURL() + "/exchange?fromCurrency=" + fromCurrency
+					+ "&toCurrency=" + toCurrency;
+			JSONObject response = HttpsURLConnectionUtil.doGet(url, null);
+			log.debug("exchange rate:" + response);
+			int httpCode = response.getInt("httpCode");
+			if (httpCode == HttpStatus.OK_200) {
+				JSONObject payload = new JSONObject(response.getString("payload"));
+				double exchangeRate = payload.getDouble("exchangeRate");
+				OrderUtil.updateMemcache(MCKey, MC_MAX_EXPIRE_TIME, exchangeRate);
+				return exchangeRate;
+			} else {
+				log.error("Get " + url + " failed with status code " + httpCode + " and the response is: " + response);
+				return 0;
+			}
 		}
 	}
 

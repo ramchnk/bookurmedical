@@ -22,6 +22,9 @@ public class Config {
 	private String SIAInventoryManagementServerURL;
 	private String warehouses;
 	private boolean whatsAppEnabled;
+	private String MemcachedCloudUsername;
+	private String MemcachedCloudPassword;
+	private String MemcachedCloudServers;
 
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
@@ -145,6 +148,30 @@ public class Config {
 
 	public void setWhatsAppEnabled(boolean whatsAppEnabled) {
 		this.whatsAppEnabled = whatsAppEnabled;
+	}
+
+	public String getMemcachedCloudUsername() {
+		return MemcachedCloudUsername;
+	}
+
+	public void setMemcachedCloudUsername(String memcachedCloudUsername) {
+		MemcachedCloudUsername = memcachedCloudUsername;
+	}
+
+	public String getMemcachedCloudPassword() {
+		return MemcachedCloudPassword;
+	}
+
+	public void setMemcachedCloudPassword(String memcachedCloudPassword) {
+		MemcachedCloudPassword = memcachedCloudPassword;
+	}
+
+	public String getMemcachedCloudServers() {
+		return MemcachedCloudServers;
+	}
+
+	public void setMemcachedCloudServers(String memcachedCloudServers) {
+		MemcachedCloudServers = memcachedCloudServers;
 	}
 
 }

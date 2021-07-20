@@ -46,6 +46,8 @@ public class PrepareRequestMessage implements Processor {
 		exchange.setProperty("publishToSingPost", false);
 		Boolean isJTExpressShippingCarrier = exchange.getProperty("isJTExpressShippingCarrier", Boolean.class);
 		exchange.setProperty("publishToJTExpress", false);
+		Boolean isAramexShippingCarrier = exchange.getProperty("isAramexShippingCarrier", Boolean.class);
+		exchange.setProperty("publishToAramexShipping", false);
 		// To skip the unnecessary order Update, receive from Shipping Carrier
 		// channels
 		boolean isOrderUpdatedByShippingCarrier = exchange.getProperty("isOrderUpdatedByShippingCarrier",
@@ -56,7 +58,10 @@ public class PrepareRequestMessage implements Processor {
 			exchange.setProperty("publishToSingPost", true);
 		}  else if (isJTExpressShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 			exchange.setProperty("publishToJTExpress", true);
+		} else if (isAramexShippingCarrier && !isOrderUpdatedByShippingCarrier) {
+			exchange.setProperty("publishToAramexShipping", true);
 		}
+
 
 		// prepare publish message for create & update in infor server
 		boolean isInforWMS = exchange.getProperty("isInforWMS", Boolean.class);

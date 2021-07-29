@@ -21,14 +21,6 @@ public class ConstructRequestType implements Processor {
 		exchange.setProperty("isEligibleToProceed", true);
 		if (exchange.getProperties().containsKey("publishTo")) {
 			String publishTo = exchange.getProperty("publishTo", String.class);
-			// for feemanagement createOrder & updateOrder
-			if (publishTo.equals("feeManagement")) {
-				publishMessage.put("feeType", "order");
-				if (exchange.getProperty("isReconciliation", boolean.class)) {
-					parseOrderItems(publishMessage, exchange.getProperty("orderItemList", JSONArray.class));
-					publishMessage.put("isReconciliation", true);
-				}
-			}
 			// for finops createOrder & updateOrder
 			if (publishTo.equals("finops")) {
 				publishMessage.put("requestType", "order");
@@ -61,39 +53,5 @@ public class ConstructRequestType implements Processor {
 		log.debug("publishMessage " + publishMessage);
 		exchange.getOut().setBody(publishMessage);
 
-	}
-
-	private void parseOrderItems(JSONObject publishMessage, JSONArray jsonArray) throws JSONException {
-		JSONArray orderItems = publishMessage.getJSONArray("orderItems");
-		for (int index = 0; index < orderItems.length(); index++) {
-			JSONObject orderItem = orderItems.getJSONObject(index);
-			JSONObject object = jsonArray.getJSONObject(index);
-			if (object.has("settlementDetails")) {
-				JSONObject settlementDetails = object.getJSONObject("settlementDetails");
-				if (settlementDetails.has("refunded")) {
-					JSONObject refunded = settlementDetails.getJSONObject("refunded");
-					if (orderItem.has("settlementDetails")) {
-						JSONObject settlementDetailsObject = orderItem.getJSONObject("settlementDetails");
-						if (settlementDetailsObject.has("refunded")) {
-							JSONObject refundedObject = settlementDetails.getJSONObject("refunded");
-							fillUpFeesDetails(refunded, refundedObject);
-							settlementDetailsObject.put("refunded", refundedObject);
-							orderItem.put("settlementDetails", settlementDetailsObject);
-						}
-					}
-				}
-			}
-			fillUpFeesDetails(object,orderItem);
-			orderItems.put(index, orderItem);
-		}
-	}
-
-	private void fillUpFeesDetails(JSONObject object, JSONObject orderItem) throws JSONException {
-		if (object.has("expectedMarketPlaceCommission")) {
-			orderItem.put("expectedMarketPlaceCommission", object.get("expectedMarketPlaceCommission"));
-		}
-		if (object.has("feesFieldsToUpdate")) {
-			orderItem.put("feesFieldsToUpdate", object.get("feesFieldsToUpdate"));
-		}
 	}
 }

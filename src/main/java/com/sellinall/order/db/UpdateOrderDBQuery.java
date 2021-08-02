@@ -276,9 +276,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("updateStatus")) {
 			updateStatus = orderMessage.getString("updateStatus");
 		}
+		//TODO: need to remove isReconciliation check after disable the finops1.0
 		if (orderMessage.getBoolean("isReconciliation")) {
 			exchange.setProperty("isReconciliation", orderMessage.getBoolean("isReconciliation"));
-			exchange.setProperty("orderItemList", new JSONArray(orderMessage.get("orderItems").toString()));
 		}
 		if (orderMessage.containsField("timeSettled")) {
 			orderRecord.put("timeSettled", orderMessage.getLong("timeSettled"));

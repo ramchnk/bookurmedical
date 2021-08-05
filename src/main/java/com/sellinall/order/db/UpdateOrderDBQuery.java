@@ -5,6 +5,7 @@ package com.sellinall.order.db;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,11 @@ public class UpdateOrderDBQuery implements Processor {
 			exchange.setProperty("isOrderUpdatedByShippingCarrier", true);
 		}
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
+		boolean isValidDocUrl = checkValidDocumentUrl(orderMessage);
+		if (!isValidDocUrl) {
+			exchange.setProperty("stopProcess", true);
+			return;
+		}
 		exchange.setProperty("isNewOrder", false);
 		if (!hasOrderInDB) {
 			insertOrderRecord(exchange, notificationOrderActionStatus, orderMessage, inBody);
@@ -69,6 +75,23 @@ public class UpdateOrderDBQuery implements Processor {
 			return;
 		}
 		updateOrderRecord(exchange, notificationOrderActionStatus, orderMessage);
+	}
+
+	private boolean checkValidDocumentUrl(BasicDBObject orderMessage) {
+		if (orderMessage.containsField("documents")
+				&& ((BasicDBObject) orderMessage.get("documents")).containsField("shippingLabelUrl")) {
+			String url = ((BasicDBObject) orderMessage.get("documents")).getString("shippingLabelUrl");
+			if (url.contains(Config.getConfig().getDocUploadPath())) {
+				String orderID = orderMessage.getString("orderID");
+				List<String> values = Arrays.asList(url.split("/"));
+				String fileName = values.get(values.size() - 1);
+				if (!fileName.split("[.]")[0].equals(orderID)) {
+					log.error("shipping label url not matched with orderID : " + orderID + ", url : " + url);
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	private void insertOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,

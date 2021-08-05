@@ -54,5 +54,7 @@
 		<property name="MemcachedCloudUsername" value="${MemcachedCloudUsername}" />
 		<property name="MemcachedCloudPassword" value="${MemcachedCloudPassword}" />
 		<property name="MemcachedCloudServers" value="${MemcachedCloudServers}" />
+
+		<property name="docUploadPath" value="${docUploadPath}" />
 		</bean>
 </beans>

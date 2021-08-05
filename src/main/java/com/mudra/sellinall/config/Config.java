@@ -25,6 +25,7 @@ public class Config {
 	private String MemcachedCloudUsername;
 	private String MemcachedCloudPassword;
 	private String MemcachedCloudServers;
+	private String docUploadPath;
 
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
@@ -172,6 +173,14 @@ public class Config {
 
 	public void setMemcachedCloudServers(String memcachedCloudServers) {
 		MemcachedCloudServers = memcachedCloudServers;
+	}
+
+	public String getDocUploadPath() {
+		return docUploadPath;
+	}
+
+	public void setDocUploadPath(String docUploadPath) {
+		this.docUploadPath = docUploadPath;
 	}
 
 }

@@ -30,6 +30,26 @@ public class CrossDomainFilter implements ContainerResponseFilter {
 				"GET, POST, PUT, DELETE");
 		cres.getHttpHeaders().add("Access-Control-Max-Age", "1209600");
 		cres.getHttpHeaders().add("Content-type", "text/html");
+
+		logRequestedServiceCall(creq, cres);
 		return cres;
+	}
+
+	private void logRequestedServiceCall(ContainerRequest creq, ContainerResponse cres) {
+		String logMessage = "method=" + creq.getMethod();
+		logMessage += " path=" + creq.getAbsolutePath().getRawPath();
+		if (creq.getRequestUri().getRawQuery() != null) {
+			logMessage += "?" + creq.getRequestUri().getRawQuery();
+		}
+		logMessage += " host=" + creq.getRequestUri().getHost();
+		logMessage += " service="+ getProcessedTime(Long.parseLong(creq.getProperties().get("apiExecutionStartTime").toString())) + "ms";
+		logMessage += " status=" + cres.getStatus();
+		log.info(logMessage);
+	}
+
+	private String getProcessedTime(long startTime) {
+		long endTime = System.currentTimeMillis();
+		endTime = endTime - startTime;
+		return String.valueOf(endTime);
 	}
 }

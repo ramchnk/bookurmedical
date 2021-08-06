@@ -85,6 +85,10 @@ public class UpdateOrderDBQuery implements Processor {
 				String orderID = orderMessage.getString("orderID");
 				List<String> values = Arrays.asList(url.split("/"));
 				String fileName = values.get(values.size() - 1);
+				if (fileName.split("[.]")[0].isEmpty()) {
+					log.warn("shipping label url not matched with orderID : " + orderID + ", url : " + url);
+					return true;
+				}
 				if (!fileName.split("[.]")[0].equals(orderID)) {
 					log.error("shipping label url not matched with orderID : " + orderID + ", url : " + url);
 					return false;

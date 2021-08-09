@@ -1,1 +1,1 @@
-web: java -cp target/classes:target/dependency/* com.sellinall.order.MainPrg
+web: java -jar target/partnernotifserv-1.0-SNAPSHOT.jar

@@ -24,6 +24,7 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 
 	public ContainerRequest filter(ContainerRequest arg0)
 			throws WebApplicationException {
+		arg0.getProperties().put("apiExecutionStartTime", System.currentTimeMillis());
 		if (arg0.getMethod().equals("OPTIONS")) {
 			throw new WebApplicationException(Status.ACCEPTED);
 		}

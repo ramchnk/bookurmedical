@@ -56,5 +56,6 @@
 		<property name="MemcachedCloudServers" value="${MemcachedCloudServers}" />
 
 		<property name="docUploadPath" value="${docUploadPath}" />
+		<property name="SIAFinopsServerURL" value="${SIAFinopsServerURL}" />
 		</bean>
 </beans>

@@ -33,6 +33,7 @@ import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
+import com.sellinall.util.AuthConstant;
 import com.sellinall.util.CurrencyUtil;
 import com.sellinall.util.DateUtil;
 import com.sellinall.util.HttpsURLConnectionUtil;
@@ -256,9 +257,12 @@ public class UpdateOrderDBQuery implements Processor {
 		if (mcValue != null) {
 			return (double) mcValue;
 		} else {
-			String url = Config.getConfig().getSIAfeeManagementServerURL() + "/exchange?fromCurrency=" + fromCurrency
+			String url = Config.getConfig().getSIAFinopsServerURL() + "/exchange?fromCurrency=" + fromCurrency
 					+ "&toCurrency=" + toCurrency;
-			JSONObject response = HttpsURLConnectionUtil.doGet(url, null);
+			Map<String, String> header = new HashMap<String, String>();
+			header.put("Content-Type", "application/json");
+			header.put(AuthConstant.RAGASIYAM_KEY, Config.getConfig().getRagasiyam());
+			JSONObject response = HttpsURLConnectionUtil.doGet(url, header);
 			log.debug("exchange rate:" + response);
 			int httpCode = response.getInt("httpCode");
 			if (httpCode == HttpStatus.OK_200) {

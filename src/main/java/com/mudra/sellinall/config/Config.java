@@ -27,6 +27,9 @@ public class Config {
 	private String MemcachedCloudServers;
 	private String docUploadPath;
 	private String SIAFinopsServerURL;
+	private String maatramIntegratedShippingCarrier;
+	private String maatramIntegratedWms;
+	private String maatramIntegratedErp;
 
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
@@ -190,6 +193,30 @@ public class Config {
 
 	public void setSIAFinopsServerURL(String sIAFinopsServerURL) {
 		SIAFinopsServerURL = sIAFinopsServerURL;
+	}
+
+	public String getMaatramIntegratedWms() {
+		return maatramIntegratedWms;
+	}
+
+	public void setMaatramIntegratedWms(String maatramIntegratedWms) {
+		this.maatramIntegratedWms = maatramIntegratedWms;
+	}
+
+	public String getMaatramIntegratedErp() {
+		return maatramIntegratedErp;
+	}
+
+	public void setMaatramIntegratedErp(String maatramIntegratedErp) {
+		this.maatramIntegratedErp = maatramIntegratedErp;
+	}
+
+	public String getMaatramIntegratedShippingCarrier() {
+		return maatramIntegratedShippingCarrier;
+	}
+
+	public void setMaatramIntegratedShippingCarrier(String maatramIntegratedShippingCarrier) {
+		this.maatramIntegratedShippingCarrier = maatramIntegratedShippingCarrier;
 	}
 
 }

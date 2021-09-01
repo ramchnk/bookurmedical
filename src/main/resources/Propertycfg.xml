@@ -57,5 +57,9 @@
 
 		<property name="docUploadPath" value="${docUploadPath}" />
 		<property name="SIAFinopsServerURL" value="${SIAFinopsServerURL}" />
+
+		<property name="maatramIntegratedShippingCarrier" value="${maatramIntegratedShippingCarrier}" />
+		<property name="maatramIntegratedWms" value="${maatramIntegratedWms}" />
+		<property name="maatramIntegratedErp" value="${maatramIntegratedErp}" />
 		</bean>
 </beans>

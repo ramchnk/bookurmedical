@@ -39,7 +39,10 @@ import com.sellinall.util.DateUtil;
 import com.sellinall.util.HttpsURLConnectionUtil;
 import com.sellinall.util.InvoiceSequence;
 import com.sellinall.util.enums.OrderUpdateStatus;
+import com.sellinall.util.enums.SIAErpUpdateStatuses;
 import com.sellinall.util.enums.SIAOrderStatus;
+import com.sellinall.util.enums.SIAShippingCarrierUpdateStatuses;
+import com.sellinall.util.enums.SIAWmsUpdateStatuses;
 import com.sellinall.util.enums.UserMessageName;
 
 /**
@@ -188,6 +191,7 @@ public class UpdateOrderDBQuery implements Processor {
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
+		fillMaatramIntegratedDetails(exchange, orderRecord);
 		if (exchange.getProperties().containsKey("isPartnerLogistics")
 				&& exchange.getProperties().containsKey("airwayBillExists")) {
 			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));
@@ -218,6 +222,25 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
+	}
+
+	private void fillMaatramIntegratedDetails(Exchange exchange, BasicDBObject orderRecord) {
+		if (exchange.getProperties().containsKey("isMaatramIntegratedErp")
+				&& exchange.getProperty("isMaatramIntegratedErp", Boolean.class)) {
+			orderRecord.put("erpUpdateStatuses", Arrays.asList(SIAErpUpdateStatuses.NOT_INITIATED.toString()));
+			orderRecord.put("erpStatus", SIAErpUpdateStatuses.NOT_INITIATED.toString());
+		}
+		if (exchange.getProperties().containsKey("isMaatramIntegratedWms")
+				&& exchange.getProperty("isMaatramIntegratedWms", Boolean.class)) {
+			orderRecord.put("wmsUpdateStatuses", Arrays.asList(SIAWmsUpdateStatuses.NOT_INITIATED.toString()));
+			orderRecord.put("wmsStatus", SIAWmsUpdateStatuses.NOT_INITIATED.toString());
+		}
+		if (exchange.getProperties().containsKey("isMaatramIntegratedShippingCarrier")
+				&& exchange.getProperty("isMaatramIntegratedShippingCarrier", Boolean.class)) {
+			orderRecord.put("shippingCarrierUpdateStatuses",
+					Arrays.asList(SIAShippingCarrierUpdateStatuses.NOT_INITIATED.toString()));
+			orderRecord.put("shippingCarrierStatus", SIAShippingCarrierUpdateStatuses.NOT_INITIATED.toString());
+		}
 	}
 
 	private void checkIfgroupOrderByCartNumberNeeded(Exchange exchange, int totalOrderItemsInCart, String cartNumber) {

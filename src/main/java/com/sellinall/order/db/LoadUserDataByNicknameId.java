@@ -4,9 +4,9 @@
 package com.sellinall.order.db;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -69,6 +69,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isSingPostShippingCarrier", false);
 		exchange.setProperty("isJTExpressShippingCarrier", false);
 		exchange.setProperty("isAramexShippingCarrier", false);
+		exchange.setProperty("isMaatramIntegratedShippingCarrier", false);
 		if (userSiteSpecificObject.containsKey("shippingCarrier")
 				&& userSiteSpecificObject.get("shippingCarrier") != null) {
 			BasicDBList shippingCarrier = (BasicDBList) userSiteSpecificObject.get("shippingCarrier");
@@ -83,6 +84,13 @@ public class LoadUserDataByNicknameId implements Processor {
 				} else if (shippingCarrierName.startsWith("aramexShipping")) {
 					exchange.setProperty("isAramexShippingCarrier", true);
 				}
+				List<String> maatramIntegratedShippingCarrierList = Arrays
+						.asList(Config.getConfig().getMaatramIntegratedShippingCarrier().split("-"));
+				maatramIntegratedShippingCarrierList.stream().forEach(i -> {
+					if (shippingCarrierName.startsWith(i)) {
+						exchange.setProperty("isMaatramIntegratedShippingCarrier", true);
+					}
+				});
 			}
 		}
 		exchange.setProperty("isInforWMS", false);
@@ -107,10 +115,18 @@ public class LoadUserDataByNicknameId implements Processor {
 			enableWarehouseBasedStock = true;
 		}
 
+		exchange.setProperty("isMaatramIntegratedWms", false);
 		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {
 			BasicDBList wmsList = (BasicDBList) userSiteSpecificObject.get("wms");
 			for (int i = 0; i < wmsList.size(); i++) {
 				String wms = wmsList.get(i).toString();
+				List<String> maatramIntegratedWmsList = Arrays
+						.asList(Config.getConfig().getMaatramIntegratedWms().split("-"));
+				maatramIntegratedWmsList.stream().forEach(configWmsValue -> {
+					if (wms.startsWith(configWmsValue)) {
+						exchange.setProperty("isMaatramIntegratedWms", true);
+					}
+				});
 				String warehouseName = wms.split("-")[0];
 				if (enableWarehouseBasedStock) {
 					if (siaLinkedWarehouseList.contains(warehouseName)) {
@@ -140,10 +156,18 @@ public class LoadUserDataByNicknameId implements Processor {
 				|| exchange.getProperty("isNinjaVanShippingCarrier", boolean.class)) {
 			exchange.setProperty("isPartnerLogistics", true);
 		}
+		exchange.setProperty("isMaatramIntegratedErp", false);
 		if (userSiteSpecificObject.containsKey("erp") && userSiteSpecificObject.get("erp") != null) {
 			BasicDBList erpList = (BasicDBList) userSiteSpecificObject.get("erp");
 			for (int i = 0; i < erpList.size(); i++) {
 				String erp = erpList.get(i).toString();
+				List<String> maatramIntegratedErpList = Arrays
+						.asList(Config.getConfig().getMaatramIntegratedErp().split("-"));
+				maatramIntegratedErpList.stream().forEach(configErpValue -> {
+					if (erp.startsWith(configErpValue)) {
+						exchange.setProperty("isMaatramIntegratedErp", true);
+					}
+				});
 				if (erp.startsWith("netSuite")) {
 					exchange.setProperty("isNetSuite", true);
 					break;

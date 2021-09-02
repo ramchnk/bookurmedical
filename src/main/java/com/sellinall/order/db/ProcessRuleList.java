@@ -21,14 +21,15 @@ public class ProcessRuleList implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		List<BasicDBObject> ruleList = (List<BasicDBObject>) exchange.getIn().getBody();
 		BasicDBObject orderDetails = (BasicDBObject) exchange.getProperty("orderRecord");
+		String selectedWMS = exchange.getProperty("selectedWMS", String.class);
 		List<BasicDBObject> freeGiftOrderItems = new LinkedList<>();
 		for (BasicDBObject rule : ruleList) {
 			BasicDBObject action = (BasicDBObject) rule.get("action");
 			String ruleEngineMethod = RuleActionsMapping
 					.getRuleEngineMethod(RuleActionEnum.valueOf(action.getString("name")));
 			Method method = RuleEngine.class.getMethod(ruleEngineMethod, BasicDBObject.class, BasicDBObject.class,
-					List.class);
-			method.invoke(new RuleEngine(), orderDetails, rule, freeGiftOrderItems);
+					List.class, String.class);
+			method.invoke(new RuleEngine(), orderDetails, rule, freeGiftOrderItems, selectedWMS);
 		}
 		if (freeGiftOrderItems.size() > 0) {
 			List<BasicDBObject> orderItems = (List<BasicDBObject>) orderDetails.get("orderItems");

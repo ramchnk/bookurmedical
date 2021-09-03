@@ -18,7 +18,7 @@ import com.sellinall.order.enums.RuleActionTypes;
 public class RuleEngine {
 	@SuppressWarnings("unchecked")
 	public static void setGiftItems(BasicDBObject order, BasicDBObject rule, List<BasicDBObject> freeGiftOrderItems,
-			String selectedWMS) {
+			String selectedWMS, List<String> giftItemSKUs) {
 		List<BasicDBObject> conditions = (List<BasicDBObject>) rule.get("conditions");
 		List<BasicDBObject> orderItems = (List<BasicDBObject>) order.get("orderItems");
 		List<BasicDBObject> newOrderItemList = new LinkedList<>();
@@ -29,7 +29,7 @@ public class RuleEngine {
 		if (isConditionSatisfied) {
 			Map<String, Integer> sellerSKUAndQuantityMap = new LinkedHashMap<>();
 			List<BasicDBObject> freeGiftInventoryListFromDb = getFreeGiftInvetnoryFromDB(rule,
-					order.getString("accountNumber"), sellerSKUAndQuantityMap);
+					order.getString("accountNumber"), sellerSKUAndQuantityMap, giftItemSKUs);
 			constructFreeGiftOrderItems(order, freeGiftInventoryListFromDb, sellerSKUAndQuantityMap, freeGiftOrderItems,
 					selectedWMS);
 		}
@@ -45,8 +45,6 @@ public class RuleEngine {
 			int availableFreeGiftQty = getAvailableQuantityFromProductMaster(freeGift, selectedWMS);
 			int orderedFreeGiftQty = sellerSKUAndQuantityMap.get(sellerSKU);
 			if (availableFreeGiftQty >= orderedFreeGiftQty) {
-				decrementQuantityForGiftItem(order.getString("accountNumber"), sellerSKU, orderedFreeGiftQty,
-						selectedWMS);
 				boolean isFreeGiftHandled = false;
 				for (BasicDBObject object : freeGiftOrderItems) {
 					if (object.getString("customSKU").equals(sellerSKU)) {
@@ -62,6 +60,8 @@ public class RuleEngine {
 				if (isFreeGiftHandled) {
 					continue;
 				}
+				decrementQuantityForGiftItem(order.getString("accountNumber"), sellerSKU, orderedFreeGiftQty,
+						selectedWMS);
 				BasicDBObject freeGiftOrderItem = new BasicDBObject();
 				freeGiftOrderItem.put("customSKU", sellerSKU);
 				if (freeGift.containsField("SKU") && freeGift.get("SKU") != null) {
@@ -115,10 +115,11 @@ public class RuleEngine {
 	}
 
 	private static List<BasicDBObject> getFreeGiftInvetnoryFromDB(BasicDBObject rule, String accountNumber,
-			Map<String, Integer> sellerSKUAndQuantityMap) {
+			Map<String, Integer> sellerSKUAndQuantityMap, List<String> giftItemSKUs) {
 		BasicDBObject action = (BasicDBObject) rule.get("action");
 		List<BasicDBObject> itemList = (List<BasicDBObject>) action.get("itemList");
 		boolean isAvailableStockFoundInDB = false;
+		boolean isGiftItemAdded = false;
 		String actionType = RuleActionTypes.ALL.toString();
 		if (action.containsField("type")) {
 			actionType = action.getString("type");
@@ -128,6 +129,13 @@ public class RuleEngine {
 		searchQuery.put("accountNumber", accountNumber);
 		List<String> sellerSKUList = new LinkedList<>();
 		for (int i = 0; i < itemList.size(); i++) {
+			if (isGiftItemAdded && actionType.equals(RuleActionTypes.TIERED.toString())) {
+				/*
+				 * Note: we are adding only 1 gift product based on availableStock & itemList
+				 * index for tier case
+				 */
+				break;
+			}
 			BasicDBObject item = itemList.get(i);
 			boolean isStockAvailableForFreeGift = true;
 			if (item.containsField("availableStock")) {
@@ -137,20 +145,21 @@ public class RuleEngine {
 				}
 			}
 			if (isStockAvailableForFreeGift) {
+				if (giftItemSKUs.contains(item.getString("sellerSKU"))) {
+					isGiftItemAdded = true;
+					continue;
+				}
 				sellerSKUList.add(item.getString("sellerSKU"));
 				sellerSKUAndQuantityMap.put(item.getString("sellerSKU"), item.getInt("quantity"));
 				if (isAvailableStockFoundInDB) {
 					updateAvailableStockInRule(rule.getString("_id"), item.getString("sellerSKU"),
 							item.getInt("quantity"));
-					if (actionType.equals(RuleActionTypes.TIERED.toString())) {
-						/*
-						 * Note: we are adding only 1 gift product based on availableStock & itemList
-						 * index for tier case
-						 */
-						break;
-					}
+					isGiftItemAdded = true;
 				}
 			}
+		}
+		if (sellerSKUList.isEmpty()) {
+			new ArrayList<BasicDBObject>();
 		}
 		searchQuery.put("sellerSKU", new BasicDBObject("$in", sellerSKUList));
 		BasicDBObject projection = new BasicDBObject();

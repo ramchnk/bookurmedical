@@ -360,6 +360,9 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		orderRecord.put("updateStatus", updateStatus);
+		if (updateStatus.equals(OrderUpdateStatus.FAILED.toString()) && orderMessage.containsKey("failureReason")) {
+			orderRecord.put("failureReason", orderMessage.getString("failureReason"));	
+		}
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		if (orderRecord.containsField("orderItems")) {
 			if (orderRecord.get("orderItems") != null) {

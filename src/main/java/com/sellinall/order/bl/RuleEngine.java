@@ -50,8 +50,11 @@ public class RuleEngine {
 				boolean isFreeGiftHandled = false;
 				for (BasicDBObject object : freeGiftOrderItems) {
 					if (object.getString("customSKU").equals(sellerSKU)) {
-						int newQuantity = object.getInt("quantity") + orderedFreeGiftQty;
-						object.put("quantity", newQuantity);
+						/* Note: Added condition to restrict multiple gift of same product */
+						/*
+						 * int newQuantity = object.getInt("quantity") + orderedFreeGiftQty;
+						 * object.put("quantity", newQuantity);
+						 */
 						isFreeGiftHandled = true;
 						break;
 					}

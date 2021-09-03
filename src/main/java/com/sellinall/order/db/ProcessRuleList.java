@@ -1,6 +1,7 @@
 package com.sellinall.order.db;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,14 +23,15 @@ public class ProcessRuleList implements Processor {
 		List<BasicDBObject> ruleList = (List<BasicDBObject>) exchange.getIn().getBody();
 		BasicDBObject orderDetails = (BasicDBObject) exchange.getProperty("orderRecord");
 		String selectedWMS = exchange.getProperty("selectedWMS", String.class);
+		List<String> giftItemSKUs = new ArrayList<String>();
 		List<BasicDBObject> freeGiftOrderItems = new LinkedList<>();
 		for (BasicDBObject rule : ruleList) {
 			BasicDBObject action = (BasicDBObject) rule.get("action");
 			String ruleEngineMethod = RuleActionsMapping
 					.getRuleEngineMethod(RuleActionEnum.valueOf(action.getString("name")));
 			Method method = RuleEngine.class.getMethod(ruleEngineMethod, BasicDBObject.class, BasicDBObject.class,
-					List.class, String.class);
-			method.invoke(new RuleEngine(), orderDetails, rule, freeGiftOrderItems, selectedWMS);
+					List.class, String.class, List.class);
+			method.invoke(new RuleEngine(), orderDetails, rule, freeGiftOrderItems, selectedWMS, giftItemSKUs);
 		}
 		if (freeGiftOrderItems.size() > 0) {
 			List<BasicDBObject> orderItems = (List<BasicDBObject>) orderDetails.get("orderItems");

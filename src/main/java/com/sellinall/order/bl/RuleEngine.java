@@ -1,24 +1,39 @@
 package com.sellinall.order.bl;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.eclipse.jetty.http.HttpStatus;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
+import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.RuleActionTypes;
+import com.sellinall.util.AuthConstant;
+import com.sellinall.util.HttpsURLConnectionUtil;
+import com.sellinall.util.enums.Actor;
+import com.sellinall.util.enums.StockEventType;
 
 public class RuleEngine {
+
+	static Logger log = Logger.getLogger(RuleEngine.class.getName());
+
 	@SuppressWarnings("unchecked")
 	public static void setGiftItems(BasicDBObject order, BasicDBObject rule, List<BasicDBObject> freeGiftOrderItems,
-			String selectedWMS, List<String> giftItemSKUs) {
+			String selectedWMS, List<String> giftItemSKUs) throws JSONException {
 		List<BasicDBObject> conditions = (List<BasicDBObject>) rule.get("conditions");
 		List<BasicDBObject> orderItems = (List<BasicDBObject>) order.get("orderItems");
 		List<BasicDBObject> newOrderItemList = new LinkedList<>();
@@ -32,12 +47,15 @@ public class RuleEngine {
 					order.getString("accountNumber"), sellerSKUAndQuantityMap, giftItemSKUs);
 			constructFreeGiftOrderItems(order, freeGiftInventoryListFromDb, sellerSKUAndQuantityMap, freeGiftOrderItems,
 					selectedWMS);
+		} else {
+			log.info("Free gift rule not satisfied for orderID : " + order.getString("orderID") + ", accountNumber : "
+					+ order.getString("accountNumber") + ", gift doc id : " + rule.getString("_id"));
 		}
 	}
 
 	private static void constructFreeGiftOrderItems(BasicDBObject order,
 			List<BasicDBObject> freeGiftInevntoryListFromDb, Map<String, Integer> sellerSKUAndQuantityMap,
-			List<BasicDBObject> freeGiftOrderItems, String selectedWMS) {
+			List<BasicDBObject> freeGiftOrderItems, String selectedWMS) throws JSONException {
 		BasicDBObject orderAmount = (BasicDBObject) order.get("orderAmount");
 		String currencyCode = orderAmount.getString("currencyCode");
 		for (BasicDBObject freeGift : freeGiftInevntoryListFromDb) {
@@ -60,8 +78,7 @@ public class RuleEngine {
 				if (isFreeGiftHandled) {
 					continue;
 				}
-				decrementQuantityForGiftItem(order.getString("accountNumber"), sellerSKU, orderedFreeGiftQty,
-						selectedWMS);
+				decrementQuantityForGiftItem(order, sellerSKU, orderedFreeGiftQty, selectedWMS);
 				BasicDBObject freeGiftOrderItem = new BasicDBObject();
 				freeGiftOrderItem.put("customSKU", sellerSKU);
 				if (freeGift.containsField("SKU") && freeGift.get("SKU") != null) {
@@ -100,18 +117,57 @@ public class RuleEngine {
 		return quantity;
 	}
 
-	private static void decrementQuantityForGiftItem(String accountNumber, String sellerSKU, int freeGiftQuantity,
-			String selectedWMS) {
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("accountNumber", accountNumber);
-		searchQuery.put("sellerSKU", sellerSKU);
-		searchQuery.put("quantities.warehouseID", selectedWMS);
+	private static void decrementQuantityForGiftItem(BasicDBObject order, String sellerSKU, int freeGiftQuantity,
+			String selectedWMS) throws JSONException {
+		String accountNumber = order.getString("accountNumber");
+		JSONObject quantityObj = new JSONObject();
+		quantityObj.put("warehouseID", selectedWMS);
+		quantityObj.put("quantityDiff", -freeGiftQuantity);
 
-		BasicDBObject update = new BasicDBObject();
-		update.put("$inc", new BasicDBObject("quantities.$.quantity", -freeGiftQuantity));
+		JSONArray quantityArray = new JSONArray();
+		quantityArray.put(quantityObj);
 
-		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("productMaster");
-		table.updateOne(searchQuery, update);
+		JSONObject addendum = new JSONObject();
+		addendum.put("orderID", order.getString("orderID"));
+		addendum.put("nickNameID", order.getString("nickNameID"));
+
+		JSONObject payload = new JSONObject();
+		payload.put("sellerSKU", sellerSKU);
+		payload.put("quantityDiffs", quantityArray);
+		payload.put("actor", Actor.SALES_CHANNEL.toString());
+		payload.put("stockEventType", StockEventType.NEW_ORDER.toString());
+		payload.put("isPromotionItem", false);
+		payload.put("addendum", addendum);
+
+		updateProductMaster(payload, accountNumber);
+	}
+
+	private static void updateProductMaster(JSONObject payload, String accountNumber) {
+		String url = Config.getConfig().getSIAInventoryManagementServerURL() + "/productMaster/quantityDiffs";
+		Map<String, String> headers = new HashMap<String, String>();
+		headers.put("Content-Type", "application/json");
+		headers.put(AuthConstant.RAGASIYAM_KEY, Config.getConfig().getRagasiyam());
+		headers.put("accountNumber", accountNumber);
+		JSONObject response = new JSONObject();
+		try {
+			response = HttpsURLConnectionUtil.doPut(url, payload.toString(), headers);
+			if (response.getInt("httpCode") != HttpStatus.OK_200) {
+				if (response.getInt("httpCode") == HttpStatus.NOT_FOUND_404) {
+					log.info("The sellerSKU: " + payload.getString("sellerSKU")
+							+ " not found in ProductMaster for accountNumber : " + accountNumber);
+				} else {
+					log.error("SyncProductMaster failed with HttpStatus code : " + response.getInt("httpCode")
+							+ " for accountNumber : " + accountNumber + ", sellerSKU : "
+							+ payload.getString("sellerSKU") + " and response payload: " + response.get("payload"));
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			log.error(response);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			log.error(response);
+		}
 	}
 
 	private static List<BasicDBObject> getFreeGiftInvetnoryFromDB(BasicDBObject rule, String accountNumber,

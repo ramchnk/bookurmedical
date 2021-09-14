@@ -120,6 +120,7 @@ public class RuleEngine {
 	private static void decrementQuantityForGiftItem(BasicDBObject order, String sellerSKU, int freeGiftQuantity,
 			String selectedWMS) throws JSONException {
 		String accountNumber = order.getString("accountNumber");
+		BasicDBObject siteObj = (BasicDBObject) order.get("site");
 		JSONObject quantityObj = new JSONObject();
 		quantityObj.put("warehouseID", selectedWMS);
 		quantityObj.put("quantityDiff", -freeGiftQuantity);
@@ -129,7 +130,7 @@ public class RuleEngine {
 
 		JSONObject addendum = new JSONObject();
 		addendum.put("orderID", order.getString("orderID"));
-		addendum.put("nickNameID", order.getString("nickNameID"));
+		addendum.put("nickNameID", siteObj.getString("nickNameID"));
 
 		JSONObject payload = new JSONObject();
 		payload.put("sellerSKU", sellerSKU);

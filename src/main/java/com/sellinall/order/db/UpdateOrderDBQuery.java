@@ -227,18 +227,14 @@ public class UpdateOrderDBQuery implements Processor {
 	private void fillMaatramIntegratedDetails(Exchange exchange, BasicDBObject orderRecord) {
 		if (exchange.getProperties().containsKey("isMaatramIntegratedErp")
 				&& exchange.getProperty("isMaatramIntegratedErp", Boolean.class)) {
-			orderRecord.put("erpUpdateStatuses", Arrays.asList(SIAErpUpdateStatuses.NOT_INITIATED.toString()));
 			orderRecord.put("erpStatus", SIAErpUpdateStatuses.NOT_INITIATED.toString());
 		}
 		if (exchange.getProperties().containsKey("isMaatramIntegratedWms")
 				&& exchange.getProperty("isMaatramIntegratedWms", Boolean.class)) {
-			orderRecord.put("wmsUpdateStatuses", Arrays.asList(SIAWmsUpdateStatuses.NOT_INITIATED.toString()));
 			orderRecord.put("wmsStatus", SIAWmsUpdateStatuses.NOT_INITIATED.toString());
 		}
 		if (exchange.getProperties().containsKey("isMaatramIntegratedShippingCarrier")
 				&& exchange.getProperty("isMaatramIntegratedShippingCarrier", Boolean.class)) {
-			orderRecord.put("shippingCarrierUpdateStatuses",
-					Arrays.asList(SIAShippingCarrierUpdateStatuses.NOT_INITIATED.toString()));
 			orderRecord.put("shippingCarrierStatus", SIAShippingCarrierUpdateStatuses.NOT_INITIATED.toString());
 		}
 	}

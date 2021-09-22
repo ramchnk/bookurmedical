@@ -504,6 +504,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "sellerRemarks", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "buyerRemarks", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "gstAmount", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "giftMessage", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
 	}
 

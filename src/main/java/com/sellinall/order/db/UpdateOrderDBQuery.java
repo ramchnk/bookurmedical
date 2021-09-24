@@ -498,6 +498,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "shippingAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerVoucherAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "sellerVoucherCodes", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "marketplaceInvoiceNumber", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "channelVoucherCodes", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "bundledPromotionItems", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);

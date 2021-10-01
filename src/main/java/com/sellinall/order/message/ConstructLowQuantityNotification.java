@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.json.JSONObject;
-import org.json.JSONArray;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
 import com.mudra.sellinall.config.PostingSites;

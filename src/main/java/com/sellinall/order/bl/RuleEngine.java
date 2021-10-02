@@ -79,7 +79,10 @@ public class RuleEngine {
 					continue;
 				}
 				decrementQuantityForGiftItem(order, sellerSKU, orderedFreeGiftQty, selectedWMS);
+				int giftItemCount = freeGiftOrderItems.size() + 1;
 				BasicDBObject freeGiftOrderItem = new BasicDBObject();
+				freeGiftOrderItem.put("orderItemID", order.getString("orderID") + "-gwp" + giftItemCount);
+				freeGiftOrderItem.put("siaOrderItemID", order.getString("orderID") + "-gwp" + giftItemCount);
 				freeGiftOrderItem.put("customSKU", sellerSKU);
 				if (freeGift.containsField("SKU") && freeGift.get("SKU") != null) {
 					freeGiftOrderItem.put("SKU", freeGift.getString("SKU"));

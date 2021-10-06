@@ -35,7 +35,9 @@ public class ConstructRequestType implements Processor {
 			if (publishTo.equals("ninjaVan") || publishTo.equals("infor") || publishTo.equals("satsaco")
 					|| publishTo.equals("netSuite") || publishTo.equals("odoo") || publishTo.equals("singPost")
 					|| publishTo.equals("aramex") || publishTo.equals("vend") || publishTo.equals("jtExpress")
-					|| publishTo.equals("aramexShipping")) {
+					|| publishTo.equals("aramexShipping") || publishTo.equals("maatramBridgeIntegratedWms")
+					|| publishTo.equals("maatramBridgeIntegratedErp")
+					|| publishTo.equals("maatramBridgeIntegratedShippingCarrier")) {
 				String requestType = "";
 				if (exchange.getProperty("isNewOrder", boolean.class)) {
 					requestType = "createOrder";
@@ -46,6 +48,15 @@ public class ConstructRequestType implements Processor {
 					requestType = "updateOrder";
 					publishMessage.put("requestType", requestType);
 					exchange.setProperty("requestType", requestType);
+				}
+				if (publishTo.equals("maatramBridgeIntegratedWms")) {
+					publishMessage.put("isMaatramBridgeIntegratedWMS", true);
+				}
+				if (publishTo.equals("maatramBridgeIntegratedErp")) {
+					publishMessage.put("isMaatramBridgeIntegratedERP", true);
+				}
+				if (publishTo.equals("maatramBridgeIntegratedShippingCarrier")) {
+					publishMessage.put("isMaatramBridgeIntegratedShipping", true);
 				}
 				publishMessage.remove("feeType");
 			}

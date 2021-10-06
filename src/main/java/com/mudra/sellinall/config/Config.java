@@ -30,7 +30,8 @@ public class Config {
 	private String maatramIntegratedShippingCarrier;
 	private String maatramIntegratedWms;
 	private String maatramIntegratedErp;
-
+	private String maatramBridgeIntegratedServers;
+	
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
 	}
@@ -217,6 +218,14 @@ public class Config {
 
 	public void setMaatramIntegratedShippingCarrier(String maatramIntegratedShippingCarrier) {
 		this.maatramIntegratedShippingCarrier = maatramIntegratedShippingCarrier;
+	}
+
+	public String getMaatramBridgeIntegratedServers() {
+		return maatramBridgeIntegratedServers;
+	}
+
+	public void setMaatramBridgeIntegratedServers(String maatramBridgeIntegratedServers) {
+		this.maatramBridgeIntegratedServers = maatramBridgeIntegratedServers;
 	}
 
 }

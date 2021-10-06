@@ -101,5 +101,22 @@ public class PrepareRequestMessage implements Processor {
 		if (isVend) {
 			exchange.setProperty("publishToVend", true);
 		}
+		
+		boolean isMaatramBridgeIntegratedShippingCarrier = exchange
+				.getProperty("isMaatramBridgeIntegratedShippingCarrier", Boolean.class);
+		boolean isMaatramBridgeIntegratedWms = exchange.getProperty("isMaatramBridgeIntegratedWms", Boolean.class);
+		boolean isMaatramBridgeIntegratedErp = exchange.getProperty("isMaatramBridgeIntegratedErp", Boolean.class);
+		exchange.setProperty("publishToMaatramBridgeIntegratedWms", false);
+		exchange.setProperty("publishToMaatramBridgeIntegratedErp", false);
+		exchange.setProperty("publishToMaatramBridgeIntegratedShippingCarrier", false);
+		if (isMaatramBridgeIntegratedWms) {
+			exchange.setProperty("publishToMaatramBridgeIntegratedWms", true);
+		}
+		if (isMaatramBridgeIntegratedErp) {
+			exchange.setProperty("publishToMaatramBridgeIntegratedErp", true);
+		}
+		if (isMaatramBridgeIntegratedShippingCarrier) {
+			exchange.setProperty("publishToMaatramBridgeIntegratedShippingCarrier", true);
+		}
 	}
 }

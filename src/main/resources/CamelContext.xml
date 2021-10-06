@@ -407,7 +407,15 @@
 		<property name="networkRecoveryInterval" value="0"/>
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
-
+	<bean id="maatramBridgeServTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${maatramBridgeServ.host}" />
+		<property name="port" value="${maatramBridgeServ.rx.port}" />
+		<property name="username" value="${maatramBridgeServ.username}" />
+		<property name="password" value="${maatramBridgeServ.password}" />
+		<property name="virtualHost" value="${maatramBridgeServ.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
+	</bean>
 	<!-- mongo db bean -->
 	<bean id="mongoInventoryBean" class="com.mongodb.MongoClient">
 		<constructor-arg index="0">
@@ -937,6 +945,69 @@
 					<convertBodyTo type="java.lang.String" />
 					<to
 							uri="rabbitmq://{{vend.host}}:{{vend.tx.port}}/vendExchange?connectionFactory=#vendTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+							pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedWms} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>maatramBridgeIntegratedWms</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>maatramBridgeServKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+							uri="rabbitmq://{{maatramBridgeServ.host}}:{{maatramBridgeServ.tx.port}}/maatramBridgeServExchange?connectionFactory=#maatramBridgeServTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+							pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedErp} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>maatramBridgeIntegratedErp</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>maatramBridgeServKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+							uri="rabbitmq://{{maatramBridgeServ.host}}:{{maatramBridgeServ.tx.port}}/maatramBridgeServExchange?connectionFactory=#maatramBridgeServTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+							pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedShippingCarrier} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>maatramBridgeIntegratedShippingCarrier</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
+					<to uri="direct:groupOrderByCartNumber" />
+				</when>
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>maatramBridgeServKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+							uri="rabbitmq://{{maatramBridgeServ.host}}:{{maatramBridgeServ.tx.port}}/maatramBridgeServExchange?connectionFactory=#maatramBridgeServTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 							pattern="InOut" />
 				</when>
 			</when>

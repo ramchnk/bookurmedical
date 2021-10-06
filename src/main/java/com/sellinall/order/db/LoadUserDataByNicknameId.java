@@ -70,6 +70,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isJTExpressShippingCarrier", false);
 		exchange.setProperty("isAramexShippingCarrier", false);
 		exchange.setProperty("isMaatramIntegratedShippingCarrier", false);
+		exchange.setProperty("isMaatramBridgeIntegratedShippingCarrier", false);
 		if (userSiteSpecificObject.containsKey("shippingCarrier")
 				&& userSiteSpecificObject.get("shippingCarrier") != null) {
 			BasicDBList shippingCarrier = (BasicDBList) userSiteSpecificObject.get("shippingCarrier");
@@ -89,6 +90,10 @@ public class LoadUserDataByNicknameId implements Processor {
 				maatramIntegratedShippingCarrierList.stream().forEach(i -> {
 					if (shippingCarrierName.startsWith(i)) {
 						exchange.setProperty("isMaatramIntegratedShippingCarrier", true);
+						if (Arrays.asList(Config.getConfig().getMaatramBridgeIntegratedServers().split("-"))
+								.contains(shippingCarrierName.split("-")[0])) {
+							exchange.setProperty("isMaatramBridgeIntegratedShippingCarrier", true);
+						}
 					}
 				});
 			}
@@ -116,6 +121,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 
 		exchange.setProperty("isMaatramIntegratedWms", false);
+		exchange.setProperty("isMaatramBridgeIntegratedWms", false);
 		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {
 			BasicDBList wmsList = (BasicDBList) userSiteSpecificObject.get("wms");
 			for (int i = 0; i < wmsList.size(); i++) {
@@ -125,6 +131,10 @@ public class LoadUserDataByNicknameId implements Processor {
 				maatramIntegratedWmsList.stream().forEach(configWmsValue -> {
 					if (wms.startsWith(configWmsValue)) {
 						exchange.setProperty("isMaatramIntegratedWms", true);
+					}
+					if (Arrays.asList(Config.getConfig().getMaatramBridgeIntegratedServers().split("-"))
+							.contains(wms.split("-")[0])) {
+						exchange.setProperty("isMaatramBridgeIntegratedWms", true);
 					}
 				});
 				String warehouseName = wms.split("-")[0];
@@ -157,6 +167,7 @@ public class LoadUserDataByNicknameId implements Processor {
 			exchange.setProperty("isPartnerLogistics", true);
 		}
 		exchange.setProperty("isMaatramIntegratedErp", false);
+		exchange.setProperty("isMaatramBridgeIntegratedErp", false);
 		if (userSiteSpecificObject.containsKey("erp") && userSiteSpecificObject.get("erp") != null) {
 			BasicDBList erpList = (BasicDBList) userSiteSpecificObject.get("erp");
 			for (int i = 0; i < erpList.size(); i++) {
@@ -166,6 +177,10 @@ public class LoadUserDataByNicknameId implements Processor {
 				maatramIntegratedErpList.stream().forEach(configErpValue -> {
 					if (erp.startsWith(configErpValue)) {
 						exchange.setProperty("isMaatramIntegratedErp", true);
+					}
+					if (Arrays.asList(Config.getConfig().getMaatramBridgeIntegratedServers().split("-"))
+							.contains(erp.split("-")[0])) {
+						exchange.setProperty("isMaatramBridgeIntegratedErp", true);
 					}
 				});
 				if (erp.startsWith("netSuite")) {

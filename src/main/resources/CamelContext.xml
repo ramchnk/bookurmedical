@@ -949,51 +949,12 @@
 				</when>
 			</when>
 			<when>
-				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedWms} == true</simple>
+				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedWms} == true or
+						${exchangeProperty.publishToMaatramBridgeIntegratedErp} == true or
+						${exchangeProperty.publishToMaatramBridgeIntegratedShippingCarrier} == true
+				</simple>
 				<setProperty propertyName="publishTo">
-					<constant>maatramBridgeIntegratedWms</constant>
-				</setProperty>
-				<process ref="constructRequestType" />
-				<when>
-					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
-					<to uri="direct:groupOrderByCartNumber" />
-				</when>
-				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
-						<constant>maatramBridgeServKey</constant>
-					</setHeader>
-					<convertBodyTo type="java.lang.String" />
-					<to
-							uri="rabbitmq://{{maatramBridgeServ.host}}:{{maatramBridgeServ.tx.port}}/maatramBridgeServExchange?connectionFactory=#maatramBridgeServTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-							pattern="InOut" />
-				</when>
-			</when>
-			<when>
-				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedErp} == true</simple>
-				<setProperty propertyName="publishTo">
-					<constant>maatramBridgeIntegratedErp</constant>
-				</setProperty>
-				<process ref="constructRequestType" />
-				<when>
-					<simple>${exchangeProperty.groupOrderByCartNumber} == true</simple>
-					<to uri="direct:groupOrderByCartNumber" />
-				</when>
-				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
-						<constant>maatramBridgeServKey</constant>
-					</setHeader>
-					<convertBodyTo type="java.lang.String" />
-					<to
-							uri="rabbitmq://{{maatramBridgeServ.host}}:{{maatramBridgeServ.tx.port}}/maatramBridgeServExchange?connectionFactory=#maatramBridgeServTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-							pattern="InOut" />
-				</when>
-			</when>
-			<when>
-				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedShippingCarrier} == true</simple>
-				<setProperty propertyName="publishTo">
-					<constant>maatramBridgeIntegratedShippingCarrier</constant>
+					<constant>maatramBridgeIntegratedServer</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
 				<when>

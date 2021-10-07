@@ -35,9 +35,7 @@ public class ConstructRequestType implements Processor {
 			if (publishTo.equals("ninjaVan") || publishTo.equals("infor") || publishTo.equals("satsaco")
 					|| publishTo.equals("netSuite") || publishTo.equals("odoo") || publishTo.equals("singPost")
 					|| publishTo.equals("aramex") || publishTo.equals("vend") || publishTo.equals("jtExpress")
-					|| publishTo.equals("aramexShipping") || publishTo.equals("maatramBridgeIntegratedWms")
-					|| publishTo.equals("maatramBridgeIntegratedErp")
-					|| publishTo.equals("maatramBridgeIntegratedShippingCarrier")) {
+					|| publishTo.equals("aramexShipping") || publishTo.equals("maatramBridgeIntegratedServer")) {
 				String requestType = "";
 				if (exchange.getProperty("isNewOrder", boolean.class)) {
 					requestType = "createOrder";
@@ -49,14 +47,13 @@ public class ConstructRequestType implements Processor {
 					publishMessage.put("requestType", requestType);
 					exchange.setProperty("requestType", requestType);
 				}
-				if (publishTo.equals("maatramBridgeIntegratedWms")) {
-					publishMessage.put("isMaatramBridgeIntegratedWMS", true);
-				}
-				if (publishTo.equals("maatramBridgeIntegratedErp")) {
-					publishMessage.put("isMaatramBridgeIntegratedERP", true);
-				}
-				if (publishTo.equals("maatramBridgeIntegratedShippingCarrier")) {
-					publishMessage.put("isMaatramBridgeIntegratedShipping", true);
+				if (publishTo.equals("maatramBridgeIntegratedServer")) {
+					publishMessage.put("isMaatramBridgeIntegratedWMS",
+							exchange.getProperty("publishToMaatramBridgeIntegratedWms", boolean.class));
+					publishMessage.put("isMaatramBridgeIntegratedERP",
+							exchange.getProperty("publishToMaatramBridgeIntegratedErp", boolean.class));
+					publishMessage.put("isMaatramBridgeIntegratedShippingCarrier",
+							exchange.getProperty("publishToMaatramBridgeIntegratedShippingCarrier", boolean.class));
 				}
 				publishMessage.remove("feeType");
 			}

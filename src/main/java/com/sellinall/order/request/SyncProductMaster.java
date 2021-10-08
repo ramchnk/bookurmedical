@@ -104,6 +104,7 @@ public class SyncProductMaster implements Processor {
 				payload.put("isPromotionItem", isPromotionItem);
 				JSONObject addendum = new JSONObject();
 				addendum.put("orderID", orderID);
+				addendum.put("sellerSKU", sellerSKU);
 				if (promotionID != null) {
 					payload.put("promotionID", promotionID);
 					addendum.put("promotionID", promotionID);

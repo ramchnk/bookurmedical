@@ -19,6 +19,7 @@ public class LoadAndProcessOrderFromDB implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
+		exchange.setProperty("orderStatus", orderMessage.getString("orderStatus"));
 		String orderID = orderMessage.getString("orderID");
 		exchange.setProperty("orderID", orderID);
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");

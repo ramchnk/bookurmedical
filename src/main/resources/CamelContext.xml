@@ -459,7 +459,7 @@
 			<process ref="updateOrderDBQuery" />
 			<when>
 			       <simple>${exchangeProperty.stopProcess} == true</simple>
-			       <stop />
+			       <stop/>
 			</when>
 			<setBody>
 			        <simple>${exchangeProperty.message}</simple>
@@ -469,7 +469,9 @@
 				<to uri="direct:processOrderItem" />
 			</split>
 			<when>
-				<simple>${exchangeProperty.processRule} == true and ${exchangeProperty.isNewOrder} == true</simple>
+				<simple>${exchangeProperty.processRule} == true and ${exchangeProperty.orderStatus} == "INITIATED" and
+					${exchangeProperty.isFreeGiftAddedToOrder} == false
+				</simple>
 				<to uri="direct:processRuleRoute" />
 			</when>
 			<when>

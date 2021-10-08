@@ -66,6 +66,7 @@ public class UpdateOrderDBQuery implements Processor {
 				&& orderMessageJSON.getBoolean("isOrderUpdatedByShippingCarrier")) {
 			exchange.setProperty("isOrderUpdatedByShippingCarrier", true);
 		}
+		exchange.setProperty("isFreeGiftAddedToOrder", true);
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
 		boolean isValidDocUrl = checkValidDocumentUrl(orderMessage);
 		if (!isValidDocUrl) {
@@ -76,6 +77,7 @@ public class UpdateOrderDBQuery implements Processor {
 		if (!hasOrderInDB) {
 			insertOrderRecord(exchange, notificationOrderActionStatus, orderMessage, inBody);
 			exchange.setProperty("isNewOrder", true);
+			exchange.setProperty("isFreeGiftAddedToOrder", false);
 			return;
 		}
 		updateOrderRecord(exchange, notificationOrderActionStatus, orderMessage);
@@ -667,6 +669,8 @@ public class UpdateOrderDBQuery implements Processor {
 			if(freeGiftItems.size()>0) {
 				//Retain freegift item from DB.
 				newOrderItems.addAll(freeGiftItems);
+			}else{
+				exchange.setProperty("isFreeGiftAddedToOrder", false);
 			}
 			orderRecord.put("orderItems", newOrderItems);
 		}

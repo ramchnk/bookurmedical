@@ -360,6 +360,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("isPosOrder")) {
 			orderRecord.put("isPosOrder", orderMessage.getBoolean("isPosOrder"));
 		}
+		if (orderMessage.containsField("isPreOrder")) {
+			orderRecord.put("isPreOrder", orderMessage.getBoolean("isPreOrder"));
+		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
 			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
@@ -508,6 +511,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "buyerRemarks", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "gstAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "giftMessage", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "isPreOrder", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
 	}
 

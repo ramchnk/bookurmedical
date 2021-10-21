@@ -110,6 +110,11 @@ public class SyncProductMaster implements Processor {
 					addendum.put("promotionID", promotionID);
 				}
 				addendum.put("nickNameID", orderMessage.getString("nickNameID"));
+				if (isNewOrder) {
+					addendum.put("quantitySold", quantitySold);
+				} else {
+					addendum.put("quantitySold", -quantitySold);
+				}
 				if (isPromotionItem && orderItemMessage.has("SKU")) {
 					addendum.put("SKU", orderItemMessage.getString("SKU"));
 				}

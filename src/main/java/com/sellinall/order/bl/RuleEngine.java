@@ -117,6 +117,9 @@ public class RuleEngine {
 				quantity += quantityObj.getInt("quantity");
 			}
 		}
+		if (quantity==0) {
+			log.warn("quantity not available for wms : "+ selectedWMS+", doc : "+ freeGift);
+		}
 		return quantity;
 	}
 

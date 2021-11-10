@@ -46,7 +46,8 @@ public class SyncProductMaster implements Processor {
 		}
 		boolean isPromotionItem = false;
 		String promotionID = null;
-		if (orderItemMessage.has("promotionType") && orderItemMessage.getString("promotionType").equals("flashSale")) {
+		if (orderItemMessage.has("promotionType") && (orderItemMessage.getString("promotionType").equals("flashSale")
+				|| orderItemMessage.getString("promotionType").equals("ProductPromotion"))) {
 			isPromotionItem = true;
 		}
 		if (orderItemMessage.has("promotionID")) {

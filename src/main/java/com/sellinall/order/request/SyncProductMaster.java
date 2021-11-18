@@ -119,6 +119,11 @@ public class SyncProductMaster implements Processor {
 				if (isPromotionItem && orderItemMessage.has("SKU")) {
 					addendum.put("SKU", orderItemMessage.getString("SKU"));
 				}
+				if (orderMessage.has("timeOrderCreated")) {
+					addendum.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
+				} else {
+					addendum.put("timeOrderCreated", System.currentTimeMillis() / 1000);
+				}
 				payload.put("addendum", addendum);
 				String url = Config.getConfig().getSIAInventoryManagementServerURL() + "/productMaster/" + urlPath;
 				updateProductMaster(payload, accountNumber, url);

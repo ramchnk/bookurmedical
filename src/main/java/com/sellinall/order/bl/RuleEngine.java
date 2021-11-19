@@ -125,28 +125,33 @@ public class RuleEngine {
 
 	private static void decrementQuantityForGiftItem(BasicDBObject order, String sellerSKU, int freeGiftQuantity,
 			String selectedWMS) throws JSONException {
-		String accountNumber = order.getString("accountNumber");
-		BasicDBObject siteObj = (BasicDBObject) order.get("site");
-		JSONObject quantityObj = new JSONObject();
-		quantityObj.put("warehouseID", selectedWMS);
-		quantityObj.put("quantityDiff", -freeGiftQuantity);
+		try {
+			String accountNumber = order.getString("accountNumber");
+			BasicDBObject siteObj = (BasicDBObject) order.get("site");
+			JSONObject quantityObj = new JSONObject();
+			quantityObj.put("warehouseID", selectedWMS);
+			quantityObj.put("quantityDiff", -freeGiftQuantity);
 
-		JSONArray quantityArray = new JSONArray();
-		quantityArray.put(quantityObj);
+			JSONArray quantityArray = new JSONArray();
+			quantityArray.put(quantityObj);
 
-		JSONObject addendum = new JSONObject();
-		addendum.put("orderID", order.getString("orderID"));
-		addendum.put("nickNameID", siteObj.getString("nickNameID"));
+			JSONObject addendum = new JSONObject();
+			addendum.put("orderID", order.getString("orderID"));
+			addendum.put("nickNameID", siteObj.getString("nickNameID"));
+			addendum.put("quantitySold", freeGiftQuantity);
+			addendum.put("timeOrderCreated", order.getLong("timeOrderCreated"));
+			JSONObject payload = new JSONObject();
+			payload.put("sellerSKU", sellerSKU);
+			payload.put("quantityDiffs", quantityArray);
+			payload.put("actor", Actor.SALES_CHANNEL.toString());
+			payload.put("stockEventType", StockEventType.NEW_ORDER.toString());
+			payload.put("isPromotionItem", false);
+			payload.put("addendum", addendum);
 
-		JSONObject payload = new JSONObject();
-		payload.put("sellerSKU", sellerSKU);
-		payload.put("quantityDiffs", quantityArray);
-		payload.put("actor", Actor.SALES_CHANNEL.toString());
-		payload.put("stockEventType", StockEventType.NEW_ORDER.toString());
-		payload.put("isPromotionItem", false);
-		payload.put("addendum", addendum);
-
-		updateProductMaster(payload, accountNumber);
+			updateProductMaster(payload, accountNumber);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static void updateProductMaster(JSONObject payload, String accountNumber) {
@@ -275,7 +280,6 @@ public class RuleEngine {
 	}
 
 	private static boolean processCondition(BasicDBObject condition, Object data, String fieldName) {
-
 		if (data instanceof List) {
 			List<BasicDBObject> orderItems = (List<BasicDBObject>) data;
 			for (BasicDBObject orderItem : orderItems) {

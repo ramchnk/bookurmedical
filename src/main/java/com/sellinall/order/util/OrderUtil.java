@@ -48,9 +48,7 @@ public class OrderUtil {
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.DELIVERY_FAILED_TO_RETURN_SHIPPED.toString())
 						|| orderStateTransition
-								.equals(NotificationOrderActionStatus.RETURN_REQUESTED_TO_RETURN_SHIPPED.toString())
-						|| orderStateTransition
-								.equals(NotificationOrderActionStatus.RETURN_SHIPPED_TO_RETURNED.toString())) {
+								.equals(NotificationOrderActionStatus.RETURN_REQUESTED_TO_RETURN_SHIPPED.toString())) {
 					if (type.equals("order")) {
 						log.warn(" The backward transistion came for orderID is " + orderID
 								+ " and orderStateTransistion " + orderStateTransition);

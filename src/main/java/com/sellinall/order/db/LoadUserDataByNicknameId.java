@@ -157,6 +157,10 @@ public class LoadUserDataByNicknameId implements Processor {
 					exchange.setProperty("isAramexWMS", true);
 					break;
 				}
+				if (wms.startsWith("SiAWMS")) {
+					exchange.setProperty("isOdoo", true);
+					break;
+				}
 			}
 		} else if (enableWarehouseBasedStock) {
 			isEligibleToProceed = false;

@@ -102,6 +102,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isSatsacoWMS", false);
 		exchange.setProperty("isNetSuite", false);
 		exchange.setProperty("isOdoo", false);
+		exchange.setProperty("isSiAWMS", false);
 		exchange.setProperty("isAramexWMS", false);
 		exchange.setProperty("isVend", false);
 
@@ -158,7 +159,7 @@ public class LoadUserDataByNicknameId implements Processor {
 					break;
 				}
 				if (wms.startsWith("SiAWMS")) {
-					exchange.setProperty("isOdoo", true);
+					exchange.setProperty("isSiAWMS", true);
 					break;
 				}
 			}

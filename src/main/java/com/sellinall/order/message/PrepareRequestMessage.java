@@ -87,6 +87,10 @@ public class PrepareRequestMessage implements Processor {
 		if (isOdoo) {
 			exchange.setProperty("publishToOdoo", true);
 		}
+		boolean isSiAWMS = exchange.getProperty("isSiAWMS", Boolean.class);
+		if (isSiAWMS) {
+			exchange.setProperty("publishToSiAWMS", true);
+		}
 
 		// prepare publish message for create & update in aramex server
 		boolean isAramex = exchange.getProperty("isAramexWMS", Boolean.class);

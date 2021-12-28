@@ -701,9 +701,9 @@
 			<from uri="direct:publishOrderNotificationToMQ" />
 			<choice>
 				<when>
-					<simple>${exchangeProperty.hasOrderInDB} == false</simple>
+					<simple>${exchangeProperty.userMessageName} != null</simple>
 					<setHeader headerName="userMessageName">
-						<constant>ORDER_CREATED</constant>
+						<simple>${exchangeProperty.userMessageName}</simple>
 					</setHeader>
 					<process ref="constructOrderNotification" />
 					<to uri="direct:notificationToUser" />

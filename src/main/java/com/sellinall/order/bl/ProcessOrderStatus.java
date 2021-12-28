@@ -12,6 +12,7 @@ import com.mongodb.BasicDBObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.SIAOrderStatus;
+import com.sellinall.util.enums.UserMessageName;
 
 public class ProcessOrderStatus implements Processor {
 	static Logger log = Logger.getLogger(ProcessOrderStatus.class.getName());
@@ -63,6 +64,24 @@ public class ProcessOrderStatus implements Processor {
 			notificationOrderActionStatus = OrderUtil.handleExistingOrderStatus(notificationOrderStatus, orderDBStatus,
 					orderMessage, orderID, "order");
 		} 
+		String userMessageName = null;
+		if (!hasOrderInDB) {
+			userMessageName = UserMessageName.ORDER_CREATED.toString();
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_DELIVERED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERED)) {
+			userMessageName = UserMessageName.ORDER_DELIVERED.toString();
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)) {
+			userMessageName = UserMessageName.ORDER_CANCELLED.toString();
+		}
+		exchange.setProperty("userMessageName", userMessageName);
 		log.debug("OrderActionStatus	: " + notificationOrderActionStatus);
 		exchange.setProperty("notificationOrderActionStatus", notificationOrderActionStatus);
 

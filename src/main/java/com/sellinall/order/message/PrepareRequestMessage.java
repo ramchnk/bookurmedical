@@ -8,6 +8,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.sellinall.order.util.OrderUtil;
+import com.sellinall.util.enums.SIAOrderStatus;
 
 /**
  * 
@@ -52,7 +53,9 @@ public class PrepareRequestMessage implements Processor {
 		// channels
 		boolean isOrderUpdatedByShippingCarrier = exchange.getProperty("isOrderUpdatedByShippingCarrier",
 				Boolean.class);
-		if (isNinjaVanShippingCarrier && !isOrderUpdatedByShippingCarrier) {
+		boolean isProcessToNinjaVan = orderRecord.getString("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
+				&& exchange.getProperty("airwayBillExists") == null;
+		if (isNinjaVanShippingCarrier && !isOrderUpdatedByShippingCarrier && isProcessToNinjaVan) {
 			exchange.setProperty("publishToNinjaVan", true);
 		} else if (isSingPostShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 			exchange.setProperty("publishToSingPost", true);
@@ -61,8 +64,6 @@ public class PrepareRequestMessage implements Processor {
 		} else if (isAramexShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 			exchange.setProperty("publishToAramexShipping", true);
 		}
-
-
 		// prepare publish message for create & update in infor server
 		boolean isInforWMS = exchange.getProperty("isInforWMS", Boolean.class);
 		exchange.setProperty("publishToInfor", false);

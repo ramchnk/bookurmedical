@@ -53,9 +53,9 @@ public class PrepareRequestMessage implements Processor {
 		// channels
 		boolean isOrderUpdatedByShippingCarrier = exchange.getProperty("isOrderUpdatedByShippingCarrier",
 				Boolean.class);
-		boolean isBlockToNinjaVan = !exchange.getProperty("isAutoAcceptEnabled", Boolean.class)
-				&& orderRecord.getString("orderStatus").equals(SIAOrderStatus.INITIATED.toString());
-		if (isNinjaVanShippingCarrier && !isOrderUpdatedByShippingCarrier && !isBlockToNinjaVan) {
+		boolean isProcessToNinjaVan = orderRecord.getString("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
+				&& exchange.getProperty("airwayBillExists") == null;
+		if (isNinjaVanShippingCarrier && !isOrderUpdatedByShippingCarrier && isProcessToNinjaVan) {
 			exchange.setProperty("publishToNinjaVan", true);
 		} else if (isSingPostShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 			exchange.setProperty("publishToSingPost", true);
@@ -64,7 +64,6 @@ public class PrepareRequestMessage implements Processor {
 		} else if (isAramexShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 			exchange.setProperty("publishToAramexShipping", true);
 		}
-	
 		// prepare publish message for create & update in infor server
 		boolean isInforWMS = exchange.getProperty("isInforWMS", Boolean.class);
 		exchange.setProperty("publishToInfor", false);

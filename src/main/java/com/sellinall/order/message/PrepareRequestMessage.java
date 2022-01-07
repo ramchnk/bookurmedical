@@ -61,8 +61,6 @@ public class PrepareRequestMessage implements Processor {
 		} else if (isAramexShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 			exchange.setProperty("publishToAramexShipping", true);
 		}
-
-
 		// prepare publish message for create & update in infor server
 		boolean isInforWMS = exchange.getProperty("isInforWMS", Boolean.class);
 		exchange.setProperty("publishToInfor", false);

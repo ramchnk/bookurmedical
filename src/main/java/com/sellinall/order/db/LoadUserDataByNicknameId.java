@@ -98,6 +98,11 @@ public class LoadUserDataByNicknameId implements Processor {
 				});
 			}
 		}
+		exchange.setProperty("isAutoAcceptEnabled", false);
+		if (userSiteSpecificObject.containsField("isAutoAcceptOrder")
+				&& userSiteSpecificObject.getBoolean("isAutoAcceptOrder")) {
+			exchange.setProperty("isAutoAcceptEnabled", true);
+		}
 		exchange.setProperty("isInforWMS", false);
 		exchange.setProperty("isSatsacoWMS", false);
 		exchange.setProperty("isNetSuite", false);

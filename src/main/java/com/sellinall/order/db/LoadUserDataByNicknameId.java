@@ -20,6 +20,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
+import com.sellinall.util.enums.SIAOrderStatus;
 
 /**
  * @author vikraman
@@ -34,6 +35,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		String siteName = exchange.getProperty("siteName", String.class);
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		String accountingChannel = Config.getConfig().getSIAAccountingChannels();
+		String orderStatus = exchange.getProperty("orderStatus", String.class);
 		BasicDBObject queryResult = runQuery(accountNumber, nickNameID, siteName, accountingChannel);
 		exchange.setProperty("syncInventory", (Boolean) queryResult.get("syncInventory"));
 		List<BasicDBObject> userSiteSpecificObjectList = (List<BasicDBObject>) queryResult.get(siteName);
@@ -75,7 +77,16 @@ public class LoadUserDataByNicknameId implements Processor {
 				&& userSiteSpecificObject.get("shippingCarrier") != null) {
 			BasicDBList shippingCarrier = (BasicDBList) userSiteSpecificObject.get("shippingCarrier");
 			if (shippingCarrier.contains("ninjaVan")) {
-				exchange.setProperty("isNinjaVanShippingCarrier", true);
+				if (userSiteSpecificObject.containsField("isAutoAcceptOrder")
+						&& !userSiteSpecificObject.getBoolean("isAutoAcceptOrder")
+						&& orderStatus.equals(SIAOrderStatus.INITIATED.toString())) {
+					// isAutoAcceptOrder = false and orderStatus = INITIATED, No need to publish this for ninjavan
+					// That accounts auto accept disabled account
+				} else {
+					// If that channel account don't have 'isAutoAcceptOrder'
+					// flag then we can publish to ninjavan
+					exchange.setProperty("isNinjaVanShippingCarrier", true);
+				}
 			} else if (shippingCarrier.size() > 0) {
 				String shippingCarrierName = shippingCarrier.get(0).toString();
 				if (shippingCarrierName.startsWith("jtExpress")) {

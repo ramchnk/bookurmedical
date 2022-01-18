@@ -38,6 +38,7 @@ import com.sellinall.util.CurrencyUtil;
 import com.sellinall.util.DateUtil;
 import com.sellinall.util.HttpsURLConnectionUtil;
 import com.sellinall.util.InvoiceSequence;
+import com.sellinall.util.enums.OrderFulfilledBy;
 import com.sellinall.util.enums.OrderUpdateStatus;
 import com.sellinall.util.enums.SIAErpUpdateStatuses;
 import com.sellinall.util.enums.SIAOrderStatus;
@@ -76,11 +77,13 @@ public class UpdateOrderDBQuery implements Processor {
 		exchange.setProperty("isNewOrder", false);
 		if (!hasOrderInDB) {
 			insertOrderRecord(exchange, notificationOrderActionStatus, orderMessage, inBody);
+			checkIsOrderFulfilledByChannel(exchange, orderMessageJSON);
 			exchange.setProperty("isNewOrder", true);
 			exchange.setProperty("isFreeGiftAddedToOrder", false);
 			return;
 		}
 		updateOrderRecord(exchange, notificationOrderActionStatus, orderMessage);
+		checkIsOrderFulfilledByChannel(exchange, orderMessageJSON);
 	}
 
 	private boolean checkValidDocumentUrl(BasicDBObject orderMessage) {
@@ -518,6 +521,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "gstAmount", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "giftMessage", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "isPreOrder", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "orderFulfilledBy", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
 	}
 
@@ -816,6 +820,17 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("timeDamageBy3PL", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERY_FAILED)) {
 			orderRecord.put("timeDeliveryFailed", DateUtil.getSIADateFormat());
+		}
+	}
+
+	private void checkIsOrderFulfilledByChannel(Exchange exchange, JSONObject orderMessageJSON) throws JSONException {
+		// If order fulfilled by channel, no need sync inventory.
+		// That will be done by respective channel itself.
+		// So should stop inventory sync.
+		if (orderMessageJSON.has("orderFulfilledBy")
+				&& orderMessageJSON.getString("orderFulfilledBy").equals(OrderFulfilledBy.CHANNEL.toString())) {
+			log.info("Order : " + orderMessageJSON.getString("orderID") + " is fulfilled by channel. So stock sync not required to SIA system.");
+			exchange.setProperty("stopProcess", true);
 		}
 	}
 

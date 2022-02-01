@@ -558,11 +558,13 @@ public class UpdateOrderDBQuery implements Processor {
 			}
 		}
 
+		int giftItemsSize = freeGiftItems.size();
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			if (orderRecord.containsField("orderStatus")
 					&& orderRecord.getString("orderStatus").equals(SIAOrderStatus.INITIATED.toString())
-					&& exchange.getProperty("hasOrderInDB", Boolean.class) && orderDBObjectSize != orderItems.size()) {
+					&& exchange.getProperty("hasOrderInDB", Boolean.class)
+					&& orderDBObjectSize - giftItemsSize != orderItems.size()) {
 				return;
 			}
 			for (int i = 0; i < orderItems.size(); i++) {

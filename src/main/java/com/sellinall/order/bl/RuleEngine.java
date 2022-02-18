@@ -91,6 +91,9 @@ public class RuleEngine {
 					freeGiftOrderItem.put("itemTitle", freeGift.getString("itemTitle"));
 				}
 				BasicDBObject itemAmountObject = new BasicDBObject();
+				if (selectedWMS != null && !selectedWMS.isEmpty()) {
+					freeGiftOrderItem.put("wmsID", selectedWMS);
+				}
 				itemAmountObject.put("amount", 0);
 				itemAmountObject.put("currencyCode", currencyCode);
 				freeGiftOrderItem.put("itemAmount", itemAmountObject);

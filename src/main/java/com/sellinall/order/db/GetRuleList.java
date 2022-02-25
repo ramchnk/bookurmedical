@@ -20,6 +20,15 @@ public class GetRuleList implements Processor {
 		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", accountNumber);
 		searchQuery.put("nickNameID", new BasicDBObject("$in", nicknameIdList));
+
+		BasicDBObject elemMatch = new BasicDBObject();
+		elemMatch.put("leftOperand", "timeOrderCreated");
+		elemMatch.put("operator", "LESS_THAN");
+		elemMatch.put("rightOperand", new BasicDBObject("$gt", System.currentTimeMillis() / 1000));
+
+		BasicDBObject conditions = new BasicDBObject();
+		conditions.put("$elemMatch", elemMatch);
+		searchQuery.put("conditions",conditions);
 		searchQuery.put("status", SIAInventoryStatus.ACTIVE.toString());
 		exchange.getOut().setBody(searchQuery);
 	}

@@ -266,6 +266,10 @@ public class RuleEngine {
 				if (!processCondition(condition, order, "orderSoldAmount")) {
 					return false;
 				}
+			} else if (condition.getString("leftOperand").equals("quantity")) {
+				if (!processCondition(condition, orderItems, "quantity")) {
+					return false;
+				}
 			} else if (condition.getString("leftOperand").equals("paymentStatus")) {
 				if (!processCondition(condition, order, "paymentStatus")) {
 					return false;

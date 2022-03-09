@@ -561,12 +561,7 @@ public class UpdateOrderDBQuery implements Processor {
 		int giftItemsSize = freeGiftItems.size();
 		if (orderRecord.containsField("orderItems")) {
 			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
-			if (orderRecord.containsField("orderStatus")
-					&& orderRecord.getString("orderStatus").equals(SIAOrderStatus.INITIATED.toString())
-					&& exchange.getProperty("hasOrderInDB", Boolean.class)
-					&& orderDBObjectSize - giftItemsSize != orderItems.size()) {
-				return;
-			}
+			int requestOrderItemSize = orderItems.size();
 			for (int i = 0; i < orderItems.size(); i++) {
 				BasicDBObject orderItem = orderItems.get(i);
 				if (exchange.getProperties().containsKey("isStatusHandledInOrderItem")
@@ -585,7 +580,8 @@ public class UpdateOrderDBQuery implements Processor {
 						}
 					}
 				}
-				if (!orderItem.containsField("settlementAmount")) {
+				if (!orderItem.containsField("settlementAmount")
+						&& requestOrderItemSize == orderDBObjectSize - giftItemsSize) {
 					processSettlementAmountOrderItem(orderItem, i, exchange);
 				}
 				boolean orderHasInventory = false;

@@ -98,6 +98,9 @@ public class ConstructOrderNotification implements Processor {
 					|| orderStatus.equals(SIAOrderStatus.PROCESSING.toString())) && orderRecord.has("documents")) {
 				message.put("documents", orderRecord.get("documents"));
 			}
+			if (orderRecord.has("cancelDetails") && orderRecord.getJSONObject("cancelDetails").has("cancelReason")) {
+				message.put("cancelReason", orderRecord.getJSONObject("cancelDetails").getString("cancelReason").replaceAll("_", " "));
+			}
 			outBody.put("accountNumber", orderRecord.get("accountNumber"));
 			outBody.put("merchantID", exchange.getProperty("merchantID"));
 			outBody.put("userMessageName", (String) exchange.getIn().getHeader("userMessageName"));

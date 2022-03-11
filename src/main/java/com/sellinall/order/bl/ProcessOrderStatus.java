@@ -87,6 +87,14 @@ public class ProcessOrderStatus implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_PENDING_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_CANCELLED)) {
 			userMessageName = UserMessageName.ORDER_CANCELLED.toString();
+		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERY_FAILED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURN_REQUESTED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURN_SHIPPED_TO_RETURNED)) {
+			userMessageName = UserMessageName.ORDER_RETURNED.toString();
 		}
 		exchange.setProperty("userMessageName", userMessageName);
 		log.debug("OrderActionStatus	: " + notificationOrderActionStatus);

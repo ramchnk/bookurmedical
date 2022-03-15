@@ -24,8 +24,7 @@ public class InitializeJournalMessage implements Processor {
 			eventMessages.put("adjustedBy", addendum.getString("adjustedBy"));
 		}
 		JSONArray journalMessageArray = exchange.getProperty("journalMessage", JSONArray.class);
-		eventMessages.put("addendum", journalMessageArray);
-		eventMessagesArray.put(eventMessages);
+		eventMessagesArray.put(journalMessageArray);
 		exchange.getOut().setBody(journalMessageArray);
 	}
 

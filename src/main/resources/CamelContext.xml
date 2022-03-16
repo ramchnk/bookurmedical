@@ -52,6 +52,7 @@
 	<bean id="processRuleList" class="com.sellinall.order.db.ProcessRuleList"/>
 	<bean id="updateProductMaster" class="com.sellinall.order.db.UpdateProductMaster"/>
 	<bean id="syncProductMaster" class="com.sellinall.order.request.SyncProductMaster"/>
+	<bean id="initializeJournalMessage" class="com.sellinall.order.message.InitializeJournalMessage"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -425,6 +426,17 @@
 		<property name="networkRecoveryInterval" value="0"/>
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
+	
+	<bean id="journalTxConnectionFactory"
+		class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${journalmq.host}" />
+		<property name="port" value="${journalmq.port}" />
+		<property name="username" value="${journalmq.username}" />
+		<property name="password" value="${journalmq.password}" />
+		<property name="virtualHost" value="${journalmq.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0" />
+		<property name="automaticRecoveryEnabled" value="true" />
+	</bean>
 	<!-- mongo db bean -->
 	<bean id="mongoInventoryBean" class="com.mongodb.MongoClient">
 		<constructor-arg index="0">
@@ -492,6 +504,10 @@
 			<when>
 				<simple>${exchangeProperty.isOrderUpdatedByShippingCarrier} == true</simple>
 				<to uri="direct:publishToMQForUpdateOrder" />
+			</when>
+			<when>
+				<simple>${exchangeProperty.isEligiblePublishToJournal} == true</simple>
+				<to uri="direct:publishOrderStatusEventsToJournal" />
 			</when>
 		</route>
 
@@ -1005,6 +1021,24 @@
 				</when>
 			</when>
 		</route>
+		
+		<route id="publishOrderStatusEventsToJournal">
+			<from uri="direct:publishOrderStatusEventsToJournal" />
+			<process ref="initializeJournalMessage" />
+			<to uri="direct:publishToJournal" />
+		</route>
+
+		<route id="publishToJournal">
+			<from uri="direct:publishToJournal" />
+			<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<constant>journalKey</constant>
+			</setHeader>
+			<convertBodyTo type="java.lang.String" />
+			<to
+				uri="rabbitmq://{{journalmq.host}}:{{journalmq.port}}/journalExchange?connectionFactory=#journalTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+				pattern="InOnly" />
+		</route>
+		
 
 		<route id="groupOrderByCartNumber">
 		   <from uri="direct:groupOrderByCartNumber" />

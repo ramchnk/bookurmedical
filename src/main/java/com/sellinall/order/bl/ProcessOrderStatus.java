@@ -6,12 +6,16 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
+import com.sellinall.util.enums.OrderUpdateStatus;
 import com.sellinall.util.enums.SIAOrderStatus;
+import com.sellinall.util.enums.SIAShippingStatus;
 import com.sellinall.util.enums.UserMessageName;
 
 public class ProcessOrderStatus implements Processor {
@@ -63,7 +67,10 @@ public class ProcessOrderStatus implements Processor {
 			SIAOrderStatus orderDBStatus = SIAOrderStatus.valueOf(orderDBObject.getString("orderStatus"));
 			notificationOrderActionStatus = OrderUtil.handleExistingOrderStatus(notificationOrderStatus, orderDBStatus,
 					orderMessage, orderID, "order");
-		} 
+			buildOrderUpdateJournal(exchange, hasOrderInDB, orderDBObject, orderMessage);
+		} else {
+			buildOrderUpdateJournal(exchange, hasOrderInDB, null, orderMessage);
+		}
 		String userMessageName = null;
 		if (!hasOrderInDB) {
 			userMessageName = UserMessageName.ORDER_CREATED.toString();
@@ -98,5 +105,44 @@ public class ProcessOrderStatus implements Processor {
 		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);
 
 		exchange.getOut().setBody(orderMessage);
+	}
+
+	public void buildOrderUpdateJournal(Exchange exchange, Boolean hasOrderInDB, BasicDBObject orderDBObject,
+			JSONObject orderMessage) throws JSONException {
+		JSONArray journalMessage = new JSONArray();
+		setJournalMessage(journalMessage, "orderStatus", hasOrderInDB ? orderDBObject.getString("orderStatus") : null,
+				orderMessage.getString("orderStatus"));
+		setJournalMessage(journalMessage, "shippingStatus",
+				hasOrderInDB ? orderDBObject.getString("shippingStatus") : null,
+				orderMessage.getString("shippingStatus"));
+		exchange.setProperty("isEligiblePublishToJournal", false);
+		
+		String updateStatus = OrderUpdateStatus.COMPLETE.toString();
+		if (orderMessage.has("updateStatus")) {
+			updateStatus = orderMessage.getString("updateStatus");
+		}
+		if (journalMessage.length() > 0 && orderMessage.has("addendum")
+				&& (updateStatus.equals(OrderUpdateStatus.COMPLETE.toString()) || !hasOrderInDB)) {
+			exchange.setProperty("isEligiblePublishToJournal", true);
+			exchange.setProperty("journalMessage", journalMessage);
+		}
+	}
+
+	public void setJournalMessage(JSONArray journalMessage, String fieldName, String oldValue, String newValue)
+			throws JSONException {
+		if (oldValue != null) {
+			if (!oldValue.equals(newValue)) {
+				JSONObject statusChange = new JSONObject();
+				statusChange.put("fieldName", fieldName);
+				statusChange.put("oldValue", oldValue);
+				statusChange.put("newValue", newValue);
+				journalMessage.put(statusChange);
+			}
+		} else {
+			JSONObject statusChange = new JSONObject();
+			statusChange.put("fieldName", fieldName);
+			statusChange.put("newValue", newValue);
+			journalMessage.put(statusChange);
+		}
 	}
 }

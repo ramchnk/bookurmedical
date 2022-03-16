@@ -269,6 +269,10 @@ public class RuleEngine {
 				if (!processCondition(condition, order, "orderSoldAmount")) {
 					return false;
 				}
+			} else if (condition.getString("leftOperand").equals("orderAmount")) {
+				if (!processCondition(condition, order, "orderAmount")) {
+					return false;
+				}
 			} else if (condition.getString("leftOperand").equals("quantity")) {
 				if (!processCondition(condition, orderItems, "quantity")) {
 					return false;
@@ -302,7 +306,8 @@ public class RuleEngine {
 				}
 			}
 			return orderItems.stream().filter(x -> x.getBoolean("isConditionSatisfied")).count() > 0;
-		} else if (data instanceof BasicDBObject && fieldName.equals("orderSoldAmount")) {
+		} else if (data instanceof BasicDBObject
+				&& (fieldName.equals("orderSoldAmount") || fieldName.equals("orderAmount"))) {
 			BasicDBObject order = (BasicDBObject) data;
 			BasicDBObject orderSoldAmountObj = (BasicDBObject) order.get(fieldName);
 			long amount = orderSoldAmountObj.getLong("amount");

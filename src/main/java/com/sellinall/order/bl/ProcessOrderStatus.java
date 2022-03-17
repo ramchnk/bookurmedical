@@ -104,6 +104,15 @@ public class ProcessOrderStatus implements Processor {
 		Map<String, BasicDBObject> inventoryDetailsMap = new HashMap<String, BasicDBObject>();
 		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);
 
+		// For qoo10 orders orderItems doesn't exist in update polling msg so pushed orderItems from existing db object to satisfy free gift rule cases
+		if (exchange.getProperty("processRule", Boolean.class) && exchange.getProperty("hasOrderInDB", Boolean.class)
+				&& exchange.getProperties().containsKey("siteName")
+				&& exchange.getProperty("siteName", String.class).equals("qoo10") && !orderMessage.has("orderItems")) {
+			BasicDBObject orderFromDB = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			if (orderFromDB.containsField("orderItems")) {
+				orderMessage.put("orderItems", new JSONArray(orderFromDB.get("orderItems").toString()));
+			}
+		}
 		exchange.getOut().setBody(orderMessage);
 	}
 

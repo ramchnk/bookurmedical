@@ -121,9 +121,12 @@ public class ProcessOrderStatus implements Processor {
 		JSONArray journalMessage = new JSONArray();
 		setJournalMessage(journalMessage, "orderStatus", hasOrderInDB ? orderDBObject.getString("orderStatus") : null,
 				orderMessage.getString("orderStatus"));
-		setJournalMessage(journalMessage, "shippingStatus",
-				hasOrderInDB ? orderDBObject.getString("shippingStatus") : null,
-				orderMessage.getString("shippingStatus"));
+		if (orderMessage.has("shippingStatus")
+				&& (!hasOrderInDB || (hasOrderInDB && orderDBObject.containsField("shippingStatus")))) {
+			setJournalMessage(journalMessage, "shippingStatus",
+					hasOrderInDB ? orderDBObject.getString("shippingStatus") : null,
+					orderMessage.getString("shippingStatus"));
+		}
 		exchange.setProperty("isEligiblePublishToJournal", false);
 		
 		String updateStatus = OrderUpdateStatus.COMPLETE.toString();

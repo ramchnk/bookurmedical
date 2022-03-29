@@ -817,7 +817,8 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_RETURNED)) {
 			orderRecord.put("timeReturned", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.LOST_BY_3PL)
-				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_LOST_BY_3PL)) {
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_LOST_BY_3PL)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURN_SHIPPED_TO_LOST_BY_3PL)) {
 			orderRecord.put("timeLostBy3PL", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.DAMAGE_BY_3PL)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DAMAGE_BY_3PL)) {

@@ -183,6 +183,12 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("packageWeight")) {
 			orderRecord.put("packageWeight", orderMessage.get("packageWeight"));
 		}
+		if (orderMessage.containsField("orderTypes")) {
+			orderRecord.put("orderTypes", orderMessage.get("orderTypes"));
+		}
+		if (orderMessage.containsField("shippingTypes")) {
+			orderRecord.put("shippingTypes", orderMessage.get("shippingTypes"));
+		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		exchange.setProperty("groupOrderByCartNumber", false);
@@ -377,6 +383,12 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsField("packageWeight")) {
 			orderRecord.put("packageWeight", orderMessage.get("packageWeight"));
+		}
+		if (orderMessage.containsField("orderTypes")) {
+			orderRecord.put("orderTypes", orderMessage.get("orderTypes"));
+		}
+		if (orderMessage.containsField("shippingTypes")) {
+			orderRecord.put("shippingTypes", orderMessage.get("shippingTypes"));
 		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {

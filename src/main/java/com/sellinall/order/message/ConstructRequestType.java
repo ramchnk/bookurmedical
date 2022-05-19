@@ -54,6 +54,9 @@ public class ConstructRequestType implements Processor {
 					publishMessage.put("requestType", requestType);
 					exchange.setProperty("requestType", requestType);
 				}
+				if (exchange.getProperties().containsKey("isItemsReAllocated")) {
+					publishMessage.put("isItemsReAllocated", exchange.getProperty("isItemsReAllocated", boolean.class));
+				}
 				if (publishTo.equals("maatramBridgeIntegratedServer")) {
 					publishMessage.put("isMaatramBridgeIntegratedWMS",
 							exchange.getProperty("publishToMaatramBridgeIntegratedWms", boolean.class));

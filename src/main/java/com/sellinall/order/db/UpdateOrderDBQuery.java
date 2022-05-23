@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -389,6 +390,11 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsField("shippingTypes")) {
 			orderRecord.put("shippingTypes", orderMessage.get("shippingTypes"));
+		}
+		/* Need to set this flag in exchange and in out going message for re-pushing
+		   infor orders again*/
+		if (isItemsReAllocatedNeeded(orderMessage, exchange)) {
+			exchange.setProperty("isItemsReAllocated", true);
 		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
@@ -852,4 +858,58 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
+	private boolean isItemsReAllocatedNeeded(BasicDBObject orderMessage, Exchange exchange) throws JSONException {
+		JSONObject orderRecord = OrderUtil.parseToJsonObject((DBObject) exchange.getProperty("orderDBObject"));
+		if (orderRecord.has("orderItems") && orderMessage.containsField("orderItems")) {
+			JSONArray orderItemsFromDB = orderRecord.getJSONArray("orderItems");
+			//When size mismatches need to set the isItemReAllocated flag
+			List<BasicDBObject> orderItemsMessage = (ArrayList<BasicDBObject>) orderMessage.get("orderItems");
+			if (orderItemsMessage.size() > 0 && (orderItemsMessage.size() != orderItemsFromDB.length())) {
+				return true;
+			}
+			HashSet<String> orderItemIDs = new HashSet<String>();
+			for (int i = 0; i < orderItemsMessage.size(); i++) {
+				BasicDBObject orderItemMessage = orderItemsMessage.get(i);
+				if (orderItemMessage.containsField("orderItemID")) {
+					orderItemIDs.add(orderItemMessage.getString("orderItemID"));
+				}
+			}
+			//When orderedItemID mismatches means need to set the isItemReAllocated
+			for (int j = 0; j < orderItemsFromDB.length(); j++) {
+				JSONObject orderItemFromDB = orderItemsFromDB.getJSONObject(j);
+				if (orderItemFromDB.has("orderItemID")
+						&& !orderItemIDs.contains(orderItemFromDB.getString("orderItemID"))) {
+					return true;
+				}
+			}
+			//When wmsID not in orders data but in message then vice versa to set the isItemReAllocated
+			for (int k = 0; k < orderItemsFromDB.length(); k++) {
+				JSONObject orderItemFromDB = orderItemsFromDB.getJSONObject(k);
+				for (int l = 0; l < orderItemsMessage.size(); l++) {
+					BasicDBObject orderItemMessage = orderItemsMessage.get(l);
+					if (orderItemMessage.containsField("orderItemID") && orderItemFromDB.has("orderItemID")) {
+						String orderItemIDFromMessage = orderItemMessage.getString("orderItemID");
+						if (orderItemMessage.containsField("wmsID")) {
+							String wmsIDFromMessage = orderItemMessage.getString("wmsID");
+							if (orderItemFromDB.getString("orderItemID").equals(orderItemIDFromMessage)) {
+								return deceideToSetReAllocationFlag(orderItemFromDB, wmsIDFromMessage);
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean deceideToSetReAllocationFlag(JSONObject orderItemFromDB, String wmsIDFromMessage)
+			throws JSONException {
+		if (!wmsIDFromMessage.isEmpty() && !orderItemFromDB.has("wmsID")) {
+			return true;
+		}
+		if (orderItemFromDB.has("wmsID") && !orderItemFromDB.getString("wmsID").equals(wmsIDFromMessage)) {
+			return true;
+		}
+		return false;
+	}
 }

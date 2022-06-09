@@ -391,6 +391,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("shippingTypes")) {
 			orderRecord.put("shippingTypes", orderMessage.get("shippingTypes"));
 		}
+		if (orderMessage.containsField("buyerOwedAmount")) {
+			orderRecord.put("buyerOwedAmount", orderMessage.get("buyerOwedAmount"));
+		}
 		/* Need to set this flag in exchange and in out going message for re-pushing
 		   infor orders again*/
 		if (isItemsReAllocatedNeeded(orderMessage, exchange)) {

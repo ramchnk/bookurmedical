@@ -190,6 +190,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("shippingTypes")) {
 			orderRecord.put("shippingTypes", orderMessage.get("shippingTypes"));
 		}
+		if (orderMessage.containsField("buyerOwedAmount")) {
+			orderRecord.put("buyerOwedAmount", orderMessage.get("buyerOwedAmount"));
+		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		exchange.setProperty("groupOrderByCartNumber", false);

@@ -211,6 +211,33 @@ public class LoadUserDataByNicknameId implements Processor {
 				}
 			}
 		}
+		
+		//OMS
+		
+		exchange.setProperty("isMaatramIntegratedOms", false);
+		exchange.setProperty("isMaatramBridgeIntegratedOms", false);
+		if (userSiteSpecificObject.containsField("oms") && userSiteSpecificObject.get("oms") != null) {
+			BasicDBList omsList = (BasicDBList) userSiteSpecificObject.get("oms");
+			for (int i = 0; i < omsList.size(); i++) {
+				String oms = omsList.get(i).toString();
+				List<String> maatramIntegratedOmsList = Arrays
+						.asList(Config.getConfig().getMaatramIntegratedOms().split("-"));
+				maatramIntegratedOmsList.stream().forEach(configOmsValue -> {
+					if (oms.startsWith(configOmsValue)) {
+						exchange.setProperty("isMaatramIntegratedOms", true);
+					}
+					if (Arrays.asList(Config.getConfig().getMaatramBridgeIntegratedServers().split("-"))
+							.contains(oms.split("-")[0])) {
+						exchange.setProperty("isMaatramBridgeIntegratedOms", true);
+					}
+				});
+				if (oms.startsWith("omsPro")) {
+					exchange.setProperty("isOmsPro", true);
+					break;
+				}
+			}
+		}
+
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
 		if(userSiteSpecificObject.containsField("countryCode")){
 			exchange.setProperty("countryCode", userSiteSpecificObject.getString("countryCode"));

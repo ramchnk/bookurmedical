@@ -64,6 +64,8 @@ public class ConstructRequestType implements Processor {
 							exchange.getProperty("publishToMaatramBridgeIntegratedErp", boolean.class));
 					publishMessage.put("isMaatramBridgeIntegratedShippingCarrier",
 							exchange.getProperty("publishToMaatramBridgeIntegratedShippingCarrier", boolean.class));
+					publishMessage.put("isMaatramBridgeIntegratedOms",
+							exchange.getProperty("publishToMaatramBridgeIntegratedOms", boolean.class));
 				}
 				publishMessage.remove("feeType");
 			}

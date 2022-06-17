@@ -12,9 +12,11 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.order.enums.NotificationPaymentActionStatus;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.OrderUpdateStatus;
 import com.sellinall.util.enums.SIAOrderStatus;
+import com.sellinall.util.enums.SIAPaymentStatus;
 import com.sellinall.util.enums.SIAShippingStatus;
 import com.sellinall.util.enums.UserMessageName;
 
@@ -45,12 +47,14 @@ public class ProcessOrderStatus implements Processor {
 			}
 		}
 		SIAOrderStatus notificationOrderStatus = SIAOrderStatus.valueOf(orderMessage.getString("orderStatus"));
+		SIAPaymentStatus notificationPaymentStatus = SIAPaymentStatus.valueOf(orderMessage.getString("paymentStatus"));
 		boolean isStatusHandledInOrderItem = false;
 		if (orderMessage.has("orderStatuses")) {
 			isStatusHandledInOrderItem = true;
 		}
 		exchange.setProperty("isStatusHandledInOrderItem", isStatusHandledInOrderItem);
 		NotificationOrderActionStatus notificationOrderActionStatus = NotificationOrderActionStatus.NO_ACTION;
+		NotificationPaymentActionStatus notificationPaymentActionStatus = NotificationPaymentActionStatus.NO_ACTION;
 		exchange.setProperty("hasCombinedOrderIds", false);
 		if ( orderMessage.has("combinedOrderIds") && !orderMessage.isNull("combinedOrderIds")) {
 			exchange.setProperty("hasCombinedOrderIds", true);
@@ -61,12 +65,16 @@ public class ProcessOrderStatus implements Processor {
 			throw new Exception("Unknown Notification Order Status"); 
 		}
 		notificationOrderActionStatus = NotificationOrderActionStatus.valueOf(orderMessage.getString("orderStatus"));
+		notificationPaymentActionStatus = NotificationPaymentActionStatus.valueOf(orderMessage.getString("paymentStatus"));
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		if (hasOrderInDB) {
 			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
 			SIAOrderStatus orderDBStatus = SIAOrderStatus.valueOf(orderDBObject.getString("orderStatus"));
 			notificationOrderActionStatus = OrderUtil.handleExistingOrderStatus(notificationOrderStatus, orderDBStatus,
 					orderMessage, orderID, "order");
+			SIAPaymentStatus orderDBPayementStatus = SIAPaymentStatus.valueOf(orderDBObject.getString("paymentStatus"));
+			notificationPaymentActionStatus = OrderUtil.handleExistingPaymentStatus(notificationPaymentStatus,
+					orderDBPayementStatus, orderMessage);
 			buildOrderUpdateJournal(exchange, hasOrderInDB, orderDBObject, orderMessage);
 		} else {
 			buildOrderUpdateJournal(exchange, hasOrderInDB, null, orderMessage);
@@ -95,6 +103,8 @@ public class ProcessOrderStatus implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURN_SHIPPED_TO_RETURNED)) {
 			userMessageName = UserMessageName.ORDER_RETURNED.toString();
+		} else if (notificationPaymentActionStatus.equals(NotificationPaymentActionStatus.NOT_INITIATED_TO_COMPLETED)) {
+			userMessageName = UserMessageName.ORDER_PAYMENT_RECEIVED.toString();
 		}
 		exchange.setProperty("userMessageName", userMessageName);
 		log.debug("OrderActionStatus	: " + notificationOrderActionStatus);

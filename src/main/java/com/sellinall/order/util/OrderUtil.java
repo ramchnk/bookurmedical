@@ -14,7 +14,9 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
+import com.sellinall.order.enums.NotificationPaymentActionStatus;
 import com.sellinall.util.enums.SIAOrderStatus;
+import com.sellinall.util.enums.SIAPaymentStatus;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.ConnectionFactoryBuilder;
@@ -70,6 +72,27 @@ public class OrderUtil {
 			}
 		}
 		return NotificationOrderActionStatus.NO_ACTION;
+	}
+	
+	public static NotificationPaymentActionStatus handleExistingPaymentStatus(
+			SIAPaymentStatus notificationPaymentStatus, SIAPaymentStatus orderDBPaymentStatus, JSONObject orderMessage)
+			throws Exception {
+		if (notificationPaymentStatus.equals(orderDBPaymentStatus)) {
+			return NotificationPaymentActionStatus.NO_ACTION;
+		}
+		String orderPaymentStateTransition = orderDBPaymentStatus + "_TO_" + notificationPaymentStatus;
+		try {
+			if (orderPaymentStateTransition
+					.equals(NotificationPaymentActionStatus.valueOf(orderPaymentStateTransition).toString())) {
+				return NotificationPaymentActionStatus.valueOf(orderPaymentStateTransition);
+			}
+		} catch (Exception e) {
+			// TODO Activity logging for Invalid State Transitions
+			String errMsg = "Some Invalid payment state transition : " + orderPaymentStateTransition
+					+ " Exception Message : " + e.getMessage() + " orderMessage: " + orderMessage;
+			log.warn(errMsg);
+		}
+		return NotificationPaymentActionStatus.NO_ACTION;
 	}
 
 	public static boolean checkIsNewOrder(NotificationOrderActionStatus notificationOrderActionStatus) {

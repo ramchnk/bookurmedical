@@ -127,7 +127,7 @@
 		<dependency>
 			<groupId>com.sellinall.util</groupId>
 			<artifactId>sellinall-util</artifactId>
-			<version>1.2.51-RELEASE</version>
+			<version>1.2.52-RELEASE</version>
 		</dependency>
 
 		<dependency>

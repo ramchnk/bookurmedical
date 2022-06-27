@@ -90,7 +90,7 @@ public class OrderUtil {
 			// TODO Activity logging for Invalid State Transitions
 			String errMsg = "Some Invalid payment state transition : " + orderPaymentStateTransition
 					+ " Exception Message : " + e.getMessage() + " orderMessage: " + orderMessage;
-			log.warn(errMsg);
+			log.debug(errMsg);
 		}
 		return NotificationPaymentActionStatus.NO_ACTION;
 	}

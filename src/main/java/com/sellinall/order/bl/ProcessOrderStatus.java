@@ -65,7 +65,12 @@ public class ProcessOrderStatus implements Processor {
 			throw new Exception("Unknown Notification Order Status"); 
 		}
 		notificationOrderActionStatus = NotificationOrderActionStatus.valueOf(orderMessage.getString("orderStatus"));
-		notificationPaymentActionStatus = NotificationPaymentActionStatus.valueOf(orderMessage.getString("paymentStatus"));
+		try {
+			notificationPaymentActionStatus = NotificationPaymentActionStatus
+					.valueOf(orderMessage.getString("paymentStatus"));
+		} catch (Exception e) {
+			log.debug("Unknow payement action status recevied" + orderMessage.getString("paymentStatus"));
+		}
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		if (hasOrderInDB) {
 			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);

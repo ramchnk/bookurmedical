@@ -1,6 +1,10 @@
 package com.sellinall.order.enums;
 
 public enum NotificationPaymentActionStatus {
+	INITIATED ("INITIATED"),
+	FAILED ("FAILED"),
+	UNKNOWN("UNKNOWN"),
+	PARTIALLY_PAID("PARTIALLY_PAID"),
 	NO_ACTION ("NO_ACTION"), 			// noAction
 	NOT_INITIATED ("NOT_INITIATED"), 	// Payment Not initiated
 	AUTHORIZED ("AUTHORIZED"), 			// ( + )pending amount calculation only

@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.sellinall.order.util.OrderUtil;
 
 /**
@@ -17,10 +18,9 @@ import com.sellinall.order.util.OrderUtil;
 public class PrepareRequestMessage implements Processor {
 	static Logger log = Logger.getLogger(PrepareRequestMessage.class.getName());
 
-	@Override
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderRecord = OrderUtil
-				.parseToJsonObject(exchange.getProperty("orderRecord", BasicDBObject.class));
+				.parseToJsonObject((DBObject) exchange.getProperty("orderRecord", BasicDBObject.class));
 		orderRecord.put("merchantID", exchange.getProperty("merchantID", String.class));
 		if(exchange.getProperties().containsKey("countryCode")){
 			orderRecord.put("countryCode", exchange.getProperty("countryCode"));
@@ -107,17 +107,12 @@ public class PrepareRequestMessage implements Processor {
 		boolean isMaatramBridgeIntegratedShippingCarrier = exchange
 				.getProperty("isMaatramBridgeIntegratedShippingCarrier", Boolean.class);
 		boolean isMaatramBridgeIntegratedWms = exchange.getProperty("isMaatramBridgeIntegratedWms", Boolean.class);
-		boolean isMaatramBridgeIntegratedOms = exchange.getProperty("isMaatramBridgeIntegratedOms", Boolean.class);
 		boolean isMaatramBridgeIntegratedErp = exchange.getProperty("isMaatramBridgeIntegratedErp", Boolean.class);
 		exchange.setProperty("publishToMaatramBridgeIntegratedWms", false);
-		exchange.setProperty("publishToMaatramBridgeIntegratedOms", false);
 		exchange.setProperty("publishToMaatramBridgeIntegratedErp", false);
 		exchange.setProperty("publishToMaatramBridgeIntegratedShippingCarrier", false);
 		if (isMaatramBridgeIntegratedWms) {
 			exchange.setProperty("publishToMaatramBridgeIntegratedWms", true);
-		}
-		if (isMaatramBridgeIntegratedOms) {
-			exchange.setProperty("publishToMaatramBridgeIntegratedOms", true);
 		}
 		if (isMaatramBridgeIntegratedErp) {
 			exchange.setProperty("publishToMaatramBridgeIntegratedErp", true);

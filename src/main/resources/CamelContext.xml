@@ -999,8 +999,7 @@
 			<when>
 				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedWms} == true or
 						${exchangeProperty.publishToMaatramBridgeIntegratedErp} == true or
-						${exchangeProperty.publishToMaatramBridgeIntegratedShippingCarrier} == true or
-						${exchangeProperty.publishToMaatramBridgeIntegratedOms} == true
+						${exchangeProperty.publishToMaatramBridgeIntegratedShippingCarrier} == true
 				</simple>
 				<setProperty propertyName="publishTo">
 					<constant>maatramBridgeIntegratedServer</constant>

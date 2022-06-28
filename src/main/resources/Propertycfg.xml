@@ -60,6 +60,7 @@
 
 		<property name="maatramIntegratedShippingCarrier" value="${maatramIntegratedShippingCarrier}" />
 		<property name="maatramIntegratedWms" value="${maatramIntegratedWms}" />
+		<property name="maatramIntegratedOms" value="${maatramIntegratedOms}" />
 		<property name="maatramIntegratedErp" value="${maatramIntegratedErp}" />
 		<property name="maatramBridgeIntegratedServers" value="${maatramBridgeIntegratedServers}" />
 		</bean>

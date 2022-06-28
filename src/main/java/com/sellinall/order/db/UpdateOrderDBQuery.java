@@ -42,6 +42,7 @@ import com.sellinall.util.InvoiceSequence;
 import com.sellinall.util.enums.OrderFulfilledBy;
 import com.sellinall.util.enums.OrderUpdateStatus;
 import com.sellinall.util.enums.SIAErpUpdateStatuses;
+import com.sellinall.util.enums.SIAOmsUpdateStatuses;
 import com.sellinall.util.enums.SIAOrderStatus;
 import com.sellinall.util.enums.SIAShippingCarrierUpdateStatuses;
 import com.sellinall.util.enums.SIAWmsUpdateStatuses;
@@ -257,6 +258,10 @@ public class UpdateOrderDBQuery implements Processor {
 		if (exchange.getProperties().containsKey("isMaatramIntegratedShippingCarrier")
 				&& exchange.getProperty("isMaatramIntegratedShippingCarrier", Boolean.class)) {
 			orderRecord.put("shippingCarrierStatus", SIAShippingCarrierUpdateStatuses.NOT_INITIATED.toString());
+		}
+		if (exchange.getProperties().containsKey("isMaatramIntegratedOms")
+				&& exchange.getProperty("isMaatramIntegratedOms", Boolean.class)) {
+			orderRecord.put("omsStatus", SIAOmsUpdateStatuses.NOT_INITIATED.toString());
 		}
 	}
 

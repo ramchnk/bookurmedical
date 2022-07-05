@@ -316,6 +316,9 @@ public class LoadUserDataByNicknameId implements Processor {
 			if (wmsListinChannel.size() == 1) {
 				isWmsSelected = true;
 				exchange.setProperty("selectedWMS", wmsListinChannel.get(0));
+			} else if (userSiteSpecificObject.containsField("multiWarehouseMapping")) {
+				isWmsSelected = true;
+				exchange.setProperty("selectedWMSList", wmsListinChannel);
 			} else {
 				log.error("WMS not selected / more than one WMS selected  for accountNumber : " + accountNumber
 						+ ", nickName: " + nickNameID);

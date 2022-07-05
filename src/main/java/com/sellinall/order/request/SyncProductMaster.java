@@ -35,7 +35,8 @@ public class SyncProductMaster implements Processor {
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = nickNameID.split("-")[0];
-		if (!exchange.getProperty("isWmsSelected", Boolean.class)) {
+		String selectedWMS = getSelectedWmsID(exchange, orderItemMessage);
+		if (!exchange.getProperty("isWmsSelected", Boolean.class) || selectedWMS == null) {
 			log.error("productMaster is not synced, since no wms chosen for accountNumber : " + accountNumber
 					+ ", nickNameID : " + exchange.getProperty("nickNameID", String.class));
 			return;
@@ -80,7 +81,6 @@ public class SyncProductMaster implements Processor {
 			sellerSKU = inventoryDBRecordJSON.getString("customSKU");
 		}
 		if (!sellerSKU.isEmpty()) {
-			String selectedWMS = exchange.getProperty("selectedWMS", String.class);
 			String urlPath = "";
 			JSONObject payload = new JSONObject();
 			String actor = Actor.SALES_CHANNEL.toString();
@@ -197,6 +197,15 @@ public class SyncProductMaster implements Processor {
 			payload.put("quantities", quantityArray);
 		}
 		return payload;
+	}
+
+	private String getSelectedWmsID(Exchange exchange, JSONObject orderItemMessage) throws JSONException {
+		if (exchange.getProperties().containsKey("selectedWMSList") && orderItemMessage.has("wmsID")) {
+			return orderItemMessage.getString("wmsID");
+		} else if (exchange.getProperties().containsKey("selectedWMS")) {
+			return exchange.getProperty("selectedWMS", String.class);
+		}
+		return null;
 	}
 
 }

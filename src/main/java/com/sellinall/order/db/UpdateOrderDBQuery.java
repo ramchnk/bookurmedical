@@ -452,14 +452,14 @@ public class UpdateOrderDBQuery implements Processor {
 					BasicDBObject shippingTrackingDetails = (BasicDBObject) shippingDetails
 							.get("shippingTrackingDetails");
 					String courierName = shippingTrackingDetails.getString("courierName");
-					String maatramIntegratedShippingCarrier = Config.getConfig().getMaatramIntegratedShippingCarrier();
-					if (maatramIntegratedShippingCarrier.contains(courierName) || courierName.equals("janio")
-							|| (courierName.toLowerCase().replaceAll(" ", "")).equals("ninjavan")) {
+					if (courierName.equals("janio")
+							|| (courierName.toLowerCase().replaceAll(" ", "")).contains("ninjavan")) {
 						if ((!shippingTrackingDetails.containsField("airwayBill")
 								|| (shippingTrackingDetails.containsField("airwayBill")
 										&& shippingTrackingDetails.getString("airwayBill").isEmpty()))) {
 							orderRecord.put("shippingCarrierStatus",
 									SIAShippingCarrierUpdateStatuses.SHIPMENT_CREATE_FAILED.toString());
+							orderRecord.put("shippingCarrierFailureReason", orderMessage.getString("failureReason"));
 						}
 					}
 				}

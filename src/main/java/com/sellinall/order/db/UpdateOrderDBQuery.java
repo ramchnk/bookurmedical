@@ -409,6 +409,21 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
+			if (orderMessage.containsField("orderStatus")
+					&& orderMessage.get("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
+					&& orderMessage.containsField("shippingDetails")) {
+				BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
+				if (shippingDetails.containsField("shippingTrackingDetails")) {
+					BasicDBObject shippingTrackingDetails = (BasicDBObject) shippingDetails
+							.get("shippingTrackingDetails");
+					if (shippingTrackingDetails.containsField("airwayBill")
+							&& !shippingTrackingDetails.getString("airwayBill").isEmpty()) {
+						orderMessage.put("shippingCarrierStatus",
+								SIAShippingCarrierUpdateStatuses.SHIPMENT_CREATED.toString());
+						orderMessage.put("isAWBCreated", true);
+					}
+				}
+			}
 			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
 			//TODO: need to remove isWhatsAppEnabled after whatsapp approval
 			if (orderRecord.containsField("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
@@ -429,7 +444,26 @@ public class UpdateOrderDBQuery implements Processor {
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		orderRecord.put("updateStatus", updateStatus);
 		if (updateStatus.equals(OrderUpdateStatus.FAILED.toString()) && orderMessage.containsKey("failureReason")) {
-			orderRecord.put("failureReason", orderMessage.getString("failureReason"));	
+			orderRecord.put("failureReason", orderMessage.getString("failureReason"));
+			if (orderMessage.containsField("orderStatus")
+					&& orderMessage.get("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString()) && orderMessage.containsField("shippingDetails")) {
+				BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
+				if (shippingDetails.containsField("shippingTrackingDetails")) {
+					BasicDBObject shippingTrackingDetails = (BasicDBObject) shippingDetails
+							.get("shippingTrackingDetails");
+					String courierName = shippingTrackingDetails.getString("courierName");
+					String maatramIntegratedShippingCarrier = Config.getConfig().getMaatramIntegratedShippingCarrier();
+					if (maatramIntegratedShippingCarrier.contains(courierName) || courierName.equals("janio")
+							|| (courierName.toLowerCase().replaceAll(" ", "")).equals("ninjavan")) {
+						if ((!shippingTrackingDetails.containsField("airwayBill")
+								|| (shippingTrackingDetails.containsField("airwayBill")
+										&& shippingTrackingDetails.getString("airwayBill").isEmpty()))) {
+							orderRecord.put("shippingCarrierStatus",
+									SIAShippingCarrierUpdateStatuses.SHIPMENT_CREATE_FAILED.toString());
+						}
+					}
+				}
+			}
 		}
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
 		if (orderRecord.containsField("orderItems")) {
@@ -558,6 +592,7 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "isPreOrder", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderFulfilledBy", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "packageList", orderMessage);
+		fillTransactionKeyValuePair(orderRecord, "isAWBCreated", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
 	}
 

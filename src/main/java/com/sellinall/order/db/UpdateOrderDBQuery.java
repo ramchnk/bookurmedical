@@ -938,7 +938,9 @@ public class UpdateOrderDBQuery implements Processor {
 						if (orderItemMessage.containsField("wmsID")) {
 							String wmsIDFromMessage = orderItemMessage.getString("wmsID");
 							if (orderItemFromDB.getString("orderItemID").equals(orderItemIDFromMessage)) {
-								return deceideToSetReAllocationFlag(orderItemFromDB, wmsIDFromMessage);
+								if (deceideToSetReAllocationFlag(orderItemFromDB, wmsIDFromMessage)) {
+									return true;
+								}
 							}
 						}
 					}

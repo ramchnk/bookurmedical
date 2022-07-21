@@ -410,7 +410,9 @@ public class UpdateOrderDBQuery implements Processor {
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
 			if (orderMessage.containsField("orderStatus")
-					&& orderMessage.get("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
+					&& (orderMessage.get("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
+							|| orderMessage.get("orderStatus").equals(SIAOrderStatus.PROCESSING.toString())
+							|| orderMessage.get("orderStatus").equals(SIAOrderStatus.DISPATCHED.toString()))
 					&& orderMessage.containsField("shippingDetails")) {
 				BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
 				if (shippingDetails.containsField("shippingTrackingDetails")) {

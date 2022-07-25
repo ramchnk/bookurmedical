@@ -539,6 +539,10 @@
 			<from uri="direct:processOrderItem" />
 			<process ref="initOrderItemRoute" />
 			<when>
+				<simple>${exchangeProperty.isEligibleToStockSync} == false</simple>
+				<stop/>
+			</when>
+			<when>
 				<simple>${exchangeProperty.isStatusHandledInOrderItem} == true</simple>
 				<process ref="processOrderItemStatus" />
 			</when>

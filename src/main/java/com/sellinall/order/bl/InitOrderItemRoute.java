@@ -8,6 +8,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import com.sellinall.order.util.OrderUtil;
+import com.sellinall.util.enums.OrderFulfilledBy;
 
 public class InitOrderItemRoute implements Processor {
 	static Logger log = Logger.getLogger(InitOrderItemRoute.class.getName());
@@ -19,6 +20,13 @@ public class InitOrderItemRoute implements Processor {
 		exchange.setProperty("hasSKU", false);
 		if (orderItemMessage.has("SKU")) {
 			exchange.setProperty("hasSKU", true);
+		}
+		exchange.setProperty("isEligibleToStockSync", true);
+		// In Blibli "orderFulfilledBy" flag maintained by order item level
+		if (orderItemMessage.has("orderFulfilledBy")
+				&& orderItemMessage.getString("orderFulfilledBy").equals(OrderFulfilledBy.CHANNEL.toString())) {
+			log.info("This " + orderItemMessage.getString("orderItemID") + " item is fulfilled by channel in Order : " + exchange.getProperty("orderID", String.class) + ". So stock sync not required to SIA system.");
+			exchange.setProperty("isEligibleToStockSync", false);
 		}
 		exchange.getOut().setBody(orderItemMessage);
 	}

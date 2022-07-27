@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -37,6 +38,7 @@ import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.AuthConstant;
 import com.sellinall.util.CurrencyUtil;
 import com.sellinall.util.DateUtil;
+import com.sellinall.util.HashUtil;
 import com.sellinall.util.HttpsURLConnectionUtil;
 import com.sellinall.util.InvoiceSequence;
 import com.sellinall.util.enums.OrderFulfilledBy;
@@ -596,6 +598,40 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "packageList", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "isAWBCreated", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
+		hashRequiredFields(orderRecord, orderMessage);
+	}
+
+	private void hashRequiredFields(BasicDBObject orderRecord, BasicDBObject orderMessage) {
+		HashUtil hashUtil = new HashUtil();
+		BasicDBObject buyerDetailsHashed = hashObjectFields("buyerDetails", orderMessage, hashUtil);
+		if (buyerDetailsHashed != null) {
+			orderRecord.put("buyerDetailsHashed", buyerDetailsHashed);
+		}
+		if (orderMessage.containsField("shippingDetails")) {
+			BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
+			BasicDBObject shippingDetailsFromDB = orderRecord.containsField("shippingDetails")
+					? (BasicDBObject) orderRecord.get("shippingDetails")
+					: new BasicDBObject();
+			BasicDBObject addressHashed = hashObjectFields("address", shippingDetails, hashUtil);
+			if (addressHashed != null) {
+				shippingDetailsFromDB.put("addressHashed", addressHashed);
+				orderRecord.put("shippingDetails", shippingDetailsFromDB);
+			}
+		}
+	}
+
+	private BasicDBObject hashObjectFields(String key, BasicDBObject orderMessage, HashUtil hashUtil) {
+		if (orderMessage.containsField(key)) {
+			BasicDBObject obj = (BasicDBObject) orderMessage.get(key);
+			Set<String> keys = obj.keySet();
+
+			BasicDBObject hashedObj = new BasicDBObject();
+			for (String objKey : keys) {
+				hashedObj.put(objKey, hashUtil.hash(obj.getString(objKey).toCharArray(), false));
+			}
+			return hashedObj;
+		}
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")

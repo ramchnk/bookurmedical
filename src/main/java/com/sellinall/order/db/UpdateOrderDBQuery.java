@@ -774,6 +774,8 @@ public class UpdateOrderDBQuery implements Processor {
 								JSON.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
 					}
 				}
+				//Set maatram orderItem statuses
+				setMaatramItemStatusFromDbOrderItem(orderItem, i, exchange);;
 				if (processOrdersWithSKUOnly) {
 					// For managed accounts, add orderItem to list, only it has
 					// SKU
@@ -1004,4 +1006,24 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		return false;
 	}
+	
+	private void setMaatramItemStatusFromDbOrderItem(BasicDBObject orderItem, int orderItemIndex, Exchange exchange) {
+		if (exchange.getProperty("hasOrderInDB", Boolean.class)) {
+			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			if (orderDBObject.containsField("orderItems")) {
+				BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
+				BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
+				if (orderItemDB.containsField("omsStatus")) {
+					fillTransactionKeyValuePair(orderItem, "omsStatus", orderItemDB);
+				}
+				if (orderItemDB.containsField("wmsStatus")) {
+					fillTransactionKeyValuePair(orderItem, "wmsStatus", orderItemDB);
+				}
+				if (orderItemDB.containsField("erpStatus")) {
+					fillTransactionKeyValuePair(orderItem, "erpStatus", orderItemDB);
+				}
+			}
+		}
+	}
+
 }

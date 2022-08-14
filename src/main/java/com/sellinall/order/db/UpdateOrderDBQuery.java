@@ -775,7 +775,7 @@ public class UpdateOrderDBQuery implements Processor {
 					}
 				}
 				//Set maatram orderItem statuses
-				setMaatramItemStatusFromDbOrderItem(orderItem, i, exchange);;
+				setMaatramItemStatusFromDbOrderItem(orderItem, i, exchange);
 				if (processOrdersWithSKUOnly) {
 					// For managed accounts, add orderItem to list, only it has
 					// SKU

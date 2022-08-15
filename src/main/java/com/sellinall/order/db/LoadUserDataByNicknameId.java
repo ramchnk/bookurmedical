@@ -86,10 +86,6 @@ public class LoadUserDataByNicknameId implements Processor {
 					// If that channel account don't have 'isAutoAcceptOrder'
 					// flag then we can publish to ninjavan
 					exchange.setProperty("isNinjaVanShippingCarrier", true);
-					if (exchange.getProperties().containsKey("needToGenerateAirwayBill")
-							&& !exchange.getProperty("needToGenerateAirwayBill", Boolean.class)) {
-						exchange.setProperty("isNinjaVanShippingCarrier", false);
-					}
 				}
 			} else if (shippingCarrier.size() > 0) {
 				String shippingCarrierName = shippingCarrier.get(0).toString();

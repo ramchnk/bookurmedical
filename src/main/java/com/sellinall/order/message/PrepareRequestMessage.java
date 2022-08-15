@@ -48,18 +48,25 @@ public class PrepareRequestMessage implements Processor {
 		exchange.setProperty("publishToJTExpress", false);
 		Boolean isAramexShippingCarrier = exchange.getProperty("isAramexShippingCarrier", Boolean.class);
 		exchange.setProperty("publishToAramexShipping", false);
+		//if the order does not contains wmsID, we are skipping to generate airwayBill
+		boolean needToGenerateAirwayBill = true;
+		if (exchange.getProperties().containsKey("needToGenerateAirwayBill")) {
+			needToGenerateAirwayBill = exchange.getProperty("needToGenerateAirwayBill", Boolean.class);
+		}
 		// To skip the unnecessary order Update, receive from Shipping Carrier
 		// channels
 		boolean isOrderUpdatedByShippingCarrier = exchange.getProperty("isOrderUpdatedByShippingCarrier",
 				Boolean.class);
-		if (isNinjaVanShippingCarrier && !isOrderUpdatedByShippingCarrier) {
-			exchange.setProperty("publishToNinjaVan", true);
-		} else if (isSingPostShippingCarrier && !isOrderUpdatedByShippingCarrier) {
-			exchange.setProperty("publishToSingPost", true);
-		}  else if (isJTExpressShippingCarrier && !isOrderUpdatedByShippingCarrier) {
-			exchange.setProperty("publishToJTExpress", true);
-		} else if (isAramexShippingCarrier && !isOrderUpdatedByShippingCarrier) {
-			exchange.setProperty("publishToAramexShipping", true);
+		if (needToGenerateAirwayBill) {
+			if (isNinjaVanShippingCarrier && !isOrderUpdatedByShippingCarrier) {
+				exchange.setProperty("publishToNinjaVan", true);
+			} else if (isSingPostShippingCarrier && !isOrderUpdatedByShippingCarrier) {
+				exchange.setProperty("publishToSingPost", true);
+			}  else if (isJTExpressShippingCarrier && !isOrderUpdatedByShippingCarrier) {
+				exchange.setProperty("publishToJTExpress", true);
+			} else if (isAramexShippingCarrier && !isOrderUpdatedByShippingCarrier) {
+				exchange.setProperty("publishToAramexShipping", true);
+			}
 		}
 		// prepare publish message for create & update in infor server
 		boolean isInforWMS = exchange.getProperty("isInforWMS", Boolean.class);

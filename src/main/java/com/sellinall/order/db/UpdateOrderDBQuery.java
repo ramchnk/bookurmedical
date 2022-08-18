@@ -210,7 +210,7 @@ public class UpdateOrderDBQuery implements Processor {
 			checkIfgroupOrderByCartNumberNeeded(exchange,totalOrderItemsInCart,cartNumber);
 		}		
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
-		fillAdditionDetails(exchange, orderRecord, siteName);
+		fillAdditionDetails(exchange, orderRecord, siteName, orderMessage);
 		if (!checkIsValidOrderForAccount(orderRecord)) {
 			exchange.setProperty("stopProcess", true);
 			return;
@@ -442,7 +442,7 @@ public class UpdateOrderDBQuery implements Processor {
 					exchange.setProperty("userMessageName", UserMessageName.ORDER_ACCEPTED.toString());
 				}
 			}
-			fillAdditionDetails(exchange, orderRecord, siteName);
+			fillAdditionDetails(exchange, orderRecord, siteName, orderMessage);
 			fillOrderAmountInUSD(orderRecord);
 		}
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
@@ -641,11 +641,13 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord, String siteName)
+	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord, String siteName, BasicDBObject orderMessage)
 			throws Exception {
 		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("inventoryDetailsMap");
 		String orderID = exchange.getProperty("orderID", String.class);
+		String appType = "";
+		boolean isMaatramIntegratedExternalAPIUpdate = false;
 		boolean addOrderItemLocation = false;
 		boolean processOrdersWithSKUOnly = processOrdersWithtSKUOnly(exchange);
 		List<BasicDBObject> newOrderItems = new ArrayList<BasicDBObject>();
@@ -670,6 +672,14 @@ public class UpdateOrderDBQuery implements Processor {
 					orderItemsStatusMap.put(items.getJSONObject(i).getString("orderItemID"),
 							items.getJSONObject(i).getString("orderStatus"));
 				}
+			}
+			BasicDBObject addendum = orderMessage.containsKey("addendum") ? (BasicDBObject) orderMessage.get("addendum")
+					: new BasicDBObject();
+			String eventType = addendum.containsKey("eventType") ? addendum.getString("eventType") : "";
+			appType = addendum.containsKey("appType") ? addendum.getString("appType") : "";
+			if (eventType.equals("API_UPDATE")
+					&& (appType.equals("ERP") || appType.equals("WMS") || appType.equals("OMS"))) {
+				isMaatramIntegratedExternalAPIUpdate = true;
 			}
 		}
 
@@ -776,6 +786,10 @@ public class UpdateOrderDBQuery implements Processor {
 				}
 				//Set maatram orderItem statuses
 				setMaatramItemStatusFromDbOrderItem(orderItem, i, exchange);
+				if (isMaatramIntegratedExternalAPIUpdate) {
+					// set maatram order status when it was an maatram integrated external API order update
+					setExternalAPIMaatramItemStatus(orderItem, i, exchange, orderMessage, appType);
+				}
 				if (processOrdersWithSKUOnly) {
 					// For managed accounts, add orderItem to list, only it has
 					// SKU
@@ -1023,6 +1037,23 @@ public class UpdateOrderDBQuery implements Processor {
 					fillTransactionKeyValuePair(orderItem, "erpStatus", orderItemDB);
 				}
 			}
+		}
+	}
+
+	private void setExternalAPIMaatramItemStatus(BasicDBObject orderItem, int orderItemIndex, Exchange exchange, BasicDBObject orderMessage, String appType) {
+			String incomingOrderStatus = orderItem.containsKey("orderStatus") ? orderItem.getString("orderStatus") : "";
+			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			if (orderDBObject.containsField("orderItems")) {
+				BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
+				BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
+				if (!orderItemDB.getString("orderStatus").equals(incomingOrderStatus)) {
+					String integrateType = appType.toLowerCase();
+					if (incomingOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())) {
+						orderItem.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_CANCELLED.toString());
+					} else if (incomingOrderStatus.equals(SIAOrderStatus.RETURNED.toString())) {
+						orderItem.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_RETURNED.toString());
+					}
+				}
 		}
 	}
 

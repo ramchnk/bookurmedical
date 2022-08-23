@@ -30,12 +30,12 @@ public class LoadAndProcessOrderFromDB implements Processor {
 		searchQuery.put("site.name", orderMessage.getString("site"));
 		Document dbResult = table.find(searchQuery).first();
 		exchange.setProperty("hasOrderInDB", false);
+		if (orderMessage.has("needToGenerateAirwayBill")) {
+			exchange.setProperty("needToGenerateAirwayBill", orderMessage.getBoolean("needToGenerateAirwayBill"));
+		}
 		if (dbResult == null) {
 			log.debug("Order Record - not exists in our DB Result: " + dbResult);
 			return;
-		}
-		if (orderMessage.has("needToGenerateAirwayBill")) {
-			exchange.setProperty("needToGenerateAirwayBill", orderMessage.getBoolean("needToGenerateAirwayBill"));
 		}
 		exchange.setProperty("hasOrderInDB", true);
 		exchange.setProperty("orderDBObject", BasicDBObject.parse(dbResult.toJson()));

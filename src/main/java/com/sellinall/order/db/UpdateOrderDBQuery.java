@@ -1026,25 +1026,29 @@ public class UpdateOrderDBQuery implements Processor {
 			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
 			if (orderDBObject.containsField("orderItems")) {
 				BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
-				BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
-				if (orderItemDB.containsField("omsStatus")) {
-					fillTransactionKeyValuePair(orderItem, "omsStatus", orderItemDB);
-				}
-				if (orderItemDB.containsField("wmsStatus")) {
-					fillTransactionKeyValuePair(orderItem, "wmsStatus", orderItemDB);
-				}
-				if (orderItemDB.containsField("erpStatus")) {
-					fillTransactionKeyValuePair(orderItem, "erpStatus", orderItemDB);
+				if (orderItems.size() > orderItemIndex) {
+					BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
+					if (orderItemDB.containsField("omsStatus")) {
+						fillTransactionKeyValuePair(orderItem, "omsStatus", orderItemDB);
+					}
+					if (orderItemDB.containsField("wmsStatus")) {
+						fillTransactionKeyValuePair(orderItem, "wmsStatus", orderItemDB);
+					}
+					if (orderItemDB.containsField("erpStatus")) {
+						fillTransactionKeyValuePair(orderItem, "erpStatus", orderItemDB);
+					}
 				}
 			}
 		}
 	}
 
-	private void setExternalAPIMaatramItemStatus(BasicDBObject orderItem, int orderItemIndex, Exchange exchange, BasicDBObject orderMessage, String appType) {
-			String incomingOrderStatus = orderItem.containsKey("orderStatus") ? orderItem.getString("orderStatus") : "";
-			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
-			if (orderDBObject.containsField("orderItems")) {
-				BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
+	private void setExternalAPIMaatramItemStatus(BasicDBObject orderItem, int orderItemIndex, Exchange exchange,
+			BasicDBObject orderMessage, String appType) {
+		String incomingOrderStatus = orderItem.containsKey("orderStatus") ? orderItem.getString("orderStatus") : "";
+		BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+		if (orderDBObject.containsField("orderItems")) {
+			BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
+			if (orderItems.size() > orderItemIndex) {
 				BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
 				if (!orderItemDB.getString("orderStatus").equals(incomingOrderStatus)) {
 					String integrateType = appType.toLowerCase();
@@ -1054,6 +1058,7 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_RETURNED.toString());
 					}
 				}
+			}
 		}
 	}
 

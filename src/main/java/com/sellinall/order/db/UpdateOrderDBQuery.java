@@ -679,6 +679,8 @@ public class UpdateOrderDBQuery implements Processor {
 			appType = addendum.containsKey("appType") ? addendum.getString("appType") : "";
 			if (eventType.equals("API_UPDATE")
 					&& (appType.equals("ERP") || appType.equals("WMS") || appType.equals("OMS"))) {
+				// set maatram order status when it was an maatram integrated external API order update
+				setExternalAPIMaatramOrderStatus(orderRecord, exchange, orderMessage, appType);
 				isMaatramIntegratedExternalAPIUpdate = true;
 			}
 		}
@@ -1058,6 +1060,35 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_RETURNED.toString());
 					}
 				}
+			}
+		}
+	}
+
+	private void setExternalAPIMaatramOrderStatus(BasicDBObject orderRecord, Exchange exchange,
+			BasicDBObject orderMessage, String appType) {
+		String incomingOrderStatus = orderRecord.containsKey("orderStatus") ? orderRecord.getString("orderStatus") : "";
+		BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+		if (orderDBObject.containsKey("orderStatus")
+				&& !orderDBObject.getString("orderStatus").equals(incomingOrderStatus)) {
+			String integrateType = appType.toLowerCase();
+			if (incomingOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())) {
+				orderRecord.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_CANCELLED.toString());
+				BasicDBList integrateUpdateStatuses = new BasicDBList();
+				if (orderDBObject.containsKey(integrateType + "UpdateStatuses")
+						&& orderDBObject.get(integrateType + "UpdateStatuses") instanceof BasicDBList) {
+					integrateUpdateStatuses = (BasicDBList) orderDBObject.get(integrateType + "UpdateStatuses");
+				}
+				integrateUpdateStatuses.add(SIAErpUpdateStatuses.ORDER_CANCELLED.toString());
+				orderRecord.put(integrateType + "UpdateStatuses", integrateUpdateStatuses);
+			} else if (incomingOrderStatus.equals(SIAOrderStatus.RETURNED.toString())) {
+				orderRecord.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_RETURNED.toString());
+				BasicDBList integrateUpdateStatuses = new BasicDBList();
+				if (orderDBObject.containsKey(integrateType + "UpdateStatuses")
+						&& orderDBObject.get(integrateType + "UpdateStatuses") instanceof BasicDBList) {
+					integrateUpdateStatuses = (BasicDBList) orderDBObject.get(integrateType + "UpdateStatuses");
+				}
+				integrateUpdateStatuses.add(SIAErpUpdateStatuses.ORDER_RETURNED.toString());
+				orderRecord.put(integrateType + "UpdateStatuses", integrateUpdateStatuses);
 			}
 		}
 	}

@@ -627,9 +627,9 @@ public class UpdateOrderDBQuery implements Processor {
 
 			BasicDBObject hashedObj = new BasicDBObject();
 			for (String objKey : keys) {
-				if (key.equals("address") && (objKey.equals("country") || objKey.equals("postalCode"))) {
-					// Note: we are skipping country & postalCode in buyer address, bcoz we are
-					// using these fields in data studio reports
+				if (key.equals("address")
+						&& (objKey.equals("city") || objKey.equals("country") || objKey.equals("postalCode"))) {
+					// Note: we are skipping city, country & postalCode in buyer address
 					hashedObj.put(objKey, obj.getString(objKey));
 				} else {
 					hashedObj.put(objKey, hashUtil.hash(obj.getString(objKey).toCharArray(), false));

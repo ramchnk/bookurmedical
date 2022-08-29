@@ -32,6 +32,7 @@ public class Config {
 	private String maatramIntegratedErp;
 	private String maatramIntegratedOms;
 	private String maatramBridgeIntegratedServers;
+	private String removeBuyerDetailChannels;
 	
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
@@ -235,6 +236,14 @@ public class Config {
 
 	public void setMaatramIntegratedOms(String maatramIntegratedOms) {
 		this.maatramIntegratedOms = maatramIntegratedOms;
+	}
+
+	public String getRemoveBuyerDetailChannels() {
+		return removeBuyerDetailChannels;
+	}
+
+	public void setRemoveBuyerDetailChannels(String removeBuyerDetailChannels) {
+		this.removeBuyerDetailChannels = removeBuyerDetailChannels;
 	}
 
 }

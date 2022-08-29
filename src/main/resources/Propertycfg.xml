@@ -63,5 +63,6 @@
 		<property name="maatramIntegratedOms" value="${maatramIntegratedOms}" />
 		<property name="maatramIntegratedErp" value="${maatramIntegratedErp}" />
 		<property name="maatramBridgeIntegratedServers" value="${maatramBridgeIntegratedServers}" />
+		<property name="removeBuyerDetailChannels" value="${removeBuyerDetailChannels}" />
 		</bean>
 </beans>

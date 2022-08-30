@@ -142,7 +142,7 @@ public class UpdateOrderDBQuery implements Processor {
 				&& exchange.getProperty("isTransactionFee", boolean.class)) {
 			orderRecord.put("isTransactionFee", exchange.getProperty("isTransactionFee", boolean.class));
 		}
-		fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
+		fillOrderRecord(exchange, notificationOrderActionStatus, orderRecord, orderMessage);
 		//TODO: need to remove isWhatsAppEnabled after whatsapp approval
 		if (orderRecord.containsField("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
 			exchange.setProperty("isNotifyOrderUpdates", orderRecord.getBoolean("isNotifyOrderUpdates"));
@@ -428,7 +428,7 @@ public class UpdateOrderDBQuery implements Processor {
 					}
 				}
 			}
-			fillOrderRecord(notificationOrderActionStatus, orderRecord, orderMessage);
+			fillOrderRecord(exchange, notificationOrderActionStatus, orderRecord, orderMessage);
 			//TODO: need to remove isWhatsAppEnabled after whatsapp approval
 			if (orderRecord.containsField("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
 				exchange.setProperty("isNotifyOrderUpdates", orderRecord.getBoolean("isNotifyOrderUpdates"));
@@ -553,8 +553,8 @@ public class UpdateOrderDBQuery implements Processor {
 		return order;
 	}
 
-	private void fillOrderRecord(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord,
-			BasicDBObject orderMessage) {
+	private void fillOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
+			BasicDBObject orderRecord, BasicDBObject orderMessage) {
 		fillTransactionKeyValuePair(orderRecord, "buyerDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderNumber", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "returnOrderID", orderMessage);
@@ -598,24 +598,65 @@ public class UpdateOrderDBQuery implements Processor {
 		fillTransactionKeyValuePair(orderRecord, "packageList", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "isAWBCreated", orderMessage);
 		fillOrderTime(notificationOrderActionStatus, orderRecord, orderMessage);
-		hashRequiredFields(orderRecord, orderMessage);
+		hashRequiredFields(exchange, orderRecord, orderMessage);
 	}
 
-	private void hashRequiredFields(BasicDBObject orderRecord, BasicDBObject orderMessage) {
+	private void hashRequiredFields(Exchange exchange, BasicDBObject orderRecord, BasicDBObject orderMessage) {
 		HashUtil hashUtil = new HashUtil();
-		BasicDBObject buyerDetailsHashed = hashObjectFields("buyerDetails", orderMessage, hashUtil);
-		if (buyerDetailsHashed != null) {
-			orderRecord.put("buyerDetailsHashed", buyerDetailsHashed);
+		List<String> sites = Arrays.asList(Config.getConfig().getRemoveBuyerDetailChannels().split("-"));
+		String siteName = orderMessage.getString("site");
+		boolean isHashedBuyerDetailsFound = false, isHashedBuyerAddressFound = false, isBuyerDetailsHashed = false;
+		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
+		if (hasOrderInDB) {
+			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			BasicDBObject shippingDetailsFromDB = new BasicDBObject();
+			if (orderDBObject.containsField("shippingDetails")) {
+				shippingDetailsFromDB = (BasicDBObject) orderDBObject.get("shippingDetails");
+			}
+			if (sites.contains(siteName) && orderDBObject.containsField("isPIIRemoved")) {
+				if (orderDBObject.getBoolean("isPIIRemoved") || orderDBObject.containsField("buyerDetailsHashed")) {
+					isHashedBuyerDetailsFound = true;
+				}
+				if (orderDBObject.getBoolean("isPIIRemoved") || shippingDetailsFromDB.containsField("addressHashed")) {
+					isHashedBuyerAddressFound = true;
+				}
+			} else if (orderDBObject.containsField("isPIIAnonymized")) {
+				if (orderDBObject.getBoolean("isPIIAnonymized") || orderDBObject.containsField("buyerDetailsHashed")) {
+					isHashedBuyerDetailsFound = true;
+				}
+				if (orderDBObject.getBoolean("isPIIAnonymized")
+						|| shippingDetailsFromDB.containsField("addressHashed")) {
+					isHashedBuyerAddressFound = true;
+				}
+			}
 		}
-		if (orderMessage.containsField("shippingDetails")) {
-			BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
-			BasicDBObject shippingDetailsFromDB = orderRecord.containsField("shippingDetails")
-					? (BasicDBObject) orderRecord.get("shippingDetails")
-					: new BasicDBObject();
-			BasicDBObject addressHashed = hashObjectFields("address", shippingDetails, hashUtil);
-			if (addressHashed != null) {
-				shippingDetailsFromDB.put("addressHashed", addressHashed);
-				orderRecord.put("shippingDetails", shippingDetailsFromDB);
+		if (!isHashedBuyerDetailsFound) {
+			BasicDBObject buyerDetailsHashed = hashObjectFields("buyerDetails", orderMessage, hashUtil);
+			if (buyerDetailsHashed != null) {
+				isBuyerDetailsHashed = true;
+				orderRecord.put("buyerDetailsHashed", buyerDetailsHashed);
+			}
+		}
+		if (!isHashedBuyerAddressFound) {
+			if (orderMessage.containsField("shippingDetails")) {
+				BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
+				BasicDBObject shippingDetailsFromDB = orderRecord.containsField("shippingDetails")
+						? (BasicDBObject) orderRecord.get("shippingDetails")
+						: new BasicDBObject();
+				BasicDBObject addressHashed = hashObjectFields("address", shippingDetails, hashUtil);
+				if (addressHashed != null) {
+					isBuyerDetailsHashed = true;
+					shippingDetailsFromDB.put("addressHashed", addressHashed);
+					orderRecord.put("shippingDetails", shippingDetailsFromDB);
+				}
+			}
+		}
+
+		if (isBuyerDetailsHashed || isHashedBuyerDetailsFound || isHashedBuyerAddressFound) {
+			if (sites.contains(siteName)) {
+				orderRecord.put("isPIIRemoved", false);
+			} else {
+				orderRecord.put("isPIIAnonymized", false);
 			}
 		}
 	}

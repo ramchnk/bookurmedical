@@ -13,6 +13,7 @@ public class RuleActionsMapping {
 				private static final long serialVersionUID = 1L;
 				{
 					put(RuleActionEnum.ADD_ITEM, "setGiftItems");
+					put(RuleActionEnum.REMOVE_ALL_ITEM, "removeGiftItems");
 				}
 			});
 

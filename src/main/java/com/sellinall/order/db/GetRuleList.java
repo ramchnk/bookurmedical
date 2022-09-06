@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.component.mongodb.MongoDbConstants;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.sellinall.util.enums.SIAInventoryStatus;
 
 public class GetRuleList implements Processor {
@@ -30,6 +32,9 @@ public class GetRuleList implements Processor {
 		conditions.put("$elemMatch", elemMatch);
 		searchQuery.put("conditions",conditions);
 		searchQuery.put("status", SIAInventoryStatus.ACTIVE.toString());
+		DBObject sort = new BasicDBObject();
+		sort.put("priority", -1);
+		exchange.getOut().setHeader(MongoDbConstants.SORT_BY, sort);
 		exchange.getOut().setBody(searchQuery);
 	}
 

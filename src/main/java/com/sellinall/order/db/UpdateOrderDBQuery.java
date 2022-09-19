@@ -607,6 +607,7 @@ public class UpdateOrderDBQuery implements Processor {
 		String siteName = orderMessage.getString("site");
 		boolean isHashedBuyerDetailsFound = false, isHashedBuyerAddressFound = false, isBuyerDetailsHashed = false;
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
+		BasicDBObject addressHashed = new BasicDBObject();
 		if (hasOrderInDB) {
 			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
 			BasicDBObject shippingDetailsFromDB = new BasicDBObject();
@@ -617,33 +618,49 @@ public class UpdateOrderDBQuery implements Processor {
 				if (orderDBObject.getBoolean("isPIIRemoved") || orderDBObject.containsField("buyerDetailsHashed")) {
 					isHashedBuyerDetailsFound = true;
 				}
-				if (orderDBObject.getBoolean("isPIIRemoved") || shippingDetailsFromDB.containsField("addressHashed")) {
+				if (orderDBObject.getBoolean("isPIIRemoved")) {
 					isHashedBuyerAddressFound = true;
+				} else if (shippingDetailsFromDB.containsField("addressHashed")) {
+					isHashedBuyerAddressFound = true;
+					addressHashed = (BasicDBObject) shippingDetailsFromDB.get("addressHashed");
 				}
 			} else if (orderDBObject.containsField("isPIIAnonymized")) {
 				if (orderDBObject.getBoolean("isPIIAnonymized") || orderDBObject.containsField("buyerDetailsHashed")) {
 					isHashedBuyerDetailsFound = true;
 				}
-				if (orderDBObject.getBoolean("isPIIAnonymized")
-						|| shippingDetailsFromDB.containsField("addressHashed")) {
+				if (orderDBObject.getBoolean("isPIIAnonymized")) {
 					isHashedBuyerAddressFound = true;
+				} else if (shippingDetailsFromDB.containsField("addressHashed")) {
+					isHashedBuyerAddressFound = true;
+					addressHashed = (BasicDBObject) shippingDetailsFromDB.get("addressHashed");
 				}
 			}
 		}
-		if (!isHashedBuyerDetailsFound) {
+		if (isHashedBuyerDetailsFound) {
+			fillTransactionKeyValuePair(orderRecord, "buyerDetailsHashed", orderMessage);
+		} else {
 			BasicDBObject buyerDetailsHashed = hashObjectFields("buyerDetails", orderMessage, hashUtil);
 			if (buyerDetailsHashed != null) {
 				isBuyerDetailsHashed = true;
 				orderRecord.put("buyerDetailsHashed", buyerDetailsHashed);
 			}
 		}
-		if (!isHashedBuyerAddressFound) {
+		if (isHashedBuyerAddressFound) {
+			if (!addressHashed.isEmpty()) {
+				BasicDBObject shippingDetailsFromDB = new BasicDBObject();
+				if (orderRecord.containsField("shippingDetails")) {
+					shippingDetailsFromDB = (BasicDBObject) orderRecord.get("shippingDetails");
+				}
+				shippingDetailsFromDB.put("addressHashed", addressHashed);
+				orderRecord.put("shippingDetails", shippingDetailsFromDB);
+			}
+		} else {
 			if (orderMessage.containsField("shippingDetails")) {
 				BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
 				BasicDBObject shippingDetailsFromDB = orderRecord.containsField("shippingDetails")
 						? (BasicDBObject) orderRecord.get("shippingDetails")
 						: new BasicDBObject();
-				BasicDBObject addressHashed = hashObjectFields("address", shippingDetails, hashUtil);
+				addressHashed = hashObjectFields("address", shippingDetails, hashUtil);
 				if (addressHashed != null) {
 					isBuyerDetailsHashed = true;
 					shippingDetailsFromDB.put("addressHashed", addressHashed);

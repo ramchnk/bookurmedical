@@ -31,7 +31,11 @@ public class ProcessRuleList implements Processor {
 					.getRuleEngineMethod(RuleActionEnum.valueOf(action.getString("name")));
 			Method method = RuleEngine.class.getMethod(ruleEngineMethod, BasicDBObject.class, BasicDBObject.class,
 					List.class, String.class, List.class);
-			method.invoke(new RuleEngine(), orderDetails, rule, freeGiftOrderItems, selectedWMS, giftItemSKUs);
+			boolean isRuleSatisfied = (boolean) method.invoke(new RuleEngine(), orderDetails, rule, freeGiftOrderItems,
+					selectedWMS, giftItemSKUs);
+			if (action.getString("name").equals(RuleActionEnum.REMOVE_ALL_ITEM.toString()) && isRuleSatisfied) {
+				break;
+			}
 		}
 		if (freeGiftOrderItems.size() > 0) {
 			List<BasicDBObject> orderItems = (List<BasicDBObject>) orderDetails.get("orderItems");

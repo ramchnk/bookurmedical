@@ -32,7 +32,7 @@ public class RuleEngine {
 	static Logger log = Logger.getLogger(RuleEngine.class.getName());
 
 	@SuppressWarnings("unchecked")
-	public static void setGiftItems(BasicDBObject order, BasicDBObject rule, List<BasicDBObject> freeGiftOrderItems,
+	public static boolean setGiftItems(BasicDBObject order, BasicDBObject rule, List<BasicDBObject> freeGiftOrderItems,
 			String selectedWMS, List<String> giftItemSKUs) throws JSONException {
 		List<BasicDBObject> conditions = (List<BasicDBObject>) rule.get("conditions");
 		List<BasicDBObject> orderItems = (List<BasicDBObject>) order.get("orderItems");
@@ -51,6 +51,19 @@ public class RuleEngine {
 			log.info("Free gift rule not satisfied for orderID : " + order.getString("orderID") + ", accountNumber : "
 					+ order.getString("accountNumber") + ", gift doc id : " + rule.getString("_id"));
 		}
+		return isConditionSatisfied;
+	}
+
+	public static boolean removeGiftItems(BasicDBObject order, BasicDBObject rule,
+			List<BasicDBObject> freeGiftOrderItems, String selectedWMS, List<String> giftItemSKUs)
+			throws JSONException {
+		List<BasicDBObject> conditions = (List<BasicDBObject>) rule.get("conditions");
+		List<BasicDBObject> orderItems = (List<BasicDBObject>) order.get("orderItems");
+		List<BasicDBObject> newOrderItemList = new LinkedList<>();
+		for (BasicDBObject orderItem : orderItems) {
+			newOrderItemList.add((BasicDBObject) orderItem.clone());
+		}
+		return checkConditionSatisfied(newOrderItemList, order, conditions);
 	}
 
 	private static void constructFreeGiftOrderItems(BasicDBObject order,
@@ -265,6 +278,10 @@ public class RuleEngine {
 				if (!processCondition(condition, orderItems, "SKU")) {
 					return false;
 				}
+			} else if (condition.getString("leftOperand").equals("customSKU")) {
+				if (!processCondition(condition, orderItems, "customSKU")) {
+					return false;
+				}
 			} else if (condition.getString("leftOperand").equals("orderSoldAmount")) {
 				if (!processCondition(condition, order, "orderSoldAmount")) {
 					return false;
@@ -350,6 +367,11 @@ public class RuleEngine {
 			return false;
 		case "CONTAINS":
 			if (((List) rightOperand).contains(leftOperand)) {
+				return true;
+			}
+			return false;
+		case "NOT_CONTAINS":
+			if (!((List) rightOperand).contains(leftOperand)) {
 				return true;
 			}
 			return false;

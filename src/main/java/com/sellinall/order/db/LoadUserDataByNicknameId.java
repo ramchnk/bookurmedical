@@ -68,6 +68,7 @@ public class LoadUserDataByNicknameId implements Processor {
 			}
 		}
 		exchange.setProperty("isNinjaVanShippingCarrier", false);
+		exchange.setProperty("isJanioShippingCarrier", false);
 		exchange.setProperty("isSingPostShippingCarrier", false);
 		exchange.setProperty("isJTExpressShippingCarrier", false);
 		exchange.setProperty("isAramexShippingCarrier", false);
@@ -87,6 +88,8 @@ public class LoadUserDataByNicknameId implements Processor {
 					// flag then we can publish to ninjavan
 					exchange.setProperty("isNinjaVanShippingCarrier", true);
 				}
+			} else if (shippingCarrier.contains("janio")) {
+				exchange.setProperty("isJanioShippingCarrier", true);
 			} else if (shippingCarrier.size() > 0) {
 				String shippingCarrierName = shippingCarrier.get(0).toString();
 				if (shippingCarrierName.startsWith("jtExpress")) {
@@ -179,7 +182,8 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isEligibleToProceed", isEligibleToProceed);
 		if (exchange.getProperty("isInforWMS", boolean.class)
-				|| exchange.getProperty("isNinjaVanShippingCarrier", boolean.class)) {
+				|| exchange.getProperty("isNinjaVanShippingCarrier", boolean.class)
+				|| exchange.getProperty("isJanioShippingCarrier", boolean.class)) {
 			exchange.setProperty("isPartnerLogistics", true);
 		}
 		exchange.setProperty("isMaatramIntegratedErp", false);

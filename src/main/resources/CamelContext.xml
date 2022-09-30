@@ -221,6 +221,15 @@
 		<property name="networkRecoveryInterval" value="0"/>
 		<property name="automaticRecoveryEnabled" value="true"/>
 	</bean>
+	<bean id="janioTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
+		<property name="host" value="${janio.host}" />
+		<property name="port" value="${janio.tx.port}" />
+		<property name="username" value="${janio.username}" />
+		<property name="password" value="${janio.password}" />
+		<property name="virtualHost" value="${janio.virtualHost}" />
+		<property name="networkRecoveryInterval" value="0"/>
+		<property name="automaticRecoveryEnabled" value="true"/>
+	</bean>
 	<bean id="singPostTxConnectionFactory" class="com.rabbitmq.client.ConnectionFactory">
 		<property name="host" value="${singPost.host}" />
 		<property name="port" value="${singPost.tx.port}" />
@@ -787,6 +796,23 @@
 					<convertBodyTo type="java.lang.String" />
 					<to
 						uri="rabbitmq://{{ninjaVan.host}}:{{ninjaVan.tx.port}}/ninjaVanExchange?connectionFactory=#ninjaVanTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
+						pattern="InOut" />
+				</when>
+			</when>
+			<when>
+				<simple>${exchangeProperty.publishToJanio} == true</simple>
+				<setProperty propertyName="publishTo">
+					<constant>janio</constant>
+				</setProperty>
+				<process ref="constructRequestType" />
+				<when>
+					<simple>${exchangeProperty.publishMessage} != null</simple>
+					<setHeader headerName="rabbitmq.ROUTING_KEY">
+						<constant>janioKey</constant>
+					</setHeader>
+					<convertBodyTo type="java.lang.String" />
+					<to
+						uri="rabbitmq://{{janio.host}}:{{janio.tx.port}}/janioExchange?connectionFactory=#janioTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
 						pattern="InOut" />
 				</when>
 			</when>

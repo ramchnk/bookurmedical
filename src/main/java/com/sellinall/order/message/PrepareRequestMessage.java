@@ -42,6 +42,8 @@ public class PrepareRequestMessage implements Processor {
 		// prepare publish message for create & update in ninjaVan server
 		Boolean isNinjaVanShippingCarrier = exchange.getProperty("isNinjaVanShippingCarrier", Boolean.class);
 		exchange.setProperty("publishToNinjaVan", false);
+		Boolean isJanioShippingCarrier = exchange.getProperty("isJanioShippingCarrier", Boolean.class);
+		exchange.setProperty("publishToJanio", false);
 		Boolean isSingPostShippingCarrier = exchange.getProperty("isSingPostShippingCarrier", Boolean.class);
 		exchange.setProperty("publishToSingPost", false);
 		Boolean isJTExpressShippingCarrier = exchange.getProperty("isJTExpressShippingCarrier", Boolean.class);
@@ -66,6 +68,8 @@ public class PrepareRequestMessage implements Processor {
 				exchange.setProperty("publishToJTExpress", true);
 			} else if (isAramexShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 				exchange.setProperty("publishToAramexShipping", true);
+			} else if (isJanioShippingCarrier && !isOrderUpdatedByShippingCarrier) {
+				exchange.setProperty("publishToJanio", true);
 			}
 		}
 		// prepare publish message for create & update in infor server

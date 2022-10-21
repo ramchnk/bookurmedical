@@ -47,6 +47,7 @@
 		<property name="SIAAccountingChannels" value="${SIAAccountingChannels}" />
 		<property name="SIAfeeManagementServerURL" value="${SIAfeeManagementServerURL}" />
 		<property name="SIAInventoryManagementServerURL" value="${SIAInventoryManagementServerURL}" />
+		<property name="SIAAccountManagementURL" value="${SIAAccountManagementURL}" />
 		<property name="warehouses" value="${warehouses}"/>
 		<property name="whatsAppEnabled" value="${whatsAppEnabled}"/>
 

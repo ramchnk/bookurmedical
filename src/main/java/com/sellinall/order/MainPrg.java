@@ -12,6 +12,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.mudra.sellinall.config.Config;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.order.services.PartnerNotification;
+import com.sellinall.order.util.ChannelsUtil;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.AuthConstant;
 import com.sellinall.util.InvoiceSequence;
@@ -69,6 +70,7 @@ public class MainPrg {
 		Config config = Config.getConfig();
 		InvoiceSequence.init(config.getInventoryConfigDBURI(), config.getInventoryConfigDBName());
 		config.setRagasiyam(System.getenv(AuthConstant.RAGASIYAM_KEY));
+		ChannelsUtil.init();
 		server.start();
 		server.join();
 	}

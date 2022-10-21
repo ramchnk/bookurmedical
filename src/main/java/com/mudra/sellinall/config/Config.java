@@ -33,6 +33,7 @@ public class Config {
 	private String maatramIntegratedOms;
 	private String maatramBridgeIntegratedServers;
 	private String removeBuyerDetailChannels;
+	private String SIAAccountManagementURL;
 	
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
@@ -244,6 +245,14 @@ public class Config {
 
 	public void setRemoveBuyerDetailChannels(String removeBuyerDetailChannels) {
 		this.removeBuyerDetailChannels = removeBuyerDetailChannels;
+	}
+
+	public String getSIAAccountManagementURL() {
+		return SIAAccountManagementURL;
+	}
+
+	public void setSIAAccountManagementURL(String sIAAccountManagementURL) {
+		SIAAccountManagementURL = sIAAccountManagementURL;
 	}
 
 }

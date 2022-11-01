@@ -315,20 +315,21 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isProductMasterReady", isProductMasterReady);
 		boolean isWmsSelected = false;
-		if (userSiteSpecificObject.containsField("wms")) {
-			ArrayList<String> wmsListinChannel = (ArrayList<String>) userSiteSpecificObject.get("wms");
-			if (wmsListinChannel.size() == 1) {
-				isWmsSelected = true;
-				exchange.setProperty("selectedWMS", wmsListinChannel.get(0));
-			} else if (userSiteSpecificObject.containsField("multiWarehouseMapping")) {
-				isWmsSelected = true;
-				exchange.setProperty("selectedWMSList", wmsListinChannel);
+		if (queryResult.containsField("syncInventory") && (Boolean) queryResult.get("syncInventory")) {
+			if (userSiteSpecificObject.containsField("wms")) {
+				ArrayList<String> wmsListinChannel = (ArrayList<String>) userSiteSpecificObject.get("wms");
+				if (wmsListinChannel.size() == 1) {
+					isWmsSelected = true;
+					exchange.setProperty("selectedWMS", wmsListinChannel.get(0));
+				} else if (userSiteSpecificObject.containsField("multiWarehouseMapping")) {
+					isWmsSelected = true;
+					exchange.setProperty("selectedWMSList", wmsListinChannel);
+				} else {
+					log.error("More than one WMS selected for accountNumber : " + accountNumber + ", nickName: " + nickNameID);
+				}
 			} else {
-				log.error("WMS not selected / more than one WMS selected  for accountNumber : " + accountNumber
-						+ ", nickName: " + nickNameID);
+				log.error("WMS not found for accountNumber : " + accountNumber + ", nickName: " + nickNameID);
 			}
-		} else {
-			log.error("WMS not found for accountNumber : " + accountNumber + ", nickName: " + nickNameID);
 		}
 		exchange.setProperty("isWmsSelected", isWmsSelected);
 		boolean processOrdersWithSKUOnly = false;

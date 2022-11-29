@@ -37,8 +37,10 @@ public class SyncProductMaster implements Processor {
 		String siteName = nickNameID.split("-")[0];
 		String selectedWMS = getSelectedWmsID(exchange, orderItemMessage);
 		if (!exchange.getProperty("isWmsSelected", Boolean.class) || selectedWMS == null) {
-			log.error("productMaster is not synced, since no wms chosen for accountNumber : " + accountNumber
-					+ ", nickNameID : " + exchange.getProperty("nickNameID", String.class));
+			if (exchange.getProperty("syncInventory", Boolean.class)) {
+				log.error("productMaster is not synced, since no wms chosen for accountNumber : " + accountNumber
+						+ ", nickNameID : " + exchange.getProperty("nickNameID", String.class));
+			}
 			return;
 		}
 		if (exchange.getProperty("processOrdersWithSKUOnly", Boolean.class)

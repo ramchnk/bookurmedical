@@ -181,6 +181,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("isPosOrder")) {
 			orderRecord.put("isPosOrder", orderMessage.getBoolean("isPosOrder"));
 		}
+		if (orderMessage.containsField("subChannelName")) {
+			orderRecord.put("subChannelName", orderMessage.get("subChannelName"));
+		}
 		if (orderMessage.containsField("channelApiVersion")) {
 			orderRecord.put("channelApiVersion", orderMessage.get("channelApiVersion"));
 		}
@@ -385,6 +388,9 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsField("isPosOrder")) {
 			orderRecord.put("isPosOrder", orderMessage.getBoolean("isPosOrder"));
+		}
+		if (orderMessage.containsField("subChannelName")) {
+			orderRecord.put("subChannelName", orderMessage.get("subChannelName"));
 		}
 		if (orderMessage.containsField("isPreOrder")) {
 			orderRecord.put("isPreOrder", orderMessage.getBoolean("isPreOrder"));

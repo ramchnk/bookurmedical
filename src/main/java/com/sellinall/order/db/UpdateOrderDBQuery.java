@@ -73,10 +73,14 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		exchange.setProperty("isFreeGiftAddedToOrder", true);
 		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
-		boolean isValidDocUrl = checkValidDocumentUrl(orderMessage);
-		if (!isValidDocUrl) {
-			exchange.setProperty("stopProcess", true);
-			return;
+		String nickNameID = orderMessage.getString("nickNameID");
+		String channel = nickNameID.split("-")[0];
+		if(!channel.equalsIgnoreCase("offline")) {
+			boolean isValidDocUrl = checkValidDocumentUrl(orderMessage);
+			if (!isValidDocUrl) {
+				exchange.setProperty("stopProcess", true);
+				return;
+			}
 		}
 		exchange.setProperty("isNewOrder", false);
 		if (!hasOrderInDB) {

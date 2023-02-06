@@ -203,6 +203,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("buyerOwedAmount")) {
 			orderRecord.put("buyerOwedAmount", orderMessage.get("buyerOwedAmount"));
 		}
+		if (orderMessage.containsField("salesPerson")) {
+			orderRecord.put("salesPerson", orderMessage.get("salesPerson"));
+		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		exchange.setProperty("groupOrderByCartNumber", false);
@@ -413,6 +416,9 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsField("buyerOwedAmount")) {
 			orderRecord.put("buyerOwedAmount", orderMessage.get("buyerOwedAmount"));
+		}
+		if (orderMessage.containsField("salesPerson")) {
+			orderRecord.put("salesPerson", orderMessage.get("salesPerson"));
 		}
 		/* Need to set this flag in exchange and in out going message for re-pushing
 		   infor orders again*/

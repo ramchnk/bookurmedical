@@ -62,6 +62,7 @@
 		<property name="maatramIntegratedShippingCarrier" value="${maatramIntegratedShippingCarrier}" />
 		<property name="maatramIntegratedWms" value="${maatramIntegratedWms}" />
 		<property name="maatramIntegratedOms" value="${maatramIntegratedOms}" />
+		<property name="isEligibleToUpdateBrandID" value="${isEligibleToUpdateBrandID}" />
 		<property name="maatramIntegratedErp" value="${maatramIntegratedErp}" />
 		<property name="maatramBridgeIntegratedServers" value="${maatramBridgeIntegratedServers}" />
 		<property name="removeBuyerDetailChannels" value="${removeBuyerDetailChannels}" />

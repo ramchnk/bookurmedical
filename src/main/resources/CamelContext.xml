@@ -53,6 +53,7 @@
 	<bean id="updateProductMaster" class="com.sellinall.order.db.UpdateProductMaster"/>
 	<bean id="syncProductMaster" class="com.sellinall.order.request.SyncProductMaster"/>
 	<bean id="initializeJournalMessage" class="com.sellinall.order.message.InitializeJournalMessage"/>
+	<bean id="loadAndConstructBrandIdMap" class="com.sellinall.order.bl.LoadAndConstructBrandIdMap"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -485,6 +486,10 @@
 			<split parallelProcessing="false" strategyRef="aggregatorStrategy">
 				<method ref="splitterBean" method="splitOrders" />
 				<to uri="direct:validateOrderItem" />
+				<when>
+					<simple>${exchangeProperty.isEligibleToUpdateBrandID} == true</simple>
+					<process ref="loadAndConstructBrandIdMap" />
+				</when>
 			</split>
 			<process ref="updateOrderDBQuery" />
 			<when>

@@ -146,6 +146,9 @@ public class UpdateOrderDBQuery implements Processor {
 				&& exchange.getProperty("isTransactionFee", boolean.class)) {
 			orderRecord.put("isTransactionFee", exchange.getProperty("isTransactionFee", boolean.class));
 		}
+		if (Config.getConfig().getIsEligibleToUpdateBrandID()) {
+			updateBradIDInOrderItem(exchange, orderMessage);
+		}
 		fillOrderRecord(exchange, notificationOrderActionStatus, orderRecord, orderMessage);
 		//TODO: need to remove isWhatsAppEnabled after whatsapp approval
 		if (orderRecord.containsField("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
@@ -256,6 +259,16 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		exchange.setProperty("orderRecord", orderRecord);
 		exchange.getOut().setBody(orderMessage);
+	}
+
+	private void updateBradIDInOrderItem(Exchange exchange, BasicDBObject orderMessage) {
+		Map<String, String> brandIDMap = exchange.getProperty("brandIDMap", HashMap.class);
+		List<BasicDBObject> orderItems = (List<BasicDBObject>) orderMessage.get("orderItems");
+		for (BasicDBObject orderItem : orderItems) {
+			if (orderItem.containsKey("customSKU") && brandIDMap.containsKey(orderItem.getString("customSKU"))) {
+				orderItem.put("graasBrandID", brandIDMap.get(orderItem.getString("customSKU")));
+			}
+		}
 	}
 
 	private void fillMaatramIntegratedDetails(Exchange exchange, BasicDBObject orderRecord) {
@@ -424,6 +437,9 @@ public class UpdateOrderDBQuery implements Processor {
 		   infor orders again*/
 		if (isItemsReAllocatedNeeded(orderMessage, exchange)) {
 			exchange.setProperty("isItemsReAllocated", true);
+		}
+		if (Config.getConfig().getIsEligibleToUpdateBrandID()) {
+			updateBradIDInOrderItem(exchange, orderMessage);
 		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {

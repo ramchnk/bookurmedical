@@ -206,6 +206,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("salesPerson")) {
 			orderRecord.put("salesPerson", orderMessage.get("salesPerson"));
 		}
+		if (orderMessage.containsField("totalRefundAmount")) {
+			orderRecord.put("totalRefundAmount", orderMessage.get("totalRefundAmount"));
+		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		exchange.setProperty("groupOrderByCartNumber", false);
@@ -419,6 +422,9 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsField("salesPerson")) {
 			orderRecord.put("salesPerson", orderMessage.get("salesPerson"));
+		}
+		if (orderMessage.containsField("totalRefundAmount")) {
+			orderRecord.put("totalRefundAmount", orderMessage.get("totalRefundAmount"));
 		}
 		/* Need to set this flag in exchange and in out going message for re-pushing
 		   infor orders again*/
@@ -1011,10 +1017,12 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());
 			orderRecord.put("isNotifyOrderUpdates", true);
 		}  else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PARTIALLY_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURN_REQUESTED_TO_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PARTIAL_RETURN_REQUESTED_TO_PARTIALLY_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_RETURNED)) {
 			orderRecord.put("timeReturned", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.LOST_BY_3PL)

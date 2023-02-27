@@ -39,18 +39,23 @@ public class OrderUtil {
 				if (orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_INITIATED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_COMBINED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_PARTIALLY_RETURNED.toString())
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.DISPATCHED_TO_PROCESSING.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DISPATCHED_TO_PARTIALLY_RETURNED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_DISPATCHED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_CANCELLED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED.toString())
+						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_PARTIALLY_RETURNED.toString())
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_ACCEPTED.toString())
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.DELIVERY_FAILED_TO_RETURN_SHIPPED.toString())
 						|| orderStateTransition
-								.equals(NotificationOrderActionStatus.RETURN_REQUESTED_TO_RETURN_SHIPPED.toString())) {
+								.equals(NotificationOrderActionStatus.RETURN_REQUESTED_TO_RETURN_SHIPPED.toString())
+						|| orderStateTransition
+								.equals(NotificationOrderActionStatus.PARTIAL_RETURN_REQUESTED_TO_RETURN_SHIPPED.toString())) {
 					if (type.equals("order")) {
 						log.warn(" The backward transistion came for orderID is " + orderID
 								+ " and orderStateTransistion " + orderStateTransition);

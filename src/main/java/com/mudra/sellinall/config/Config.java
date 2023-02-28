@@ -31,6 +31,7 @@ public class Config {
 	private String maatramIntegratedWms;
 	private String maatramIntegratedErp;
 	private String maatramIntegratedOms;
+	private Boolean isEligibleToUpdateBrandID;
 	private String maatramBridgeIntegratedServers;
 	private String removeBuyerDetailChannels;
 	private String SIAAccountManagementURL;
@@ -237,6 +238,14 @@ public class Config {
 
 	public void setMaatramIntegratedOms(String maatramIntegratedOms) {
 		this.maatramIntegratedOms = maatramIntegratedOms;
+	}
+
+	public Boolean getIsEligibleToUpdateBrandID() {
+		return isEligibleToUpdateBrandID;
+	}
+
+	public void setIsEligibleToUpdateBrandID(Boolean isEligibleToUpdateBrandID) {
+		this.isEligibleToUpdateBrandID = isEligibleToUpdateBrandID;
 	}
 
 	public String getRemoveBuyerDetailChannels() {

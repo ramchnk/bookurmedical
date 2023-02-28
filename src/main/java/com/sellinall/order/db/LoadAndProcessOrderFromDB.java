@@ -1,5 +1,7 @@
 package com.sellinall.order.db;
 
+import java.util.HashMap;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
@@ -8,6 +10,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
+import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 
 /**
@@ -30,6 +33,10 @@ public class LoadAndProcessOrderFromDB implements Processor {
 		searchQuery.put("site.name", orderMessage.getString("site"));
 		Document dbResult = table.find(searchQuery).first();
 		exchange.setProperty("hasOrderInDB", false);
+		exchange.setProperty("isEligibleToUpdateBrandID", Config.getConfig().getIsEligibleToUpdateBrandID());
+		if(Config.getConfig().getIsEligibleToUpdateBrandID()) {
+			exchange.setProperty("brandIDMap", new HashMap<String, String>());
+		}
 		if (orderMessage.has("needToGenerateAirwayBill")) {
 			exchange.setProperty("needToGenerateAirwayBill", orderMessage.getBoolean("needToGenerateAirwayBill"));
 		}

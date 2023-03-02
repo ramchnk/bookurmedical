@@ -30,9 +30,11 @@ public class LoadAndConstructBrandIdMap implements Processor {
 				searchQuery.put("sellerSKU", sellerSKU);
 				BasicDBObject projection = new BasicDBObject("graasBrandID", 1);
 				Document pmDocument = productMasterTable.find(searchQuery).projection(projection).first();
-				BasicDBObject productMaster = (BasicDBObject) BasicDBObject.parse(pmDocument.toJson());
-				if (productMaster.containsKey("graasBrandID")) {
-					brandIDMap.put(sellerSKU, productMaster.getString("graasBrandID"));
+				if (pmDocument != null && !pmDocument.isEmpty()) {
+					BasicDBObject productMaster = (BasicDBObject) BasicDBObject.parse(pmDocument.toJson());
+					if (productMaster.containsKey("graasBrandID")) {
+						brandIDMap.put(sellerSKU, productMaster.getString("graasBrandID"));
+					}
 				}
 			} else {
 				log.error("CustomSKU not available for orderID :" + exchange.getProperty("orderID", String.class)

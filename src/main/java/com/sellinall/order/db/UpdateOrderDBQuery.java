@@ -176,6 +176,9 @@ public class UpdateOrderDBQuery implements Processor {
 		} else {
 			orderRecord.put("timeOrderCreated", System.currentTimeMillis() / 1000);
 		}
+		if (orderMessage.containsField("timeOrderCancelled")) {
+			orderRecord.put("timeOrderCancelled", orderMessage.getLong("timeOrderCancelled"));
+		} 
 		if (orderMessage.containsField("timeOrderUpdated")) {
 			orderRecord.put("timeOrderUpdated",  orderMessage.getLong("timeOrderUpdated"));
 		}
@@ -211,6 +214,21 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsField("totalRefundAmount")) {
 			orderRecord.put("totalRefundAmount", orderMessage.get("totalRefundAmount"));
+		}
+		if (orderMessage.containsField("totalTaxAmount")) {
+			orderRecord.put("totalTaxAmount", orderMessage.get("totalTaxAmount"));
+		}
+		if (orderMessage.containsField("vouchers")) {
+			orderRecord.put("vouchers", orderMessage.get("vouchers"));
+		}
+		if (orderMessage.containsField("landingURL")) {
+			orderRecord.put("landingURL", orderMessage.get("landingURL"));
+		}
+		if (orderMessage.containsField("paymentChannels")) {
+			orderRecord.put("paymentChannels", orderMessage.get("paymentChannels"));
+		}
+		if (orderMessage.containsField("billingDetails")) {
+			orderRecord.put("billingDetails", orderMessage.get("billingDetails"));
 		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
@@ -402,6 +420,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsField("timeOrderUpdated")) {
 			orderRecord.put("timeOrderUpdated", orderMessage.getLong("timeOrderUpdated"));
 		}
+		if (orderMessage.containsField("timeOrderCancelled")) {
+			orderRecord.put("timeOrderCancelled", orderMessage.getLong("timeOrderCancelled"));
+		} 
 		if (orderMessage.containsField("timeOrderReturnRequested")) {
 			orderRecord.put("timeOrderReturnRequested", orderMessage.getLong("timeOrderReturnRequested"));
 		}
@@ -438,6 +459,21 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsField("totalRefundAmount")) {
 			orderRecord.put("totalRefundAmount", orderMessage.get("totalRefundAmount"));
+		}
+		if (orderMessage.containsField("totalTaxAmount")) {
+			orderRecord.put("totalTaxAmount", orderMessage.get("totalTaxAmount"));
+		}
+		if (orderMessage.containsField("vouchers")) {
+			orderRecord.put("vouchers", orderMessage.get("vouchers"));
+		}
+		if (orderMessage.containsField("landingURL")) {
+			orderRecord.put("landingURL", orderMessage.get("landingURL"));
+		}
+		if (orderMessage.containsField("paymentChannels")) {
+			orderRecord.put("paymentChannels", orderMessage.get("paymentChannels"));
+		}
+		if (orderMessage.containsField("billingDetails")) {
+			orderRecord.put("billingDetails", orderMessage.get("billingDetails"));
 		}
 		/* Need to set this flag in exchange and in out going message for re-pushing
 		   infor orders again*/

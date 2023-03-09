@@ -270,6 +270,7 @@ public class UpdateOrderDBQuery implements Processor {
 		options.upsert(true);
 		try {
 			Document orderDocument = getDocument(orderRecord);
+			orderDocument.append("merchantID", exchange.getProperty("merchantID"));
 			table.insertOne(orderDocument);
 			orderRecord.put("_id", orderDocument.getObjectId("_id"));
 		} catch (MongoWriteException e) {

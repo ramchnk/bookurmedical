@@ -23,6 +23,8 @@
 	<bean id="initMessageListenerRoute" class="com.sellinall.order.bl.InitMessageListenerRoute" />
 	<bean id="initOrderItemRoute" class="com.sellinall.order.bl.InitOrderItemRoute" />
 	<bean id="loadAndProcessOrderFromDB" class="com.sellinall.order.db.LoadAndProcessOrderFromDB" />
+	<bean id="loadAndProcessCheckoutFromDB" class="com.sellinall.order.db.LoadAndProcessCheckoutFromDB" />
+	<bean id="updateAbandonedCheckoutDBQuery" class="com.sellinall.order.db.UpdateAbandonedCheckoutDBQuery" />
 	<bean id="prepareSKUDBQuery" class="com.sellinall.order.db.PrepareSKUDBQuery" />
 	<bean id="processSKUDBQuery" class="com.sellinall.order.db.ProcessSKUDBQuery" />
 	<bean id="prepareDuplicateSKUsDBQuery" class="com.sellinall.order.db.PrepareDuplicateSKUsDBQuery" />
@@ -525,6 +527,12 @@
 			</when>
 		</route>
 
+		<route id="processCheckoutsNotification">
+			<from uri="direct:processCheckoutsNotification" />
+			<process ref="loadAndProcessCheckoutFromDB" />
+			<process ref="updateAbandonedCheckoutDBQuery" />
+		</route>
+		
 		<route id="processRule">
 			<from uri="direct:processRuleRoute" />
 			<process ref="getRuleList" />
@@ -1363,6 +1371,10 @@
 			<when>
 				<simple>${exchangeProperty.messageType} == 'bid'</simple>
 				<to uri="direct:processBidNotification" />
+			</when>
+			<when>
+				<simple>${exchangeProperty.messageType} == 'abandonedCheckouts'</simple>
+				<to uri="direct:processCheckoutsNotification" />
 			</when>
 		</route>
 

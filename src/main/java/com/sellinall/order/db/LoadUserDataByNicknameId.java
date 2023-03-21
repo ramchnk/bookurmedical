@@ -14,10 +14,7 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.util.enums.SIAOrderStatus;
@@ -36,27 +33,26 @@ public class LoadUserDataByNicknameId implements Processor {
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		String accountingChannel = Config.getConfig().getSIAAccountingChannels();
 		String orderStatus = exchange.getProperty("orderStatus", String.class);
-		BasicDBObject queryResult = runQuery(accountNumber, nickNameID, siteName, accountingChannel);
+		Document queryResult = runQuery(accountNumber, nickNameID, siteName, accountingChannel);
 		exchange.setProperty("syncInventory", (Boolean) queryResult.get("syncInventory"));
-		List<BasicDBObject> userSiteSpecificObjectList = (List<BasicDBObject>) queryResult.get(siteName);
+		List<Document> userSiteSpecificObjectList = (List<Document>) queryResult.get(siteName);
 		// always userSiteSpecificObject contains only one siteName(eBay-1 only)
-		BasicDBObject userSiteSpecificObject = userSiteSpecificObjectList.get(0);
+		Document userSiteSpecificObject = userSiteSpecificObjectList.get(0);
 		String profileID = "";
-		if (userSiteSpecificObject.containsField("invoiceProfile")
-				&& userSiteSpecificObject.get("invoiceProfile") != null
+		if (userSiteSpecificObject.containsKey("invoiceProfile") && userSiteSpecificObject.get("invoiceProfile") != null
 				&& !userSiteSpecificObject.get("invoiceProfile").equals("null")) {
 			profileID = userSiteSpecificObject.getString("invoiceProfile");
-		} else if (userSiteSpecificObject.containsField("profile") && userSiteSpecificObject.get("profile") != null
+		} else if (userSiteSpecificObject.containsKey("profile") && userSiteSpecificObject.get("profile") != null
 				&& !userSiteSpecificObject.get("profile").equals("null")) {
 			profileID = userSiteSpecificObject.getString("profile");
 		}
 		if (!profileID.isEmpty()) {
-			List<BasicDBObject> userProfileList = (List<BasicDBObject>) queryResult.get("profile");
+			List<Document> userProfileList = (List<Document>) queryResult.get("profile");
 			String invoiceNumberPrefix = getinvoiceNumberPrefix(userProfileList, profileID);
 			exchange.setProperty("invoiceNumberPrefix", invoiceNumberPrefix);
 			exchange.setProperty("profileID", profileID);
 		}
-		if (userSiteSpecificObject.containsField("timeLinked") && userSiteSpecificObject.get("timeLinked") != null) {
+		if (userSiteSpecificObject.containsKey("timeLinked") && userSiteSpecificObject.get("timeLinked") != null) {
 			exchange.setProperty("timeLinked", userSiteSpecificObject.getLong("timeLinked"));
 		}
 
@@ -76,12 +72,13 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isMaatramBridgeIntegratedShippingCarrier", false);
 		if (userSiteSpecificObject.containsKey("shippingCarrier")
 				&& userSiteSpecificObject.get("shippingCarrier") != null) {
-			BasicDBList shippingCarrier = (BasicDBList) userSiteSpecificObject.get("shippingCarrier");
+			List<Document> shippingCarrier = (List<Document>) userSiteSpecificObject.get("shippingCarrier");
 			if (shippingCarrier.contains("ninjaVan")) {
-				if (userSiteSpecificObject.containsField("isAutoAcceptOrder")
+				if (userSiteSpecificObject.containsKey("isAutoAcceptOrder")
 						&& !userSiteSpecificObject.getBoolean("isAutoAcceptOrder")
 						&& orderStatus.equals(SIAOrderStatus.INITIATED.toString())) {
-					// isAutoAcceptOrder = false and orderStatus = INITIATED, No need to publish this for ninjavan
+					// isAutoAcceptOrder = false and orderStatus = INITIATED, No need to publish
+					// this for ninjavan
 					// That accounts auto accept disabled account
 				} else {
 					// If that channel account don't have 'isAutoAcceptOrder'
@@ -120,17 +117,17 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isAramexWMS", false);
 		exchange.setProperty("isVend", false);
 
-		//Handle warehousebased stock update
+		// Handle warehousebased stock update
 		boolean isEligibleToProceed = true;
 		boolean enableWarehouseBasedStock = false;
 		String[] warehouses = Config.getConfig().getWarehouses().split("-");
 		List<String> siaLinkedWarehouseList = new LinkedList<>();
 		for (String warehouse : warehouses) {
-			if (queryResult.containsField(warehouse)) {
+			if (queryResult.containsKey(warehouse)) {
 				siaLinkedWarehouseList.add(warehouse);
 			}
 		}
-		if (queryResult.containsField("enableWarehouseBasedStock")
+		if (queryResult.containsKey("enableWarehouseBasedStock")
 				&& queryResult.getBoolean("enableWarehouseBasedStock")) {
 			enableWarehouseBasedStock = true;
 		}
@@ -138,7 +135,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isMaatramIntegratedWms", false);
 		exchange.setProperty("isMaatramBridgeIntegratedWms", false);
 		if (userSiteSpecificObject.containsKey("wms") && userSiteSpecificObject.get("wms") != null) {
-			BasicDBList wmsList = (BasicDBList) userSiteSpecificObject.get("wms");
+			List<String> wmsList = (List<String>) userSiteSpecificObject.get("wms");
 			for (int i = 0; i < wmsList.size(); i++) {
 				String wms = wmsList.get(i).toString();
 				List<String> maatramIntegratedWmsList = Arrays
@@ -189,7 +186,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isMaatramIntegratedErp", false);
 		exchange.setProperty("isMaatramBridgeIntegratedErp", false);
 		if (userSiteSpecificObject.containsKey("erp") && userSiteSpecificObject.get("erp") != null) {
-			BasicDBList erpList = (BasicDBList) userSiteSpecificObject.get("erp");
+			List<String> erpList = (List<String>) userSiteSpecificObject.get("erp");
 			for (int i = 0; i < erpList.size(); i++) {
 				String erp = erpList.get(i).toString();
 				List<String> maatramIntegratedErpList = Arrays
@@ -206,7 +203,7 @@ public class LoadUserDataByNicknameId implements Processor {
 				if (erp.startsWith("netSuite")) {
 					exchange.setProperty("isNetSuite", true);
 					break;
-				} else if(erp.startsWith("odoo")) {
+				} else if (erp.startsWith("odoo")) {
 					exchange.setProperty("isOdoo", true);
 					break;
 				} else if (erp.startsWith("vend")) {
@@ -215,13 +212,13 @@ public class LoadUserDataByNicknameId implements Processor {
 				}
 			}
 		}
-		
-		//OMS
-		
+
+		// OMS
+
 		exchange.setProperty("isMaatramIntegratedOms", false);
 		exchange.setProperty("isMaatramBridgeIntegratedOms", false);
-		if (userSiteSpecificObject.containsField("oms") && userSiteSpecificObject.get("oms") != null) {
-			BasicDBList omsList = (BasicDBList) userSiteSpecificObject.get("oms");
+		if (userSiteSpecificObject.containsKey("oms") && userSiteSpecificObject.get("oms") != null) {
+			List<String> omsList = (List<String>) userSiteSpecificObject.get("oms");
 			for (int i = 0; i < omsList.size(); i++) {
 				String oms = omsList.get(i).toString();
 				List<String> maatramIntegratedOmsList = Arrays
@@ -243,52 +240,52 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 
 		exchange.setProperty("merchantID", queryResult.get("merchantID"));
-		if(userSiteSpecificObject.containsField("countryCode")){
+		if (userSiteSpecificObject.containsKey("countryCode")) {
 			exchange.setProperty("countryCode", userSiteSpecificObject.getString("countryCode"));
 		}
 		exchange.setProperty("userSiteSpecificObject", userSiteSpecificObject);
 		Boolean ignoreSoldEvent = false;
-		if (userSiteSpecificObject.containsField("ignoreSoldEvent")) {
+		if (userSiteSpecificObject.containsKey("ignoreSoldEvent")) {
 			ignoreSoldEvent = userSiteSpecificObject.getBoolean("ignoreSoldEvent");
 		}
 		exchange.setProperty("ignoreSoldEvent", ignoreSoldEvent);
 		Boolean isManaged = false;
-		if (userSiteSpecificObject.containsField("isManaged")) {
+		if (userSiteSpecificObject.containsKey("isManaged")) {
 			isManaged = userSiteSpecificObject.getBoolean("isManaged");
 		}
 		exchange.setProperty("isManaged", isManaged);
 
 		Boolean processRule = false;
-		if (userSiteSpecificObject.containsField("processRule")) {
+		if (userSiteSpecificObject.containsKey("processRule")) {
 			processRule = userSiteSpecificObject.getBoolean("processRule");
 		}
 		exchange.setProperty("processRule", processRule);
 
 		boolean isTransactionFee = false;
-		if (userSiteSpecificObject.containsField("isTransactionFee")) {
+		if (userSiteSpecificObject.containsKey("isTransactionFee")) {
 			isTransactionFee = userSiteSpecificObject.getBoolean("isTransactionFee");
 		}
 		exchange.setProperty("isTransactionFee", isTransactionFee);
 
 		boolean syncMultipleUnitSKUs = false;
-		if (queryResult.containsField("syncMultipleUnitSKUs")) {
+		if (queryResult.containsKey("syncMultipleUnitSKUs")) {
 			syncMultipleUnitSKUs = (Boolean) queryResult.get("syncMultipleUnitSKUs");
 		}
 		boolean syncDuplicateSKUs = false;
-		if (queryResult.containsField("syncDuplicateSKUs")) {
+		if (queryResult.containsKey("syncDuplicateSKUs")) {
 			syncDuplicateSKUs = (Boolean) queryResult.get("syncDuplicateSKUs");
-		} else if ((queryResult.containsField("individualSKUPerChannel")
+		} else if ((queryResult.containsKey("individualSKUPerChannel")
 				&& queryResult.getBoolean("individualSKUPerChannel") && queryResult.getBoolean("syncInventory"))
 				|| syncMultipleUnitSKUs) {
 			syncDuplicateSKUs = true;
 		}
 		exchange.setProperty("syncDuplicateSKUs", syncDuplicateSKUs);
 		boolean syncBundleSKUs = false;
-		if (queryResult.containsField("syncBundleSKUs")) {
+		if (queryResult.containsKey("syncBundleSKUs")) {
 			syncBundleSKUs = queryResult.getBoolean("syncBundleSKUs");
 			// Default delimiter
 			String bundleDelimiter = "+";
-			if (queryResult.containsField("bundleDelimiter")) {
+			if (queryResult.containsKey("bundleDelimiter")) {
 				bundleDelimiter = queryResult.getString("bundleDelimiter");
 			}
 			exchange.setProperty("bundleDelimiter", bundleDelimiter);
@@ -296,12 +293,12 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("syncBundleSKUs", syncBundleSKUs);
 		exchange.setProperty("syncMultipleUnitSKUs", syncMultipleUnitSKUs);
-		if(queryResult.containsField("showOnlyManagedOrders")) {
+		if (queryResult.containsKey("showOnlyManagedOrders")) {
 			exchange.setProperty("showOnlyManagedOrders", queryResult.getBoolean("showOnlyManagedOrders"));
 		}
 		boolean isNeedtoUpdateProductMaster = false;
 		ArrayList<String> wmsList = new ArrayList<String>();
-		if (queryResult.containsField("wmsList")) {
+		if (queryResult.containsKey("wmsList")) {
 			wmsList = (ArrayList<String>) queryResult.get("wmsList");
 			if (wmsList.size() == 1) {
 				isNeedtoUpdateProductMaster = true;
@@ -310,22 +307,23 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isNeedtoUpdateProductMaster", isNeedtoUpdateProductMaster);
 		boolean isProductMasterReady = false;
-		if (queryResult.containsField("isProductMasterReady")) {
+		if (queryResult.containsKey("isProductMasterReady")) {
 			isProductMasterReady = queryResult.getBoolean("isProductMasterReady");
 		}
 		exchange.setProperty("isProductMasterReady", isProductMasterReady);
 		boolean isWmsSelected = false;
-		if (queryResult.containsField("syncInventory") && (Boolean) queryResult.get("syncInventory")) {
-			if (userSiteSpecificObject.containsField("wms")) {
+		if (queryResult.containsKey("syncInventory") && (Boolean) queryResult.get("syncInventory")) {
+			if (userSiteSpecificObject.containsKey("wms")) {
 				ArrayList<String> wmsListinChannel = (ArrayList<String>) userSiteSpecificObject.get("wms");
 				if (wmsListinChannel.size() == 1) {
 					isWmsSelected = true;
 					exchange.setProperty("selectedWMS", wmsListinChannel.get(0));
-				} else if (userSiteSpecificObject.containsField("multiWarehouseMapping")) {
+				} else if (userSiteSpecificObject.containsKey("multiWarehouseMapping")) {
 					isWmsSelected = true;
 					exchange.setProperty("selectedWMSList", wmsListinChannel);
 				} else {
-					log.error("More than one WMS selected for accountNumber : " + accountNumber + ", nickName: " + nickNameID);
+					log.error("More than one WMS selected for accountNumber : " + accountNumber + ", nickName: "
+							+ nickNameID);
 				}
 			} else {
 				log.error("WMS not found for accountNumber : " + accountNumber + ", nickName: " + nickNameID);
@@ -333,19 +331,19 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		exchange.setProperty("isWmsSelected", isWmsSelected);
 		boolean processOrdersWithSKUOnly = false;
-		if (userSiteSpecificObject.containsField("processOrdersWithSKUOnly")) {
+		if (userSiteSpecificObject.containsKey("processOrdersWithSKUOnly")) {
 			processOrdersWithSKUOnly = userSiteSpecificObject.getBoolean("processOrdersWithSKUOnly");
 		}
 		exchange.setProperty("processOrdersWithSKUOnly", processOrdersWithSKUOnly);
 	}
 
-	private BasicDBObject runQuery(String accountNumber, String nickNameID, String siteName, String accountingChannel) {
-		BasicDBObject elemMatch = new BasicDBObject("nickName.id", nickNameID);
-		BasicDBObject searchQuery = new BasicDBObject(siteName, new BasicDBObject("$elemMatch", elemMatch));
+	private Document runQuery(String accountNumber, String nickNameID, String siteName, String accountingChannel) {
+		Document elemMatch = new Document("nickName.id", nickNameID);
+		Document searchQuery = new Document(siteName, new Document("$elemMatch", elemMatch));
 		ObjectId objId = new ObjectId(accountNumber);
 		searchQuery.put("_id", objId);
 
-		BasicDBObject projection = new BasicDBObject(siteName + ".$", 1);
+		Document projection = new Document(siteName + ".$", 1);
 		projection.put("merchantID", 1);
 		projection.put("profile", 1);
 		projection.put("syncDuplicateSKUs", 1);
@@ -369,14 +367,14 @@ public class LoadUserDataByNicknameId implements Processor {
 		}
 		MongoCollection<Document> table = DbUtilities.getDBCollection("accounts");
 		Document accountDocument = table.find(searchQuery).projection(projection).first();
-		BasicDBObject accountDetails = (BasicDBObject) JSON.parse(accountDocument.toJson());
+		Document accountDetails = Document.parse(accountDocument.toJson());
 		return accountDetails;
 	}
 
-	private static String getinvoiceNumberPrefix(List<BasicDBObject> proflieList, String profileID) {
-		for (BasicDBObject profile : proflieList) {
-			BasicDBObject nickName = (BasicDBObject) profile.get("nickName");
-			if (nickName.getString("id").equals(profileID) && profile.containsField("invoiceNumberPrefix")) {
+	private static String getinvoiceNumberPrefix(List<Document> proflieList, String profileID) {
+		for (Document profile : proflieList) {
+			Document nickName = (Document) profile.get("nickName");
+			if (nickName.getString("id").equals(profileID) && profile.containsKey("invoiceNumberPrefix")) {
 				return profile.getString("invoiceNumberPrefix");
 			}
 		}

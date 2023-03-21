@@ -3,10 +3,9 @@ package com.sellinall.order.message;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.sellinall.order.util.OrderUtil;
 
 /**
@@ -20,7 +19,7 @@ public class PrepareUpdateOrderPublishMessage implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject publishMessage = OrderUtil
-				.parseToJsonObject((DBObject) exchange.getProperty("orderRecord", BasicDBObject.class));
+				.parseToJsonObject(Document.parse(exchange.getProperty("orderRecord", String.class)));
 		if (!publishMessage.has("site")) {
 			log.error("siteName not found in order message");
 			return;

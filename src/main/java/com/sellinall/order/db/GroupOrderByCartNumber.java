@@ -9,11 +9,7 @@ import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.result.UpdateResult;
-import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.CurrencyUtil;
@@ -23,7 +19,7 @@ public class GroupOrderByCartNumber implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		int totalOrderItemsInCart = exchange.getProperty("totalOrderItemsInCart", Integer.class);
 		String cartNumber = exchange.getProperty("cartNumber", String.class);
-		List<BasicDBObject> orderList = getOrderList(cartNumber, exchange.getProperty("accountNumber", String.class));
+		List<Document> orderList = getOrderList(cartNumber, exchange.getProperty("accountNumber", String.class));
 		exchange.setProperty("isEligibleToProceed", false);
 		if (totalOrderItemsInCart == orderList.size()) {
 			exchange.setProperty("isEligibleToProceed", true);
@@ -33,83 +29,83 @@ public class GroupOrderByCartNumber implements Processor {
 		}
 	}
 
-	private JSONObject groupOrderBycart(List<BasicDBObject> orderList) throws JSONException {
-		DBObject order = orderList.get(0);
+	private JSONObject groupOrderBycart(List<Document> orderList) throws JSONException {
+		Document order = orderList.get(0);
 		String orderNumber = "";
 		String orderID = "";
-		ArrayList<DBObject> orderItems = new ArrayList<DBObject>();
-		BasicDBObject orderAmount = (BasicDBObject) order.get("orderAmount");
+		ArrayList<Document> orderItems = new ArrayList<Document>();
+		Document orderAmount = (Document) order.get("orderAmount");
 		String currencyCode = orderAmount.getString("currencyCode");
 		JSONObject orderAmountObj = CurrencyUtil.getJSONAmountObject(Long.valueOf(0), currencyCode);
 		JSONObject sellerDiscountAmountObj = CurrencyUtil.getJSONAmountObject(Long.valueOf(0), currencyCode);
 		JSONObject channelDiscountAmountObj = CurrencyUtil.getJSONAmountObject(Long.valueOf(0), currencyCode);
 		JSONObject orderSoldAmountObj = CurrencyUtil.getJSONAmountObject(Long.valueOf(0), currencyCode);
-		BasicDBObject orderAmountInUSD = (BasicDBObject) order.get("orderAmountInUSD");
+		Document orderAmountInUSD = (Document) order.get("orderAmountInUSD");
 		JSONObject orderSoldAmountInUSDObj = CurrencyUtil.getJSONAmountObject(Long.valueOf(0),
 				orderAmountInUSD.getString("currencyCode"));
 		JSONObject orderAmountInUSDObj = CurrencyUtil.getJSONAmountObject(Long.valueOf(0),
 				orderAmountInUSD.getString("currencyCode"));
 		JSONObject shippingAmountObj = CurrencyUtil.getJSONAmountObject(Long.valueOf(0), currencyCode);
 
-		for (DBObject relatedOrder : orderList) {
-			orderItems.addAll((ArrayList<DBObject>) relatedOrder.get("orderItems"));
-			if (relatedOrder.containsField("orderNumber")) {
+		for (Document relatedOrder : orderList) {
+			orderItems.addAll((ArrayList<Document>) relatedOrder.get("orderItems"));
+			if (relatedOrder.containsKey("orderNumber")) {
 				orderNumber += (orderNumber.isEmpty() ? "" : ", ") + relatedOrder.get("orderNumber");
 			}
-			if (relatedOrder.containsField("orderID")) {
+			if (relatedOrder.containsKey("orderID")) {
 				orderID += (orderID.isEmpty() ? "" : ", ") + relatedOrder.get("orderID");
 			}
-			if (relatedOrder.containsField("orderAmount")) {
+			if (relatedOrder.containsKey("orderAmount")) {
 				orderAmountObj = CurrencyUtil.addAmountObject(orderAmountObj,
-						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("orderAmount").toString())));
+						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderAmount").toString())));
 			}
-			if (relatedOrder.containsField("orderAmountInUSD")) {
+			if (relatedOrder.containsKey("orderAmountInUSD")) {
 				orderAmountInUSDObj = CurrencyUtil.addAmountObject(orderAmountInUSDObj,
-						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("orderAmountInUSD").toString())));
+						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderAmountInUSD").toString())));
 			}
-			if (relatedOrder.containsField("orderSoldAmount")) {
+			if (relatedOrder.containsKey("orderSoldAmount")) {
 				orderSoldAmountObj = CurrencyUtil.addAmountObject(orderSoldAmountObj,
-						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("orderSoldAmount").toString())));
+						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderSoldAmount").toString())));
 			}
-			if (relatedOrder.containsField("orderSoldAmountInUSD")) {
+			if (relatedOrder.containsKey("orderSoldAmountInUSD")) {
 				orderSoldAmountInUSDObj = CurrencyUtil.addAmountObject(orderSoldAmountInUSDObj,
-						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("orderSoldAmountInUSD").toString())));
+						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderSoldAmountInUSD").toString())));
 			}
-			if (relatedOrder.containsField("sellerDiscountAmount")) {
+			if (relatedOrder.containsKey("sellerDiscountAmount")) {
 				sellerDiscountAmountObj = CurrencyUtil.addAmountObject(sellerDiscountAmountObj,
-						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("sellerDiscountAmount").toString())));
+						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("sellerDiscountAmount").toString())));
 			}
-			if (relatedOrder.containsField("shippingAmount")) {
+			if (relatedOrder.containsKey("shippingAmount")) {
 				shippingAmountObj = CurrencyUtil.addAmountObject(shippingAmountObj,
-						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("shippingAmount").toString())));
+						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("shippingAmount").toString())));
 			}
-			if (relatedOrder.containsField("channelDiscountAmount")) {
+			if (relatedOrder.containsKey("channelDiscountAmount")) {
 				channelDiscountAmountObj = CurrencyUtil.addAmountObject(channelDiscountAmountObj,
-						OrderUtil.parseToJsonObject((DBObject) JSON.parse(relatedOrder.get("channelDiscountAmount").toString())));
+						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("channelDiscountAmount").toString())));
 			}
 		}
 		order.put("orderNumber", orderNumber);
 		order.put("orderID", orderID);
 		order.put("orderItems", orderItems);
-		order.put("orderAmount", BasicDBObject.parse(orderAmountObj.toString()));
-		order.put("orderAmountInUSD", BasicDBObject.parse(orderAmountInUSDObj.toString()));
-		order.put("orderSoldAmount", BasicDBObject.parse(orderSoldAmountObj.toString()));
-		order.put("orderSoldAmountInUSD", BasicDBObject.parse(orderSoldAmountInUSDObj.toString()));
-		order.put("sellerDiscountAmount", BasicDBObject.parse(sellerDiscountAmountObj.toString()));
-		order.put("channelDiscountAmount", BasicDBObject.parse(channelDiscountAmountObj.toString()));
-		order.put("shippingAmount", BasicDBObject.parse(shippingAmountObj.toString()));
+		order.put("orderAmount", Document.parse(orderAmountObj.toString()));
+		order.put("orderAmountInUSD", Document.parse(orderAmountInUSDObj.toString()));
+		order.put("orderSoldAmount", Document.parse(orderSoldAmountObj.toString()));
+		order.put("orderSoldAmountInUSD", Document.parse(orderSoldAmountInUSDObj.toString()));
+		order.put("sellerDiscountAmount", Document.parse(sellerDiscountAmountObj.toString()));
+		order.put("channelDiscountAmount", Document.parse(channelDiscountAmountObj.toString()));
+		order.put("shippingAmount", Document.parse(shippingAmountObj.toString()));
 		return OrderUtil.parseToJsonObject(order);
 	}	
 
-	private List<BasicDBObject> getOrderList(String cartNumber, String accountNumber) {
-		List<BasicDBObject> orderList = new ArrayList<BasicDBObject>();
+	private List<Document> getOrderList(String cartNumber, String accountNumber) {
+		List<Document> orderList = new ArrayList<Document>();
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
-		BasicDBObject searchQuery = new BasicDBObject();
+		Document searchQuery = new Document();
 		searchQuery.put("accountNumber", accountNumber);
 		searchQuery.put("cartNumber", cartNumber);
 		List<Document> result = table.find(searchQuery).into(new ArrayList<Document>());
 		for (Document order : result) {
-			BasicDBObject orderObj = (BasicDBObject) JSON.parse((order).toJson());
+			Document orderObj = Document.parse((order).toJson());
 			orderList.add(orderObj);
 		}
 		return orderList;

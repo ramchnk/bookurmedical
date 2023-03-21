@@ -16,9 +16,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.RuleActionTypes;
@@ -32,18 +30,18 @@ public class RuleEngine {
 	static Logger log = Logger.getLogger(RuleEngine.class.getName());
 
 	@SuppressWarnings("unchecked")
-	public static boolean setGiftItems(BasicDBObject order, BasicDBObject rule, List<BasicDBObject> freeGiftOrderItems,
+	public static boolean setGiftItems(Document order, Document rule, List<Document> freeGiftOrderItems,
 			String selectedWMS, List<String> giftItemSKUs) throws JSONException {
-		List<BasicDBObject> conditions = (List<BasicDBObject>) rule.get("conditions");
-		List<BasicDBObject> orderItems = (List<BasicDBObject>) order.get("orderItems");
-		List<BasicDBObject> newOrderItemList = new LinkedList<>();
-		for (BasicDBObject orderItem : orderItems) {
-			newOrderItemList.add((BasicDBObject) orderItem.clone());
+		List<Document> conditions = (List<Document>) rule.get("conditions");
+		List<Document> orderItems = (List<Document>) order.get("orderItems");
+		List<Document> newOrderItemList = new LinkedList<>();
+		for (Document orderItem : orderItems) {
+			newOrderItemList.add((Document) orderItem);
 		}
 		Boolean isConditionSatisfied = checkConditionSatisfied(newOrderItemList, order, conditions);
 		if (isConditionSatisfied) {
 			Map<String, Integer> sellerSKUAndQuantityMap = new LinkedHashMap<>();
-			List<BasicDBObject> freeGiftInventoryListFromDb = getFreeGiftInvetnoryFromDB(rule,
+			List<Document> freeGiftInventoryListFromDb = getFreeGiftInvetnoryFromDB(rule,
 					order.getString("accountNumber"), sellerSKUAndQuantityMap, giftItemSKUs);
 			constructFreeGiftOrderItems(order, freeGiftInventoryListFromDb, sellerSKUAndQuantityMap, freeGiftOrderItems,
 					selectedWMS);
@@ -54,30 +52,30 @@ public class RuleEngine {
 		return isConditionSatisfied;
 	}
 
-	public static boolean removeGiftItems(BasicDBObject order, BasicDBObject rule,
-			List<BasicDBObject> freeGiftOrderItems, String selectedWMS, List<String> giftItemSKUs)
-			throws JSONException {
-		List<BasicDBObject> conditions = (List<BasicDBObject>) rule.get("conditions");
-		List<BasicDBObject> orderItems = (List<BasicDBObject>) order.get("orderItems");
-		List<BasicDBObject> newOrderItemList = new LinkedList<>();
-		for (BasicDBObject orderItem : orderItems) {
-			newOrderItemList.add((BasicDBObject) orderItem.clone());
+	public static boolean removeGiftItems(Document order, Document rule, List<Document> freeGiftOrderItems,
+			String selectedWMS, List<String> giftItemSKUs) throws JSONException {
+		List<Document> conditions = (List<Document>) rule.get("conditions");
+		List<Document> orderItems = (List<Document>) order.get("orderItems");
+		List<Document> newOrderItemList = new LinkedList<>();
+		for (Document orderItem : orderItems) {
+			newOrderItemList.add((Document) orderItem);
 		}
 		return checkConditionSatisfied(newOrderItemList, order, conditions);
 	}
 
-	private static void constructFreeGiftOrderItems(BasicDBObject order,
-			List<BasicDBObject> freeGiftInevntoryListFromDb, Map<String, Integer> sellerSKUAndQuantityMap,
-			List<BasicDBObject> freeGiftOrderItems, String selectedWMS) throws JSONException {
-		BasicDBObject orderAmount = (BasicDBObject) order.get("orderAmount");
+	private static void constructFreeGiftOrderItems(Document order, List<Document> freeGiftInevntoryListFromDb,
+			Map<String, Integer> sellerSKUAndQuantityMap,
+			List<Document> freeGiftOrderItems, String selectedWMS)
+			throws JSONException {
+		Document orderAmount = (Document) order.get("orderAmount");
 		String currencyCode = orderAmount.getString("currencyCode");
-		for (BasicDBObject freeGift : freeGiftInevntoryListFromDb) {
+		for (Document freeGift : freeGiftInevntoryListFromDb) {
 			String sellerSKU = freeGift.getString("sellerSKU");
 			int availableFreeGiftQty = getAvailableQuantityFromProductMaster(freeGift, selectedWMS);
 			int orderedFreeGiftQty = sellerSKUAndQuantityMap.get(sellerSKU);
 			if (availableFreeGiftQty >= orderedFreeGiftQty) {
 				boolean isFreeGiftHandled = false;
-				for (BasicDBObject object : freeGiftOrderItems) {
+				for (Document object : freeGiftOrderItems) {
 					if (object.getString("customSKU").equals(sellerSKU)) {
 						/* Note: Added condition to restrict multiple gift of same product */
 						/*
@@ -93,24 +91,24 @@ public class RuleEngine {
 				}
 				decrementQuantityForGiftItem(order, sellerSKU, orderedFreeGiftQty, selectedWMS);
 				int giftItemCount = freeGiftOrderItems.size() + 1;
-				BasicDBObject freeGiftOrderItem = new BasicDBObject();
+				Document freeGiftOrderItem = new Document();
 				freeGiftOrderItem.put("orderItemID", order.getString("orderID") + "-gwp" + giftItemCount);
 				freeGiftOrderItem.put("siaOrderItemID", order.getString("orderID") + "-gwp" + giftItemCount);
 				freeGiftOrderItem.put("customSKU", sellerSKU);
-				if (freeGift.containsField("SKU") && freeGift.get("SKU") != null) {
+				if (freeGift.containsKey("SKU") && freeGift.get("SKU") != null) {
 					freeGiftOrderItem.put("SKU", freeGift.getString("SKU"));
 				}
-				if (freeGift.containsField("itemTitle") && freeGift.get("itemTitle") != null) {
+				if (freeGift.containsKey("itemTitle") && freeGift.get("itemTitle") != null) {
 					freeGiftOrderItem.put("itemTitle", freeGift.getString("itemTitle"));
 				}
-				BasicDBObject itemAmountObject = new BasicDBObject();
+				Document itemAmountObject = new Document();
 				if (selectedWMS != null && !selectedWMS.isEmpty()) {
 					freeGiftOrderItem.put("wmsID", selectedWMS);
 				}
 				itemAmountObject.put("amount", 0);
 				itemAmountObject.put("currencyCode", currencyCode);
 				freeGiftOrderItem.put("itemAmount", itemAmountObject);
-				BasicDBObject itemSoldAmountObject = new BasicDBObject();
+				Document itemSoldAmountObject = new Document();
 				itemSoldAmountObject.put("amount", 0);
 				itemSoldAmountObject.put("currencyCode", currencyCode);
 				freeGiftOrderItem.put("itemSoldAmount", itemSoldAmountObject);
@@ -124,26 +122,26 @@ public class RuleEngine {
 		}
 	}
 
-	private static int getAvailableQuantityFromProductMaster(BasicDBObject freeGift, String selectedWMS) {
+	private static int getAvailableQuantityFromProductMaster(Document freeGift, String selectedWMS) {
 		int quantity = 0;
-		List<BasicDBObject> quantities = (List<BasicDBObject>) freeGift.get("quantities");
-		for (BasicDBObject quantityObj : quantities) {
+		List<Document> quantities = (List<Document>) freeGift.get("quantities");
+		for (Document quantityObj : quantities) {
 			/* Note: Handled only for single wms */
 			if (quantityObj.getString("warehouseID").equals(selectedWMS)) {
-				quantity += quantityObj.getInt("quantity");
+				quantity += quantityObj.getInteger("quantity");
 			}
 		}
-		if (quantity==0) {
-			log.warn("quantity not available for wms : "+ selectedWMS+", doc : "+ freeGift);
+		if (quantity == 0) {
+			log.warn("quantity not available for wms : " + selectedWMS + ", doc : " + freeGift);
 		}
 		return quantity;
 	}
 
-	private static void decrementQuantityForGiftItem(BasicDBObject order, String sellerSKU, int freeGiftQuantity,
+	private static void decrementQuantityForGiftItem(Document order, String sellerSKU, int freeGiftQuantity,
 			String selectedWMS) throws JSONException {
 		try {
 			String accountNumber = order.getString("accountNumber");
-			BasicDBObject siteObj = (BasicDBObject) order.get("site");
+			Document siteObj = (Document) order.get("site");
 			JSONObject quantityObj = new JSONObject();
 			quantityObj.put("warehouseID", selectedWMS);
 			quantityObj.put("quantityDiff", -freeGiftQuantity);
@@ -198,18 +196,18 @@ public class RuleEngine {
 		}
 	}
 
-	private static List<BasicDBObject> getFreeGiftInvetnoryFromDB(BasicDBObject rule, String accountNumber,
+	private static List<Document> getFreeGiftInvetnoryFromDB(Document rule, String accountNumber,
 			Map<String, Integer> sellerSKUAndQuantityMap, List<String> giftItemSKUs) {
-		BasicDBObject action = (BasicDBObject) rule.get("action");
-		List<BasicDBObject> itemList = (List<BasicDBObject>) action.get("itemList");
+		Document action = (Document) rule.get("action");
+		List<Document> itemList = (List<Document>) action.get("itemList");
 		boolean isAvailableStockFoundInDB = false;
 		boolean isGiftItemAdded = false;
 		String actionType = RuleActionTypes.ALL.toString();
-		if (action.containsField("type")) {
+		if (action.containsKey("type")) {
 			actionType = action.getString("type");
 		}
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("productMaster");
-		BasicDBObject searchQuery = new BasicDBObject();
+		Document searchQuery = new Document();
 		searchQuery.put("accountNumber", accountNumber);
 		List<String> sellerSKUList = new LinkedList<>();
 		for (int i = 0; i < itemList.size(); i++) {
@@ -220,11 +218,11 @@ public class RuleEngine {
 				 */
 				break;
 			}
-			BasicDBObject item = itemList.get(i);
+			Document item = itemList.get(i);
 			boolean isStockAvailableForFreeGift = true;
-			if (item.containsField("availableStock")) {
+			if (item.containsKey("availableStock")) {
 				isAvailableStockFoundInDB = true;
-				if (item.getInt("availableStock") <= 0) {
+				if (item.getInteger("availableStock") <= 0) {
 					isStockAvailableForFreeGift = false;
 				}
 			}
@@ -234,46 +232,46 @@ public class RuleEngine {
 					continue;
 				}
 				sellerSKUList.add(item.getString("sellerSKU"));
-				sellerSKUAndQuantityMap.put(item.getString("sellerSKU"), item.getInt("quantity"));
+				sellerSKUAndQuantityMap.put(item.getString("sellerSKU"), item.getInteger("quantity"));
 				if (isAvailableStockFoundInDB) {
 					updateAvailableStockInRule(rule.getString("_id"), item.getString("sellerSKU"),
-							item.getInt("quantity"));
+							item.getInteger("quantity"));
 					isGiftItemAdded = true;
 				}
 			}
 		}
 		if (sellerSKUList.isEmpty()) {
-			new ArrayList<BasicDBObject>();
+			new ArrayList<Document>();
 		}
-		searchQuery.put("sellerSKU", new BasicDBObject("$in", sellerSKUList));
-		BasicDBObject projection = new BasicDBObject();
+		searchQuery.put("sellerSKU", new Document("$in", sellerSKUList));
+		Document projection = new Document();
 		projection.put("_id", 0);
 		projection.put("itemTitle", 1);
 		projection.put("sellerSKU", 1);
 		projection.put("quantities", 1);
 		List<Document> documentList = table.find(searchQuery).projection(projection).into(new ArrayList<Document>());
-		List<BasicDBObject> freeGiftInventoryList = new ArrayList<BasicDBObject>();
+		List<Document> freeGiftInventoryList = new ArrayList<Document>();
 		for (Document document : documentList) {
-			freeGiftInventoryList.add((BasicDBObject) JSON.parse((document).toJson()));
+			freeGiftInventoryList.add(Document.parse((document).toJson()));
 		}
 		return freeGiftInventoryList;
 	}
 
 	private static void updateAvailableStockInRule(String docId, String sellerSKU, int quantity) {
-		BasicDBObject query = new BasicDBObject();
+		Document query = new Document();
 		query.put("_id", new ObjectId(docId));
 		query.put("action.itemList.sellerSKU", sellerSKU);
 
-		BasicDBObject updateObj = new BasicDBObject();
+		Document updateObj = new Document();
 		updateObj.put("action.itemList.$.availableStock", -quantity);
 
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("ruleOrder");
-		table.updateOne(query, new BasicDBObject("$inc", updateObj));
+		table.updateOne(query, new Document("$inc", updateObj));
 	}
 
-	private static Boolean checkConditionSatisfied(List<BasicDBObject> orderItems, BasicDBObject order,
-			List<BasicDBObject> conditions) {
-		for (BasicDBObject condition : conditions) {
+	private static Boolean checkConditionSatisfied(List<Document> orderItems, Document order,
+			List<Document> conditions) {
+		for (Document condition : conditions) {
 			if (condition.getString("leftOperand").equals("SKU")) {
 				if (!processCondition(condition, orderItems, "SKU")) {
 					return false;
@@ -307,15 +305,15 @@ public class RuleEngine {
 		return true;
 	}
 
-	private static boolean processCondition(BasicDBObject condition, Object data, String fieldName) {
+	private static boolean processCondition(Document condition, Object data, String fieldName) {
 		if (data instanceof List) {
-			List<BasicDBObject> orderItems = (List<BasicDBObject>) data;
-			for (BasicDBObject orderItem : orderItems) {
+			List<Document> orderItems = (List<Document>) data;
+			for (Document orderItem : orderItems) {
 				boolean isConditionSatisfied = false;
 				String value = orderItem.getString(fieldName);
 				if (processOperands(value, condition.get("rightOperand"), condition.getString("operator"))) {
 					isConditionSatisfied = true;
-					if (!orderItem.containsField("isConditionSatisfied")) {
+					if (!orderItem.containsKey("isConditionSatisfied")) {
 						orderItem.put("isConditionSatisfied", isConditionSatisfied);
 					}
 				} else {
@@ -323,18 +321,18 @@ public class RuleEngine {
 				}
 			}
 			return orderItems.stream().filter(x -> x.getBoolean("isConditionSatisfied")).count() > 0;
-		} else if (data instanceof BasicDBObject
+		} else if (data instanceof Document
 				&& (fieldName.equals("orderSoldAmount") || fieldName.equals("orderAmount"))) {
-			BasicDBObject order = (BasicDBObject) data;
-			BasicDBObject orderSoldAmountObj = (BasicDBObject) order.get(fieldName);
+			Document order = (Document) data;
+			Document orderSoldAmountObj = (Document) order.get(fieldName);
 			long amount = orderSoldAmountObj.getLong("amount");
 			return processOperands(amount, condition.get("rightOperand"), condition.getString("operator"));
-		} else if (data instanceof BasicDBObject && fieldName.equals("paymentStatus")) {
-			BasicDBObject order = (BasicDBObject) data;
+		} else if (data instanceof Document && fieldName.equals("paymentStatus")) {
+			Document order = (Document) data;
 			return processOperands(order.getString("paymentStatus"), condition.get("rightOperand"),
 					condition.getString("operator"));
-		} else if (data instanceof BasicDBObject && fieldName.equals("timeOrderCreated")) {
-			BasicDBObject order = (BasicDBObject) data;
+		} else if (data instanceof Document && fieldName.equals("timeOrderCreated")) {
+			Document order = (Document) data;
 			return processOperands(order.getLong("timeOrderCreated"), condition.get("rightOperand"),
 					condition.getString("operator"));
 		}

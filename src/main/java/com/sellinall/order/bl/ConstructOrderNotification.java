@@ -7,12 +7,11 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.SIAOrderStatus;
@@ -24,13 +23,13 @@ public class ConstructOrderNotification implements Processor {
 	public void process(Exchange exchange) throws JSONException {
 
 		JSONObject orderRecord = OrderUtil
-				.parseToJsonObject((DBObject) exchange.getProperty("orderRecord", BasicDBObject.class));
+				.parseToJsonObject((Document) exchange.getProperty("orderRecord", Document.class));
 		JSONObject outBody = new JSONObject();
 
 		try {
 			JSONObject message = new JSONObject();
-			BasicDBObject userSiteObject = exchange.getProperty("userSiteSpecificObject", BasicDBObject.class);
-			BasicDBObject nickName = (BasicDBObject) userSiteObject.get("nickName");
+			Document userSiteObject = exchange.getProperty("userSiteSpecificObject", Document.class);
+			Document nickName = (Document) userSiteObject.get("nickName");
 			String nickNameID = nickName.getString("id");
 			String orderPageUrl = Config.getConfig().getSIAOrderPageURL() + orderRecord.get("orderID") + "&site="
 					+ nickNameID;

@@ -3,6 +3,9 @@
  */
 package com.sellinall.order.db;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
@@ -11,8 +14,6 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.util.enums.SIAOrderStatus;
@@ -33,20 +34,20 @@ public class UpdateCombineOrderStatus implements Processor {
 
 	private void updateOrderCollection(Exchange exchange, JSONObject orderMessage) throws JSONException {
 		JSONArray combineOrderIds = orderMessage.getJSONArray("combinedOrderIds");
-		BasicDBList combineOrderIdsList = new BasicDBList();
+		List<Document> combineOrderIdsList = new ArrayList<Document>();
 		for (int index = 0; index < combineOrderIds.length(); index++) {
-			combineOrderIdsList.add(combineOrderIds.getString(index));
+			combineOrderIdsList.add(Document.parse(combineOrderIds.getString(index)));
 		}
-		BasicDBObject query = new BasicDBObject("accountNumber", exchange.getProperty("accountNumber", String.class));
-		query.put("orderID", new BasicDBObject("$in", combineOrderIdsList));
+		Document query = new Document("accountNumber", exchange.getProperty("accountNumber", String.class));
+		query.put("orderID", new Document("$in", combineOrderIdsList));
 		query.put("site.nickNameID", orderMessage.getString("nickNameID"));
-		BasicDBObject updateSet = new BasicDBObject();
+		Document updateSet = new Document();
 		updateSet.put("orderStatus", SIAOrderStatus.COMBINED.toString());
 		updateSet.put("paymentStatus", SIAPaymentStatus.UNSUPPORTED.toString());
 		updateSet.put("shippingStatus", SIAShippingStatus.UNSUPPORTED.toString());
 		updateSet.put("combinedOrderId", orderMessage.getString("orderID"));
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
-		BasicDBObject update = new BasicDBObject("$set", updateSet);
+		Document update = new Document("$set", updateSet);
 		table.updateMany(query, update);
 	}
 }

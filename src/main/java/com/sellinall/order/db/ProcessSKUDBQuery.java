@@ -1,18 +1,19 @@
 package com.sellinall.order.db;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.util.JSON;
+import com.sellinall.order.util.OrderUtil;
 
 public class ProcessSKUDBQuery implements Processor {
 
@@ -50,15 +51,17 @@ public class ProcessSKUDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle, JSONObject parentInventory) throws JSONException {
-		Map<String, BasicDBObject> inventoryDetailsMap = new HashMap<String, BasicDBObject>();
+	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle,
+			JSONObject parentInventory) throws JSONException {
+		Map<String, Document> inventoryDetailsMap = new HashMap<String, Document>();
 		if (exchange.getProperties().containsKey("inventoryDetailsMap")) {
-			inventoryDetailsMap = (Map<String, BasicDBObject>) exchange.getProperty("inventoryDetailsMap");
+			inventoryDetailsMap = (Map<String, Document>) exchange.getProperty("inventoryDetailsMap");
 		}
 		String siteName = exchange.getProperty("siteName", String.class);
-		BasicDBObject inventoryValues = new BasicDBObject();
+		Document inventoryValues = new Document();
 		inventoryValues.put("itemTitle", itemTitle);
-		//  offline is not a channel and  it is not present in inventory, So will add as empty array in inventory.
+		// offline is not a channel and it is not present in inventory, So will add as
+		// empty array in inventory.
 		if (siteName.equals("offline")) {
 			inventory.put("offline", new JSONArray());
 		}
@@ -84,16 +87,17 @@ public class ProcessSKUDBQuery implements Processor {
 		}
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		JSONArray siteSpecificList = inventory.getJSONArray(siteName);
-		BasicDBObject site = null;
+		Document site = null;
 		for (int index = 0; index < siteSpecificList.length(); index++) {
 			JSONObject siteJSON = siteSpecificList.getJSONObject(index);
 			if (siteJSON.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
 				// If variant record has no image, get the parent image.
-				site = BasicDBObject.parse(siteJSON.toString());
-				if ((site.containsField("imageURI") && siteJSON.getJSONArray("imageURI").length() == 0)
-						|| !site.containsField("imageURI")) {
+				site = Document.parse(siteJSON.toString());
+				if ((site.containsKey("imageURI") && siteJSON.getJSONArray("imageURI").length() == 0)
+						|| !site.containsKey("imageURI")) {
 					if (parentInventory.has("imageURI")) {
-						site.put("imageURI", JSON.parse(parentInventory.getJSONArray("imageURI").toString()));
+						JSONArray imageURIarray = parentInventory.getJSONArray("imageURI");
+						site.put("imageURI", OrderUtil.parseDocumentListFromArray(imageURIarray));
 					}
 				}
 				break;
@@ -101,31 +105,32 @@ public class ProcessSKUDBQuery implements Processor {
 		}
 		if (site != null && parentInventory.length() != 0) {
 			JSONArray parentSiteSpecificList = parentInventory.getJSONArray(siteName);
-			BasicDBObject parentSite = null;
+			Document parentSite = null;
 			for (int index = 0; index < parentSiteSpecificList.length(); index++) {
 				JSONObject parentSiteJSON = parentSiteSpecificList.getJSONObject(index);
 				if (parentSiteJSON.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
-					parentSite = (BasicDBObject) JSON.parse(parentSiteJSON.toString());
-					if (parentSite.containsField("categoryName")) {
+					parentSite = Document.parse(parentSiteJSON.toString());
+					if (parentSite.containsKey("categoryName")) {
 						site.put("categoryName", parentSite.get("categoryName"));
 					}
-					if (parentSite.containsField("categoryID")) {
+					if (parentSite.containsKey("categoryID")) {
 						site.put("categoryID", parentSite.get("categoryID"));
 					}
 					break;
 				}
 			}
 		}
-		// siteName will be pass as empty object to handle the SKU and imageURL in next bean.
+		// siteName will be pass as empty object to handle the SKU and imageURL in next
+		// bean.
 		if (siteName.equals("offline")) {
-			inventoryValues.put(siteName, new BasicDBObject());
+			inventoryValues.put(siteName, new Document());
 		} else {
 			inventoryValues.put(siteName, site);
 		}
 		for (int i = 0; i < siteSpecificList.length(); i++) {
 			JSONObject channelObj = siteSpecificList.getJSONObject(i);
 			if (channelObj.getString("nickNameID").equals(orderMessage.getString("nickNameID"))) {
-				BasicDBList variants = new BasicDBList();
+				List<Document> variants = new ArrayList<Document>();
 				JSONArray invVariants = new JSONArray();
 				if (channelObj.has("variantDetails")) {
 					invVariants = channelObj.getJSONArray("variantDetails");
@@ -134,7 +139,7 @@ public class ProcessSKUDBQuery implements Processor {
 				}
 				for (int j = 0; j < invVariants.length(); j++) {
 					JSONObject variant = invVariants.getJSONObject(j);
-					BasicDBObject bVariant = new BasicDBObject();
+					Document bVariant = new Document();
 					bVariant.put("title", variant.getString("title"));
 					bVariant.put("name", variant.getString("name"));
 					variants.add(bVariant);

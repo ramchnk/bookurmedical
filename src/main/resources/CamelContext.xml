@@ -2,11 +2,13 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context" xmlns:cxf="http://camel.apache.org/schema/cxf"
 	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
        ">
 
 	<bean id="initBidRoute" class="com.sellinall.bid.bl.InitBidRoute" />
@@ -468,7 +470,7 @@
 			<process ref="loadUserDataByNicknameId" />
 			<choice>
 				<when>
-					<simple>${exchangeProperty.isSyncRequired} == true and
+					<simple>${exchangeProperty.isSyncRequired} == true &amp;&amp;
 						${exchangeProperty.ignoreSoldEvent} == false
 					</simple>
 					<process ref="updateInventoryForBidMessage" />
@@ -506,7 +508,7 @@
 				<to uri="direct:processOrderItem" />
 			</split>
 			<when>
-				<simple>${exchangeProperty.processRule} == true and ${exchangeProperty.orderStatus} == "INITIATED" and
+				<simple>${exchangeProperty.processRule} == true &amp;&amp; ${exchangeProperty.orderStatus} == "INITIATED" &amp;&amp;
 					${exchangeProperty.isFreeGiftAddedToOrder} == false
 				</simple>
 				<to uri="direct:processRuleRoute" />
@@ -570,7 +572,7 @@
 			</when>
 			<choice>
 				<when>
-					<simple>${exchangeProperty.isProductMasterReady} == true and ${exchangeProperty.isOldOrder} == false</simple>
+					<simple>${exchangeProperty.isProductMasterReady} == true &amp;&amp; ${exchangeProperty.isOldOrder} == false</simple>
 					<when>
 						<simple>${exchangeProperty.hasSKU} == true</simple>
 						<to uri="direct:loadInventoryData" />
@@ -579,12 +581,12 @@
 				</when>
 				<otherwise>
 				<when>
-					<simple>${exchangeProperty.hasSKU} == true and ${exchangeProperty.isOldOrder} == false</simple>
+					<simple>${exchangeProperty.hasSKU} == true &amp;&amp; ${exchangeProperty.isOldOrder} == false</simple>
 					<to uri="direct:loadInventoryData" />
 					<when>
-						<simple>${exchangeProperty.ignoreSoldEvent} == false and
-							${exchangeProperty.hasCombinedOrderIds} == false and
-							${exchangeProperty.hasInventoryInDB} == true  and
+						<simple>${exchangeProperty.ignoreSoldEvent} == false &amp;&amp;
+							${exchangeProperty.hasCombinedOrderIds} == false &amp;&amp;
+							${exchangeProperty.hasInventoryInDB} == true  &amp;&amp;
 							${exchangeProperty.updateStock} == true
 						</simple>
 						<when>
@@ -593,24 +595,24 @@
 						</when>
 						<choice>
 							<when>
-								<simple>${exchangeProperty.isEligibleToProceed} == true and
-									${exchangeProperty.syncBundleSKUs} == true and
+								<simple>${exchangeProperty.isEligibleToProceed} == true &amp;&amp;
+									${exchangeProperty.syncBundleSKUs} == true &amp;&amp;
 									${exchangeProperty.customSKU} != null
 								</simple>
 								<to uri="direct:syncBundleSKUs" />
 							</when>
 							<when>
-								<simple>${exchangeProperty.syncMultipleUnitSKUs} == true and
+								<simple>${exchangeProperty.syncMultipleUnitSKUs} == true &amp;&amp;
 									${exchangeProperty.customSKU} != null
 								</simple>
-								<setProperty propertyName="isMultipleUnitSKUUpdate">
+								<setProperty name="isMultipleUnitSKUUpdate">
 									<simple>true</simple>
 								</setProperty>
 								<to uri="direct:loadBasicUnitSKU" />
 								<choice>
 									<when>
 										<simple>${body} != null</simple>
-										<setProperty propertyName="inventory">
+										<setProperty name="inventory">
 											<simple>${body}</simple>
 										</setProperty>
 										<to uri="direct:updateAndPublish" />
@@ -656,18 +658,18 @@
 			<choice>
 				<when>
 					<simple>${exchangeProperty.isOutOfStock} == true</simple>
-					<setProperty propertyName="apiName">
+					<setProperty name="apiName">
 						<constant>quantity</constant>
 					</setProperty>
 				</when>
 				<otherwise>
-					<setProperty propertyName="apiName">
+					<setProperty name="apiName">
 						<constant>quantityDiff</constant>
 					</setProperty>
 				</otherwise>
 			</choice>
 			<process ref="buildInventoryAPIHeader" />
-			<setHeader headerName="CamelHttpMethod">
+			<setHeader name="CamelHttpMethod">
 				<constant>PUT</constant>
 			</setHeader>
 			<recipientList>
@@ -686,13 +688,13 @@
 		<route id="syncDuplicateSKUs">
 			<from uri="direct:syncDuplicateSKUs" />
 			<when>
-				<simple>${exchangeProperty.syncDuplicateSKUs} == true and
+				<simple>${exchangeProperty.syncDuplicateSKUs} == true &amp;&amp;
 					${exchangeProperty.customSKU} != null
 				</simple>
 				<to uri="direct:loadDuplicateSKUs" />
 				<split parallelProcessing="false">
 					<simple>${body}</simple>
-					<setProperty propertyName="inventory">
+					<setProperty name="inventory">
 						<simple>${body}</simple>
 					</setProperty>
 					<to uri="direct:updateAndPublish" />
@@ -716,7 +718,7 @@
 
 		<route id="loadDuplicateSKUs">
 			<from uri="direct:loadDuplicateSKUs" />
-			<setProperty propertyName="publishDuplicatSKUS">
+			<setProperty name="publishDuplicatSKUS">
 				<simple>true</simple>
 			</setProperty>
 			<process ref="prepareDuplicateSKUsDBQuery" />
@@ -744,7 +746,7 @@
 			<choice>
 				<when>
 					<simple>${exchangeProperty.userMessageName} != null</simple>
-					<setHeader headerName="userMessageName">
+					<setHeader name="userMessageName">
 						<simple>${exchangeProperty.userMessageName}</simple>
 					</setHeader>
 					<process ref="constructOrderNotification" />
@@ -753,85 +755,81 @@
 				</when>
 				<when>
 					<simple>${exchangeProperty.isNotifyOrderUpdates} == true</simple>
-					<setHeader headerName="userMessageName">
+					<setHeader name="userMessageName">
 						<simple>${exchangeProperty.userMessageName}</simple>
 					</setHeader>
 					<process ref="constructOrderNotification" />
 					<to uri="direct:notificationToUser" />
 				</when>
 			</choice>
-			<setHeader headerName="rabbitmq.DELIVERY_MODE">
+			<setHeader name="rabbitmq.DELIVERY_MODE">
 				<constant>2</constant>
 			</setHeader>
 			<!-- we are going to publish message to finops always -->
-			<setProperty propertyName="publishTo">
+			<setProperty name="publishTo">
 				<constant>finops</constant>
 			</setProperty>
 			<process ref="constructRequestType" />
 			<when>
-				<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isReconciliation} != true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<simple>${exchangeProperty.publishMessage} != null &amp;&amp; ${exchangeProperty.isReconciliation} != true</simple>
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>finopsKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{finopsmq.host}}:{{finopsmq.tx.port}}/finopsExchange?connectionFactory=#finopsTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:finopsExchange?connectionFactory=#finopsTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly" />
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToQuickBooks} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>quickbooks</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
 				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>quickbooksKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{quickBooks.host}}:{{quickBooks.tx.port}}/quickbooksExchange?connectionFactory=#quickBooksTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:quickbooksExchange?connectionFactory=#quickBooksTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToNinjaVan} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>ninjaVan</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
 				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>ninjaVanKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{ninjaVan.host}}:{{ninjaVan.tx.port}}/ninjaVanExchange?connectionFactory=#ninjaVanTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:ninjaVanExchange?connectionFactory=#ninjaVanTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToJanio} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>janio</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
 				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>janioKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{janio.host}}:{{janio.tx.port}}/janioExchange?connectionFactory=#janioTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:janioExchange?connectionFactory=#janioTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToSingPost} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>singPost</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -841,18 +839,17 @@
 				</when>
 				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>singPostKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{singPost.host}}:{{singPost.tx.port}}/singPostExchange?connectionFactory=#singPostTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:singPostExchange?connectionFactory=#singPostTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToJTExpress} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>jtExpress</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -862,18 +859,17 @@
 				</when>
 				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>jtExpressKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{jtExpress.host}}:{{jtExpress.tx.port}}/jtExpressExchange?connectionFactory=#jtExpressTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:jtExpressExchange?connectionFactory=#jtExpressTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToAramexShipping} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>aramexShipping</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -883,39 +879,37 @@
 				</when>
 				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>aramexShippingKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{aramexShipping.host}}:{{aramexShipping.tx.port}}/aramexShippingExchange?connectionFactory=#aramexShippingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:aramexShippingExchange?connectionFactory=#aramexShippingTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToInfor} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>infor</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
 				<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>inforKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{infor.host}}:{{infor.tx.port}}/inforExchange?connectionFactory=#inforTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:inforExchange?connectionFactory=#inforTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
-				<simple>${exchangeProperty.hasOrderInDB} == false and ${exchangeProperty.isSKUListEmpty} == false</simple>
+				<simple>${exchangeProperty.hasOrderInDB} == false &amp;&amp; ${exchangeProperty.isSKUListEmpty} == false</simple>
 				<to uri="direct:lowQuantityNotification" />
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToSatsaco} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>satsaco</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -924,19 +918,18 @@
 					<to uri="direct:groupOrderByCartNumber" />
 				</when>
 				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<simple>${exchangeProperty.publishMessage} != null &amp;&amp; ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>satsacoKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{satsaco.host}}:{{satsaco.tx.port}}/satsacoExchange?connectionFactory=#satsacoTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:satsacoExchange?connectionFactory=#satsacoTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToNetSuite} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>netSuite</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -945,19 +938,18 @@
 					<to uri="direct:groupOrderByCartNumber" />
 				</when>
 				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<simple>${exchangeProperty.publishMessage} != null &amp;&amp; ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>netSuiteKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-							uri="rabbitmq://{{netSuite.host}}:{{netSuite.tx.port}}/netSuiteExchange?connectionFactory=#netSuiteTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-							pattern="InOut" />
+							uri="rabbitmq:netSuiteExchange?connectionFactory=#netSuiteTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToOdoo} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>odoo</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -966,19 +958,18 @@
 					<to uri="direct:groupOrderByCartNumber" />
 				</when>
 				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<simple>${exchangeProperty.publishMessage} != null &amp;&amp; ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>odooKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-							uri="rabbitmq://{{odoo.host}}:{{odoo.tx.port}}/odooExchange?connectionFactory=#odooTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-							pattern="InOut" />
+							uri="rabbitmq:odooExchange?connectionFactory=#odooTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToSiAWMS} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>SiAWMS</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -987,19 +978,18 @@
 					<to uri="direct:groupOrderByCartNumber" />
 				</when>
 				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<simple>${exchangeProperty.publishMessage} != null &amp;&amp; ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>odooKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-							uri="rabbitmq://{{siawms.host}}:{{siawms.tx.port}}/odooExchange?connectionFactory=#siawmsTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-							pattern="InOut" />
+							uri="rabbitmq:odooExchange?connectionFactory=#siawmsTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToAramex} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>aramex</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -1008,19 +998,18 @@
 					<to uri="direct:groupOrderByCartNumber" />
 				</when>
 				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<simple>${exchangeProperty.publishMessage} != null &amp;&amp; ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>aramexKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-							uri="rabbitmq://{{aramex.host}}:{{aramex.tx.port}}/aramexExchange?connectionFactory=#aramexTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-							pattern="InOut" />
+							uri="rabbitmq:aramexExchange?connectionFactory=#aramexTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
 				<simple>${exchangeProperty.publishToVend} == true</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>vend</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -1029,14 +1018,13 @@
 					<to uri="direct:groupOrderByCartNumber" />
 				</when>
 				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<simple>${exchangeProperty.publishMessage} != null &amp;&amp; ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>vendKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-							uri="rabbitmq://{{vend.host}}:{{vend.tx.port}}/vendExchange?connectionFactory=#vendTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-							pattern="InOut" />
+							uri="rabbitmq:vendExchange?connectionFactory=#vendTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 			<when>
@@ -1045,7 +1033,7 @@
 						${exchangeProperty.publishToMaatramBridgeIntegratedShippingCarrier} == true or
 						${exchangeProperty.publishToMaatramBridgeIntegratedOms} == true
 				</simple>
-				<setProperty propertyName="publishTo">
+				<setProperty name="publishTo">
 					<constant>maatramBridgeIntegratedServer</constant>
 				</setProperty>
 				<process ref="constructRequestType" />
@@ -1054,14 +1042,13 @@
 					<to uri="direct:groupOrderByCartNumber" />
 				</when>
 				<when>
-					<simple>${exchangeProperty.publishMessage} != null and ${exchangeProperty.isEligibleToProceed} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<simple>${exchangeProperty.publishMessage} != null &amp;&amp; ${exchangeProperty.isEligibleToProceed} == true</simple>
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>maatramBridgeServKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-							uri="rabbitmq://{{maatramBridgeServ.host}}:{{maatramBridgeServ.tx.port}}/maatramBridgeServExchange?connectionFactory=#maatramBridgeServTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-							pattern="InOut" />
+						uri="rabbitmq:maatramBridgeServExchange?connectionFactory=#maatramBridgeServTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			</when>
 		</route>
@@ -1074,13 +1061,12 @@
 
 		<route id="publishToJournal">
 			<from uri="direct:publishToJournal" />
-			<setHeader headerName="rabbitmq.ROUTING_KEY">
+			<setHeader name="rabbitmq.ROUTING_KEY">
 				<constant>journalKey</constant>
 			</setHeader>
 			<convertBodyTo type="java.lang.String" />
 			<to
-				uri="rabbitmq://{{journalmq.host}}:{{journalmq.port}}/journalExchange?connectionFactory=#journalTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-				pattern="InOnly" />
+				uri="rabbitmq:journalExchange?connectionFactory=#journalTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 		</route>
 		
 
@@ -1093,7 +1079,7 @@
 			<from uri="direct:lowQuantityNotification" />
 			<process ref="loadAccountData" />
 			<process ref="loadInventoryData" />
-			<setHeader headerName="userMessageName">
+			<setHeader name="userMessageName">
 				<constant>LOW_QUANTITY_NOTIFICATION</constant>
 			</setHeader>
 			<process ref="constructLowQuantityNotification" />
@@ -1122,209 +1108,189 @@
 
 		<route id="publishToMQ">
 			<from uri="direct:publishToMQ" />
-			<setHeader headerName="rabbitmq.DELIVERY_MODE">
+			<setHeader name="rabbitmq.DELIVERY_MODE">
 				<constant>2</constant>
 			</setHeader>
 			<when>
 				<simple>${header.eBay} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>ebaylistingkey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{ebaymq.host}}:{{ebaymq.tx.port}}/ebaylistingexchange?connectionFactory=#eBayTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:ebaylistingexchange?connectionFactory=#eBayTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.shopclues} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>shopcluesKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{shopcluesmq.host}}:{{shopcluesmq.tx.port}}/shopcluesExchange?connectionFactory=#shopcluesTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:shopcluesExchange?connectionFactory=#shopcluesTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly" />
 			</when>
 			<when>
 				<simple>${header.amazon} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>amazonListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{amazonmq.host}}:{{amazonmq.tx.port}}/amazonListingExchange?connectionFactory=#amazonTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:amazonListingExchange?connectionFactory=#amazonTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.shopify} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>shopifyListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{shopifymq.host}}:{{shopifymq.tx.port}}/shopifyListingExchange?connectionFactory=#shopifyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:shopifyListingExchange?connectionFactory=#shopifyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.sellinall} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>sellinallListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{sellinallmq.host}}:{{sellinallmq.tx.port}}/sellinallListingExchange?connectionFactory=#sellinallTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:sellinallListingExchange?connectionFactory=#sellinallTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.flipkart} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>flipkartListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{flipkartmq.host}}:{{flipkartmq.tx.port}}/flipkartListingExchange?connectionFactory=#flipkartTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:flipkartListingExchange?connectionFactory=#flipkartTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.etsy} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>etsyListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{etsymq.host}}:{{etsymq.tx.port}}/etsyListingExchange?connectionFactory=#etsyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:etsyListingExchange?connectionFactory=#etsyTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.qoo10} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>qoo10ListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{qoo10mq.host}}:{{qoo10mq.tx.port}}/qoo10ListingExchange?connectionFactory=#qoo10TxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:qoo10ListingExchange?connectionFactory=#qoo10TxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.wish} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>wishListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{wishmq.host}}:{{wishmq.tx.port}}/wishListingExchange?connectionFactory=#wishTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:wishListingExchange?connectionFactory=#wishTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.lazada} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>lazadaListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{lazada.host}}:{{lazada.tx.port}}/lazadaListingExchange?connectionFactory=#lazadaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:lazadaListingExchange?connectionFactory=#lazadaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.zalora} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>rocketEComAdaptorKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{rocketecomadaptor.host}}:{{rocketecomadaptor.tx.port}}/rocketEComAdaptorExchange?connectionFactory=#rocketecomadaptorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:rocketEComAdaptorExchange?connectionFactory=#rocketecomadaptorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 					<simple>${header.elevenStreet} == true</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 							<constant>elevenStreetListingKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{elevenStreetmq.host}}:{{elevenStreetmq.tx.port}}/elevenStreetListingExchange?connectionFactory=#elevenStreetTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOnly" />
+						uri="rabbitmq:elevenStreetListingExchange?connectionFactory=#elevenStreetTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 				</when>
 			<when>
 				<simple>${header.shopee} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>shopeeListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{shopeemq.host}}:{{shopeemq.tx.port}}/shopeeListingExchange?connectionFactory=#shopeeTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:shopeeListingExchange?connectionFactory=#shopeeTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.magento} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>magentoListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{magentomq.host}}:{{magentomq.rx.port}}/magentoListingExchange?connectionFactory=#magentoTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:magentoListingExchange?connectionFactory=#magentoTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.jd} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>jdListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{jdmq.host}}:{{jdmq.rx.port}}/jdListingExchange?connectionFactory=#jdTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:jdListingExchange?connectionFactory=#jdTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.99SME} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>99SmeListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{99SMEmq.host}}:{{99SMEmq.tx.port}}/99SmeListingExchange?connectionFactory=#99SMETxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:99SmeListingExchange?connectionFactory=#99SMETxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.bukalapak} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>bukalapakListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{bukalapakmq.host}}:{{bukalapakmq.tx.port}}/bukalapakListingExchange?connectionFactory=#bukalapakTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:bukalapakListingExchange?connectionFactory=#bukalapakTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.blibli} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>blibliListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{bliblimq.host}}:{{bliblimq.tx.port}}/blibliListingExchange?connectionFactory=#blibliTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:blibliListingExchange?connectionFactory=#blibliTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 			<when>
 				<simple>${header.tokopedia} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>tokopediaListingKey</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{tokopediamq.host}}:{{tokopediamq.tx.port}}/tokopediaListingExchange?connectionFactory=#tokopediaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:tokopediaListingExchange?connectionFactory=#tokopediaTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 
 			<when>
 				<simple>${header.batchProcessor} == true</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<simple>${exchangeProperty.batchDelayKey}</simple>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{batchProcessor.host}}:{{batchProcessor.tx.port}}/batchProcessorExchange?connectionFactory=#batchProcessorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-					pattern="InOut" />
+					uri="rabbitmq:batchProcessorExchange?connectionFactory=#batchProcessorTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly"/>
 			</when>
 		</route>
 
@@ -1334,13 +1300,12 @@
 			<process ref="constructRequestType" />
 			<when>
 					<simple>${exchangeProperty.publishMessage} != null</simple>
-					<setHeader headerName="rabbitmq.ROUTING_KEY">
+					<setHeader name="rabbitmq.ROUTING_KEY">
 						<constant>buyerKey</constant>
 					</setHeader>
 					<convertBodyTo type="java.lang.String" />
 					<to
-						uri="rabbitmq://{{buyer.host}}:{{buyer.tx.port}}/buyerExchange?connectionFactory=#buyerTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false"
-						pattern="InOut" />
+						uri="rabbitmq:buyerExchange?connectionFactory=#buyerTxConnectionFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly" />
 				</when>
 		</route>
 
@@ -1348,21 +1313,21 @@
 			<from uri="direct:notificationToUser" />
 			<when>
 				<simple>${body} != null</simple>
-				<setHeader headerName="rabbitmq.ROUTING_KEY">
+				<setHeader name="rabbitmq.ROUTING_KEY">
 					<constant>userMessagingKey</constant>
 				</setHeader>
-				<setHeader headerName="rabbitmq.DELIVERY_MODE">
+				<setHeader name="rabbitmq.DELIVERY_MODE">
 					<constant>2</constant>
 				</setHeader>
 				<convertBodyTo type="java.lang.String" />
 				<to
-					uri="rabbitmq://{{userMessaging.host}}:{{userMessaging.tx.port}}/userMessagingExchange?connectionFactory=#txuserMessagingFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false" />
+					uri="rabbitmq:userMessagingExchange?connectionFactory=#txuserMessagingFactory&amp;exchangeType=topic&amp;autoDelete=false&amp;durable=true&amp;declare=false&amp;exchangePattern=InOnly" />
 			</when>
 		</route>
 
 		<route id="messageListner">
 			<from
-				uri="rabbitmq://{{rabbitmq.host}}:{{rabbitmq.rx.port}}/partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true&amp;autoAck=false&amp;prefetchEnabled=true&amp;prefetchSize=0&amp;prefetchCount=1&amp;prefetchGlobal=false&amp;concurrentConsumers=4" />
+				uri="rabbitmq:partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true&amp;autoAck=false&amp;prefetchEnabled=true&amp;prefetchSize=0&amp;prefetchCount=1&amp;prefetchGlobal=false&amp;concurrentConsumers=4&amp;exchangePattern=InOnly" />
 			<process ref="initMessageListenerRoute" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>

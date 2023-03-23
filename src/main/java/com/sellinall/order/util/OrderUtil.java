@@ -1,18 +1,17 @@
 package com.sellinall.order.util;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.bson.Document;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.enums.NotificationPaymentActionStatus;
@@ -122,18 +121,18 @@ public class OrderUtil {
 	public static JSONArray parseToJsonArray(DBCursor myList) throws JSONException {
 		JSONArray jsonArray = new JSONArray();
 		while (myList.hasNext()) {
-			Document doc = (Document) myList.next();
+			BasicDBObject doc = (BasicDBObject) myList.next();
 			JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 			jsonArray.put(new JSONObject(doc.toJson(writerSettings)));
 		}
 		return jsonArray;
 	}
 
-	public static JSONObject parseToJsonObject(Document findOneObject) throws JSONException {
+	public static JSONObject parseToJsonObject(DBObject findOneObject) throws JSONException {
 		if (findOneObject == null) {
 			return new JSONObject();
 		}
-		Document doc = (Document) findOneObject;
+		BasicDBObject doc = (BasicDBObject) findOneObject;
 		JsonWriterSettings writerSettings = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
 		return new JSONObject(doc.toJson(writerSettings));
 	}
@@ -186,14 +185,6 @@ public class OrderUtil {
 
 	public static void updateMemcache(String MCKey, int MC_MAX_EXPIRE_TIME, double exchangeRate) {
 		memcachedClient.set(MCKey, MC_MAX_EXPIRE_TIME, exchangeRate);
-	}
-	
-	public static List<Document> parseDocumentListFromArray(JSONArray arrayObject) throws JSONException {
-		List<Document> documentList = new ArrayList<Document>();
-		for (int iterator = 0; iterator < arrayObject.length(); iterator++) {
-			documentList.add(Document.parse(arrayObject.get(iterator).toString()));
-		}
-		return documentList;
 	}
 
 }

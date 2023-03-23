@@ -16,10 +16,13 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
+import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.util.OrderUtil;
@@ -38,10 +41,10 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 	public static final int MC_MAX_EXPIRE_TIME = 15 * 60;
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inBody = OrderUtil.parseToJsonObject(Document.parse(exchange.getIn().getBody(String.class)));
+		JSONObject inBody = OrderUtil.parseToJsonObject((DBObject) JSON.parse(exchange.getIn().getBody(String.class)));
 		Boolean hasCheckoutInDB = (Boolean) exchange.getProperty("hasCheckoutInDB");
 		JSONObject checkoutMessageJSON = exchange.getProperty("message", JSONObject.class);
-		Document checkoutMessage = Document.parse(checkoutMessageJSON.toString());
+		BasicDBObject checkoutMessage = (BasicDBObject) JSON.parse(checkoutMessageJSON.toString());
 		exchange.setProperty("isNewOrder", false);
 		if (!hasCheckoutInDB) {
 			insertOrderRecord(exchange, checkoutMessage, inBody);
@@ -51,15 +54,16 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		updateOrderRecord(exchange, checkoutMessage);
 	}
 
-	private void insertOrderRecord(Exchange exchange, Document checkoutMessage, JSONObject inBody) throws Exception {
-		Document site = new Document();
+	private void insertOrderRecord(Exchange exchange, BasicDBObject checkoutMessage, JSONObject inBody)
+			throws Exception {
+		BasicDBObject site = new BasicDBObject();
 		String nickNameID = checkoutMessage.getString("nickNameID");
 		String accountNumber = checkoutMessage.getString("accountNumber");
 		String checkoutID = checkoutMessage.getString("checkoutID");
 		String siteName = checkoutMessage.getString("site");
 		site.put("name", siteName);
 		site.put("nickNameID", nickNameID);
-		Document checkoutRecord = new Document();
+		BasicDBObject checkoutRecord = new BasicDBObject();
 		checkoutRecord.put("site", site);
 		checkoutRecord.put("checkoutID", checkoutID);
 		checkoutRecord.put("accountNumber", accountNumber);
@@ -67,22 +71,22 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		fillOrderSoldAmountInUSD(checkoutRecord);
 		checkoutRecord.put("timeCreated", DateUtil.getSIADateFormat());
 		checkoutRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
-		if (checkoutMessage.containsKey("timeAbandonedCartCreated")) {
+		if (checkoutMessage.containsField("timeAbandonedCartCreated")) {
 			checkoutRecord.put("timeAbandonedCartCreated", checkoutMessage.getLong("timeAbandonedCartCreated"));
 		} else {
 			checkoutRecord.put("timeAbandonedCartCreated", System.currentTimeMillis() / 1000);
 		}
-		if (checkoutMessage.containsKey("timeAbandonedCartUpdated")) {
+		if (checkoutMessage.containsField("timeAbandonedCartUpdated")) {
 			checkoutRecord.put("timeAbandonedCartUpdated", checkoutMessage.getLong("timeAbandonedCartUpdated"));
 		}
-		if (checkoutMessage.containsKey("timeAbandonedCartCompleted")) {
+		if (checkoutMessage.containsField("timeAbandonedCartCompleted")) {
 			checkoutRecord.put("timeAbandonedCartCompleted", checkoutMessage.getLong("timeAbandonedCartCompleted"));
 		}
-		if (checkoutMessage.containsKey("timeAbandonedCartClosed")) {
+		if (checkoutMessage.containsField("timeAbandonedCartClosed")) {
 			checkoutRecord.put("timeAbandonedCartClosed", checkoutMessage.getLong("timeAbandonedCartClosed"));
 		}
-		if (checkoutRecord.containsKey("orderItems")) {
-			List<Document> orderItems = (List<Document>) checkoutRecord.get("orderItems");
+		if (checkoutRecord.containsField("orderItems")) {
+			List<BasicDBObject> orderItems = (List<BasicDBObject>) checkoutRecord.get("orderItems");
 			if (orderItems.size() == 0) {
 				log.error("Insert - orderItems List is Empty for this orderId: "
 						+ checkoutMessage.getString("checkoutID"));
@@ -92,7 +96,7 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		UpdateOptions options = new UpdateOptions();
 		options.upsert(true);
 		try {
-			Document checkoutDocument = checkoutRecord;
+			Document checkoutDocument = getDocument(checkoutRecord);
 			table.insertOne(checkoutDocument);
 			checkoutRecord.put("_id", checkoutDocument.getObjectId("_id"));
 		} catch (MongoWriteException e) {
@@ -134,9 +138,9 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		}
 	}
 
-	private void updateOrderRecord(Exchange exchange, Document checkoutMessage) throws Exception {
-		Document checkoutRecord = new Document();
-		Document searchQuery = new Document();
+	private void updateOrderRecord(Exchange exchange, BasicDBObject checkoutMessage) throws Exception {
+		BasicDBObject checkoutRecord = new BasicDBObject();
+		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", checkoutMessage.getString("accountNumber"));
 		searchQuery.put("checkoutID", checkoutMessage.getString("checkoutID"));
 		String siteName = checkoutMessage.getString("site");
@@ -152,7 +156,7 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		fillTransactionKeyValuePair(checkoutRecord, "shippingDetails", checkoutMessage);
 		fillTransactionKeyValuePair(checkoutRecord, "billingDetails", checkoutMessage);
 		fillOrderSoldAmountInUSD(checkoutRecord);
-		UpdateResult result = table.updateOne(searchQuery, new Document("$set", checkoutRecord));
+		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", checkoutRecord));
 		if (result.getModifiedCount() == 0) {
 			log.info("Order :" + checkoutMessage.getString("chekoutID")
 					+ " is already updated. this is duplicate message.");
@@ -161,9 +165,9 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		}
 	}
 
-	private void fillOrderSoldAmountInUSD(Document checkoutRecord) {
-		if (checkoutRecord.containsKey("orderSoldAmount")) {
-			Document orderSoldAmount = (Document) checkoutRecord.get("orderSoldAmount");
+	private void fillOrderSoldAmountInUSD(BasicDBObject checkoutRecord) {
+		if (checkoutRecord.containsField("orderSoldAmount")) {
+			BasicDBObject orderSoldAmount = (BasicDBObject) checkoutRecord.get("orderSoldAmount");
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderSoldAmount.getString("currencyCode"), "USD");
 				if (exchangeRate == 0) {
@@ -172,7 +176,7 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 					return;
 				}
 				long amount = Math.round(orderSoldAmount.getLong("amount") * exchangeRate);
-				Document orderSoldAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
+				DBObject orderSoldAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				checkoutRecord.put("orderSoldAmountInUSD", orderSoldAmountInUSD);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -180,7 +184,13 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		}
 	}
 
-	private void fillCheckoutRecord(Exchange exchange, Document checkoutRecord, Document checkoutMessage) {
+	public static Document getDocument(BasicDBObject doc) {
+		if (doc == null)
+			return null;
+		return new Document(doc.toMap());
+	}
+
+	private void fillCheckoutRecord(Exchange exchange, BasicDBObject checkoutRecord, BasicDBObject checkoutMessage) {
 		fillTransactionKeyValuePair(checkoutRecord, "merchantID", checkoutMessage);
 		fillTransactionKeyValuePair(checkoutRecord, "buyerDetails", checkoutMessage);
 		fillTransactionKeyValuePair(checkoutRecord, "cartToken", checkoutMessage);
@@ -195,8 +205,8 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		fillTransactionKeyValuePair(checkoutRecord, "landingURL", checkoutMessage);
 	}
 
-	private void fillTransactionKeyValuePair(Document checkoutRecord, String key, Document checkoutMessage) {
-		if (checkoutMessage.containsKey(key)) {
+	private void fillTransactionKeyValuePair(BasicDBObject checkoutRecord, String key, BasicDBObject checkoutMessage) {
+		if (checkoutMessage.containsField(key)) {
 			checkoutRecord.put(key, checkoutMessage.get(key));
 		}
 	}

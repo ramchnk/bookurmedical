@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.sellinall.database.DbUtilities;
 
@@ -24,13 +25,13 @@ public class LoadAndConstructBrandIdMap implements Processor {
 			if (orderItemMessage.has("customSKU") && !orderItemMessage.getString("customSKU").isEmpty()) {
 				String sellerSKU = orderItemMessage.getString("customSKU");
 				MongoCollection<Document> productMasterTable = DbUtilities.getInventoryDBCollection("productMaster");
-				Document searchQuery = new Document();
+				BasicDBObject searchQuery = new BasicDBObject();
 				searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 				searchQuery.put("sellerSKU", sellerSKU);
-				Document projection = new Document("graasBrandID", 1);
+				BasicDBObject projection = new BasicDBObject("graasBrandID", 1);
 				Document pmDocument = productMasterTable.find(searchQuery).projection(projection).first();
 				if (pmDocument != null && !pmDocument.isEmpty()) {
-					Document productMaster = Document.parse(pmDocument.toJson());
+					BasicDBObject productMaster = (BasicDBObject) BasicDBObject.parse(pmDocument.toJson());
 					if (productMaster.containsKey("graasBrandID")) {
 						brandIDMap.put(sellerSKU, productMaster.getString("graasBrandID"));
 					}

@@ -9,7 +9,12 @@ import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.ReturnDocument;
+import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
@@ -23,23 +28,23 @@ public class UpdateSoldInventoryDetails implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject inventoryDBRecordJSON = OrderUtil
-				.parseToJsonObject(Document.parse(exchange.getProperty("inventory", String.class)));
+				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
-		Document inventoryDBRecord = Document.parse(inventoryDBRecordJSON.toString());
+		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		String SKU = inventoryDBRecord.getString("SKU");
 		int quantity = exchange.getProperty("quantity", Integer.class);
-		Document quantityIncDecModifier = new Document();
-		Document quantitySetModifier = new Document();
+		BasicDBObject quantityIncDecModifier = new BasicDBObject();
+		BasicDBObject quantitySetModifier = new BasicDBObject();
 		processSoldQuantityUpdates(notificationOrderActionStatus, inventoryDBRecord, quantity, quantityIncDecModifier,
 				quantitySetModifier);
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");
-		Document searchQuery = new Document();
+		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("SKU", SKU);
 
-		Document queryToDB = new Document();
+		BasicDBObject queryToDB = new BasicDBObject();
 		queryToDB.put("$inc", quantityIncDecModifier);
-		if (!quantitySetModifier.isEmpty()) {
+		if(!quantitySetModifier.isEmpty()){
 			queryToDB.put("$set", quantitySetModifier);
 		}
 		log.debug("searchQuery: " + searchQuery + " queryToDB: " + queryToDB);
@@ -48,8 +53,8 @@ public class UpdateSoldInventoryDetails implements Processor {
 
 	@SuppressWarnings("unchecked")
 	private void processSoldQuantityUpdates(NotificationOrderActionStatus notificationOrderActionStatus,
-			Document inventoryDBRecord, int quantitySold, Document quantityIncDecModifier, Document quantitySetModifier)
-			throws JSONException {
+			BasicDBObject inventoryDBRecord, int quantitySold, BasicDBObject quantityIncDecModifier,
+			BasicDBObject quantitySetModifier) throws JSONException {
 		boolean newOrder = notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
@@ -67,13 +72,13 @@ public class UpdateSoldInventoryDetails implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_CANCELLED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED);
 		for (String siteName : siteNames) {
-			if (!inventoryDBRecord.containsKey(siteName)) {
+			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
 			}
-			ArrayList<Document> siteSpecificList = (ArrayList<Document>) inventoryDBRecord.get(siteName);
+			ArrayList<BasicDBObject> siteSpecificList = (ArrayList<BasicDBObject>) inventoryDBRecord.get(siteName);
 			for (int index = 0; index < siteSpecificList.size(); index++) {
-				Document siteSpecific = siteSpecificList.get(index);
-				if (siteSpecific.containsKey("status")
+				BasicDBObject siteSpecific = siteSpecificList.get(index);
+				if (siteSpecific.containsField("status")
 						&& !siteSpecific.getString("status").equals(SIAInventoryStatus.ACTIVE.toString())) {
 					continue;
 				}
@@ -96,7 +101,7 @@ public class UpdateSoldInventoryDetails implements Processor {
 		}
 	}
 
-	private void incrementSetter(Document modifier, String key, int value) {
+	private void incrementSetter(BasicDBObject modifier, String key, int value) {
 		modifier.append(key, value);
 	}
 

@@ -10,7 +10,9 @@ import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
 
 /**
@@ -24,12 +26,12 @@ public class InsertBidNotification implements Processor {
 
 		JSONObject bidMessageJSON = exchange.getProperty("message",JSONObject.class);
 		bidMessageJSON.remove("type");
-		Document bidMessage = (Document) Document.parse(bidMessageJSON.toString());
+		BasicDBObject bidMessage = (BasicDBObject) JSON.parse(bidMessageJSON.toString());
 		insertBidRecord(bidMessage);
 		exchange.getOut().setBody(bidMessageJSON);
 	}
 
-	private void insertBidRecord(Document bidMessage) throws JSONException {
+	private void insertBidRecord(BasicDBObject bidMessage) throws JSONException {
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("bid");
 		table.insertOne(new Document(bidMessage));
 	}

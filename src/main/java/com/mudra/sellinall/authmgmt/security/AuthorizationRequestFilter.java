@@ -5,6 +5,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 
+import com.mongodb.DBObject;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.util.AuthConstant;
 import com.sun.jersey.core.header.InBoundHeaders;

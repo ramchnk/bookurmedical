@@ -3,9 +3,10 @@ package com.sellinall.order.bl;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
-import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.OrderFulfilledBy;
 
@@ -14,7 +15,7 @@ public class InitOrderItemRoute implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderItemMessage = OrderUtil
-				.parseToJsonObject(Document.parse(exchange.getIn().getBody(String.class)));
+				.parseToJsonObject((DBObject) JSON.parse(exchange.getIn().getBody(String.class)));
 		exchange.setProperty("orderItemMessage", orderItemMessage);
 		exchange.setProperty("hasSKU", false);
 		if (orderItemMessage.has("SKU")) {

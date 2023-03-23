@@ -6,17 +6,18 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
-import org.bson.Document;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.enums.NotificationPaymentActionStatus;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.OrderUpdateStatus;
 import com.sellinall.util.enums.SIAOrderStatus;
 import com.sellinall.util.enums.SIAPaymentStatus;
+import com.sellinall.util.enums.SIAShippingStatus;
 import com.sellinall.util.enums.UserMessageName;
 
 public class ProcessOrderStatus implements Processor {
@@ -72,7 +73,7 @@ public class ProcessOrderStatus implements Processor {
 		}
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		if (hasOrderInDB) {
-			Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
+			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
 			SIAOrderStatus orderDBStatus = SIAOrderStatus.valueOf(orderDBObject.getString("orderStatus"));
 			notificationOrderActionStatus = OrderUtil.handleExistingOrderStatus(notificationOrderStatus, orderDBStatus,
 					orderMessage, orderID, "order");
@@ -115,28 +116,28 @@ public class ProcessOrderStatus implements Processor {
 		exchange.setProperty("notificationOrderActionStatus", notificationOrderActionStatus);
 
 		// inventoryDetailsMap is set empty as this is used inside the splitter
-		Map<String, Document> inventoryDetailsMap = new HashMap<String, Document>();
+		Map<String, BasicDBObject> inventoryDetailsMap = new HashMap<String, BasicDBObject>();
 		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);
 
 		// For qoo10 orders orderItems doesn't exist in update polling msg so pushed orderItems from existing db object to satisfy free gift rule cases
 		if (exchange.getProperty("processRule", Boolean.class) && exchange.getProperty("hasOrderInDB", Boolean.class)
 				&& exchange.getProperties().containsKey("siteName")
 				&& exchange.getProperty("siteName", String.class).equals("qoo10") && !orderMessage.has("orderItems")) {
-			Document orderFromDB = exchange.getProperty("orderDBObject", Document.class);
-			if (orderFromDB.containsKey("orderItems")) {
+			BasicDBObject orderFromDB = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			if (orderFromDB.containsField("orderItems")) {
 				orderMessage.put("orderItems", new JSONArray(orderFromDB.get("orderItems").toString()));
 			}
 		}
 		exchange.getOut().setBody(orderMessage);
 	}
 
-	public void buildOrderUpdateJournal(Exchange exchange, Boolean hasOrderInDB, Document orderDBObject,
+	public void buildOrderUpdateJournal(Exchange exchange, Boolean hasOrderInDB, BasicDBObject orderDBObject,
 			JSONObject orderMessage) throws JSONException {
 		JSONArray journalMessage = new JSONArray();
 		setJournalMessage(journalMessage, "orderStatus", hasOrderInDB ? orderDBObject.getString("orderStatus") : null,
 				orderMessage.getString("orderStatus"));
 		if (orderMessage.has("shippingStatus")
-				&& (!hasOrderInDB || (hasOrderInDB && orderDBObject.containsKey("shippingStatus")))) {
+				&& (!hasOrderInDB || (hasOrderInDB && orderDBObject.containsField("shippingStatus")))) {
 			setJournalMessage(journalMessage, "shippingStatus",
 					hasOrderInDB ? orderDBObject.getString("shippingStatus") : null,
 					orderMessage.getString("shippingStatus"));

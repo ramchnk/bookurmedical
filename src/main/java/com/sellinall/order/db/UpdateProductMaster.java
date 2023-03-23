@@ -7,10 +7,7 @@ import org.apache.camel.Processor;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
@@ -22,7 +19,7 @@ public class UpdateProductMaster implements Processor {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		JSONObject inventoryDBRecordJSON = OrderUtil
-				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
+				.parseToJsonObject(Document.parse(exchange.getProperty("inventory", String.class)));
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
@@ -33,11 +30,12 @@ public class UpdateProductMaster implements Processor {
 		boolean isCancelledOrder = OrderUtil.checkIsCancelledOrder(notificationOrderActionStatus);
 		if (isCancelledOrder && orderMessage.has("cancelDetails")) {
 			JSONObject cancelDetails = orderMessage.getJSONObject("cancelDetails");
-			//SELLER_UNABLE_TO_RESERVE_STOCK usually came from lazada for which no need to decrement the stock.
+			// SELLER_UNABLE_TO_RESERVE_STOCK usually came from lazada for which no need to
+			// decrement the stock.
 			if (cancelDetails.has("cancelReason") && !cancelDetails.getString("cancelReason").isEmpty()
 					&& (cancelDetails.getString("cancelReason").equals(SIAOrderCancelReasons.OUT_OF_STOCK.toString())
 							|| cancelDetails.getString("cancelReason")
-							.equals(SIAOrderCancelReasons.SELLER_UNABLE_TO_RESERVE_STOCK.toString()))) {
+									.equals(SIAOrderCancelReasons.SELLER_UNABLE_TO_RESERVE_STOCK.toString()))) {
 				isOutOfStock = true;
 			}
 		}
@@ -54,13 +52,13 @@ public class UpdateProductMaster implements Processor {
 
 	private void updateProductMaster(String accountNumber, String sellerSKU, String wmsName, int quantitySold,
 			boolean isNewOrder, boolean isCancelledOrder, boolean isOutOfStock) {
-		BasicDBObject searchQueryProductMaster = new BasicDBObject();
+		Document searchQueryProductMaster = new Document();
 		searchQueryProductMaster.put("accountNumber", accountNumber);
 		searchQueryProductMaster.put("sellerSKU", sellerSKU);
 		searchQueryProductMaster.put("quantities.warehouseID", wmsName);
-		BasicDBObject updateProductMaster = new BasicDBObject();
-		BasicDBObject incObject = new BasicDBObject();
-		BasicDBObject setObject = new BasicDBObject();
+		Document updateProductMaster = new Document();
+		Document incObject = new Document();
+		Document setObject = new Document();
 		if (isNewOrder) {
 			incObject.put("quantities.$.quantity", -quantitySold);
 		} else if (isCancelledOrder) {

@@ -35,7 +35,7 @@ public class Config {
 	private String maatramBridgeIntegratedServers;
 	private String removeBuyerDetailChannels;
 	private String SIAAccountManagementURL;
-	
+
 	public String getSIAInventoryManagementServerURL() {
 		return SIAInventoryManagementServerURL;
 	}
@@ -59,7 +59,7 @@ public class Config {
 	public void setFbTokenExchangeUri(String fbTokenExchangeUri) {
 		FbTokenExchangeUri = fbTokenExchangeUri;
 	}
-	
+
 	public String getOrderConfigDBURI() {
 		return orderConfigDBURI;
 	}
@@ -75,7 +75,7 @@ public class Config {
 	public void setOrderConfigDBName(String orderConfigDBName) {
 		this.orderConfigDBName = orderConfigDBName;
 	}
-	
+
 	public String getUserConfigDBURI() {
 		return userConfigDBURI;
 	}

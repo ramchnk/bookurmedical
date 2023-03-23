@@ -3,9 +3,9 @@ package com.sellinall.order.bl;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.SIAOrderStatus;
@@ -21,7 +21,7 @@ public class RecheckOrderActionStatus implements Processor {
 		notificationOrderActionStatus = NotificationOrderActionStatus.valueOf(orderMessage.getString("orderStatus"));
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		if (hasOrderInDB) {
-			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
 			SIAOrderStatus orderDBStatus = SIAOrderStatus.valueOf(orderDBObject.getString("orderStatus"));
 			notificationOrderActionStatus = OrderUtil.handleExistingOrderStatus(notificationOrderStatus, orderDBStatus,
 					orderMessage, orderID, "order");

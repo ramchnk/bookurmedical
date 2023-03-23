@@ -7,6 +7,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class InitBidRoute implements Processor {
 	static Logger log = Logger.getLogger(InitBidRoute.class.getName());
+
 	public void process(Exchange exchange) throws Exception {
 		JSONObject message = exchange.getProperty("message", JSONObject.class);
 		boolean isSyncRequired = message.getBoolean("sync");

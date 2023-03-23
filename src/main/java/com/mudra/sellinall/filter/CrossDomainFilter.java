@@ -7,27 +7,23 @@ import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
 
 /**
- *  * Allow the system to serve xhr level 2 from all cross domain site  *  * @author
- * Deisss (LGPLv3)  * @version 0.1  
+ *  * Allow the system to serve xhr level 2 from all cross domain site  *
+ *  * @author Deisss (LGPLv3)  * @version 0.1  
  */
 public class CrossDomainFilter implements ContainerResponseFilter {
 	static Logger log = Logger.getLogger(CrossDomainFilter.class.getName());
 
 	/**
 	 *      * Add the cross domain data to the output if needed      *      * @param
-	 * creq The container request (input)      * @param cres The container
-	 * request (output)      * @return The output request with cross domain if
-	 * needed      
+	 * creq The container request (input)      * @param cres The container request
+	 * (output)      * @return The output request with cross domain if needed      
 	 */
-	public ContainerResponse filter(ContainerRequest creq,
-			ContainerResponse cres) {
+	public ContainerResponse filter(ContainerRequest creq, ContainerResponse cres) {
 		log.debug("Inside Cross Domain same origin Response FIlter ");
 		cres.getHttpHeaders().add("Access-Control-Allow-Origin", "*");
-		cres.getHttpHeaders().add("Access-Control-Allow-Headers",
-				"origin, content-type, accept, authorization, Mudra");
+		cres.getHttpHeaders().add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization, Mudra");
 		cres.getHttpHeaders().add("Access-Control-Allow-Credentials", "true");
-		cres.getHttpHeaders().add("Access-Control-Allow-Methods",
-				"GET, POST, PUT, DELETE");
+		cres.getHttpHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
 		cres.getHttpHeaders().add("Access-Control-Max-Age", "1209600");
 		cres.getHttpHeaders().add("Content-type", "text/html");
 
@@ -42,7 +38,8 @@ public class CrossDomainFilter implements ContainerResponseFilter {
 			logMessage += "?" + creq.getRequestUri().getRawQuery();
 		}
 		logMessage += " host=" + creq.getRequestUri().getHost();
-		logMessage += " service="+ getProcessedTime(Long.parseLong(creq.getProperties().get("apiExecutionStartTime").toString())) + "ms";
+		logMessage += " service="
+				+ getProcessedTime(Long.parseLong(creq.getProperties().get("apiExecutionStartTime").toString())) + "ms";
 		logMessage += " status=" + cres.getStatus();
 		log.info(logMessage);
 	}

@@ -1,6 +1,7 @@
 package com.sellinall.order.request;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +14,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
@@ -64,11 +64,12 @@ public class SyncProductMaster implements Processor {
 		boolean isCancelledOrder = OrderUtil.checkIsCancelledOrder(notificationOrderActionStatus);
 		if (isCancelledOrder && orderMessage.has("cancelDetails")) {
 			JSONObject cancelDetails = orderMessage.getJSONObject("cancelDetails");
-			//SELLER_UNABLE_TO_RESERVE_STOCK usually came from lazada for which no need to decrement the stock.
+			// SELLER_UNABLE_TO_RESERVE_STOCK usually came from lazada for which no need to
+			// decrement the stock.
 			if (cancelDetails.has("cancelReason") && !cancelDetails.getString("cancelReason").isEmpty()
 					&& (cancelDetails.getString("cancelReason").equals(SIAOrderCancelReasons.OUT_OF_STOCK.toString())
 							|| cancelDetails.getString("cancelReason")
-							.equals(SIAOrderCancelReasons.SELLER_UNABLE_TO_RESERVE_STOCK.toString()))) {
+									.equals(SIAOrderCancelReasons.SELLER_UNABLE_TO_RESERVE_STOCK.toString()))) {
 				isOutOfStock = true;
 			}
 		}
@@ -122,7 +123,7 @@ public class SyncProductMaster implements Processor {
 					addendum.put("SKU", orderItemMessage.getString("SKU"));
 				}
 				if (orderMessage.has("timeOrderCreated")) {
-					addendum.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
+					addendum.put("timeOrderCreated", new BigDecimal(orderMessage.get("timeOrderCreated").toString()).longValue());
 				} else {
 					addendum.put("timeOrderCreated", System.currentTimeMillis() / 1000);
 				}
@@ -134,14 +135,14 @@ public class SyncProductMaster implements Processor {
 			log.info("customSKU not found / empty for orderID : " + orderID + " and accountNumber : " + accountNumber
 					+ ", nickNameID : " + nickNameID);
 		}
-		//to update Sold count
+		// to update Sold count
 		if (orderItemMessage.has("SKU") && (isNewOrder || isCancelledOrder)) {
-			BasicDBObject searchQuery = new BasicDBObject();
+			Document searchQuery = new Document();
 			searchQuery.put("accountNumber", accountNumber);
 			searchQuery.put("SKU", orderItemMessage.getString("SKU"));
 			searchQuery.put(siteName + ".nickNameID", nickNameID);
-			BasicDBObject updateobject = new BasicDBObject();
-			BasicDBObject incObject = new BasicDBObject();
+			Document updateobject = new Document();
+			Document incObject = new Document();
 			if (isNewOrder) {
 				incObject.put("noOfItemsold", quantitySold);
 				incObject.put(siteName + ".$.noOfItemsold", quantitySold);
@@ -190,7 +191,7 @@ public class SyncProductMaster implements Processor {
 		JSONArray quantityArray = new JSONArray();
 		JSONObject quantityObj = new JSONObject();
 		quantityObj.put("warehouseID", selectedWMS);
-		quantityObj.put(isUpdateByQtyDiff ? "quantityDiff" : "quantity" , quantitySold);
+		quantityObj.put(isUpdateByQtyDiff ? "quantityDiff" : "quantity", quantitySold);
 		quantityArray.put(quantityObj);
 		payload.put("sellerSKU", sellerSKU);
 		if (isUpdateByQtyDiff) {

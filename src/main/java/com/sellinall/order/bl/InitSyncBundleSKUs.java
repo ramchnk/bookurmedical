@@ -44,7 +44,8 @@ public class InitSyncBundleSKUs implements Processor {
 		boolean isOutOfStock = false;
 		if (isCancelledOrder && orderMessage.has("cancelDetails")) {
 			JSONObject cancelDetails = orderMessage.getJSONObject("cancelDetails");
-			//SELLER_UNABLE_TO_RESERVE_STOCK usually came from lazada for which no need to decrement the stock.
+			// SELLER_UNABLE_TO_RESERVE_STOCK usually came from lazada for which no need to
+			// decrement the stock.
 			if (cancelDetails.has("cancelReason") && !cancelDetails.getString("cancelReason").isEmpty()
 					&& (cancelDetails.getString("cancelReason").equals(SIAOrderCancelReasons.OUT_OF_STOCK.toString())
 							|| cancelDetails.getString("cancelReason")

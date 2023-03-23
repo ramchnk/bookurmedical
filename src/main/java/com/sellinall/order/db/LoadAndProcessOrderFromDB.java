@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
@@ -26,15 +25,15 @@ public class LoadAndProcessOrderFromDB implements Processor {
 		String orderID = orderMessage.getString("orderID");
 		exchange.setProperty("orderID", orderID);
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+		Document searchQuery = new Document();
+		searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());
 		searchQuery.put("orderID", orderID);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
 		searchQuery.put("site.name", orderMessage.getString("site"));
 		Document dbResult = table.find(searchQuery).first();
 		exchange.setProperty("hasOrderInDB", false);
 		exchange.setProperty("isEligibleToUpdateBrandID", Config.getConfig().getIsEligibleToUpdateBrandID());
-		if(Config.getConfig().getIsEligibleToUpdateBrandID()) {
+		if (Config.getConfig().getIsEligibleToUpdateBrandID()) {
 			exchange.setProperty("brandIDMap", new HashMap<String, String>());
 		}
 		if (orderMessage.has("needToGenerateAirwayBill")) {
@@ -45,6 +44,6 @@ public class LoadAndProcessOrderFromDB implements Processor {
 			return;
 		}
 		exchange.setProperty("hasOrderInDB", true);
-		exchange.setProperty("orderDBObject", BasicDBObject.parse(dbResult.toJson()));
+		exchange.setProperty("orderDBObject", Document.parse(dbResult.toJson()));
 	}
 }

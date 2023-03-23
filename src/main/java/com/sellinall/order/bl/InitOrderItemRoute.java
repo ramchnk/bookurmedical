@@ -3,10 +3,9 @@ package com.sellinall.order.bl;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.OrderFulfilledBy;
 
@@ -15,7 +14,7 @@ public class InitOrderItemRoute implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderItemMessage = OrderUtil
-				.parseToJsonObject((DBObject) JSON.parse(exchange.getIn().getBody(String.class)));
+				.parseToJsonObject(Document.parse(exchange.getIn().getBody(String.class)));
 		exchange.setProperty("orderItemMessage", orderItemMessage);
 		exchange.setProperty("hasSKU", false);
 		if (orderItemMessage.has("SKU")) {
@@ -25,7 +24,8 @@ public class InitOrderItemRoute implements Processor {
 		// In Blibli "orderFulfilledBy" flag maintained by order item level
 		if (orderItemMessage.has("orderFulfilledBy")
 				&& orderItemMessage.getString("orderFulfilledBy").equals(OrderFulfilledBy.CHANNEL.toString())) {
-			log.info("This " + orderItemMessage.getString("orderItemID") + " item is fulfilled by channel in Order : " + exchange.getProperty("orderID", String.class) + ". So stock sync not required to SIA system.");
+			log.info("This " + orderItemMessage.getString("orderItemID") + " item is fulfilled by channel in Order : "
+					+ exchange.getProperty("orderID", String.class) + ". So stock sync not required to SIA system.");
 			exchange.setProperty("isEligibleToStockSync", false);
 		}
 		exchange.getOut().setBody(orderItemMessage);

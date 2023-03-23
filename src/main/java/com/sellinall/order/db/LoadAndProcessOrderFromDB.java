@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
@@ -26,7 +26,7 @@ public class LoadAndProcessOrderFromDB implements Processor {
 		String orderID = orderMessage.getString("orderID");
 		exchange.setProperty("orderID", orderID);
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
-		Document searchQuery = new Document();
+		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		searchQuery.put("orderID", orderID);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
@@ -45,6 +45,6 @@ public class LoadAndProcessOrderFromDB implements Processor {
 			return;
 		}
 		exchange.setProperty("hasOrderInDB", true);
-		exchange.setProperty("orderDBObject", Document.parse(dbResult.toJson()));
+		exchange.setProperty("orderDBObject", BasicDBObject.parse(dbResult.toJson()));
 	}
 }

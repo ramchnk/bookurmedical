@@ -12,7 +12,10 @@ import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.util.OrderUtil;
@@ -29,19 +32,20 @@ public class UpdateInventoryForBidMessage implements Processor {
 	static String siteNames[] = PostingSites.getConfig().getSitesList();
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inventoryDBRecordJSON = OrderUtil.parseToJsonObject(Document.parse(exchange.getProperty("inventory", String.class)));
-		Document inventoryDBRecord = Document.parse(inventoryDBRecordJSON.toString());
+		JSONObject inventoryDBRecordJSON = OrderUtil
+				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
+		BasicDBObject inventoryDBRecord = (BasicDBObject) JSON.parse(inventoryDBRecordJSON.toString());
 		JSONObject bidMessage = exchange.getProperty("message", JSONObject.class);
-		Document updateInventoryQuantity = new Document();
+		BasicDBObject updateInventoryQuantity = new BasicDBObject();
 
 		List<String> syncSites = new ArrayList<String>();
-		Document quantityModifier = new Document();
-		Document updateFields = new Document();
-		Map<String, List<String>> siteMap = new HashMap<String, List<String>>();
+		BasicDBObject quantityModifier = new BasicDBObject();
+		BasicDBObject updateFields = new BasicDBObject();
+		Map<String,List<String>> siteMap = new HashMap<String,List<String>>();
 
 		processQuantityUpdates(inventoryDBRecord, bidMessage, updateInventoryQuantity, syncSites, quantityModifier,
 				updateFields, siteMap);
-		Document searchQuery = new Document();
+		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
 		searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");
@@ -58,20 +62,20 @@ public class UpdateInventoryForBidMessage implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void processQuantityUpdates(Document inventoryDBRecord, JSONObject bidMessage,
-			Document updateInventoryQuantity, List<String> syncSites, Document quantityModifier, Document updateFields,
-			Map<String, List<String>> siteMap) throws JSONException {
+	private void processQuantityUpdates(BasicDBObject inventoryDBRecord, JSONObject bidMessage,
+			BasicDBObject updateInventoryQuantity, List<String> syncSites, BasicDBObject quantityModifier,
+			BasicDBObject updateFields, Map<String, List<String>> siteMap) throws JSONException {
 		for (String siteName : siteNames) {
 			List<String> nickNameList = new ArrayList<String>();
-			if (!inventoryDBRecord.containsKey(siteName)) {
+			if (!inventoryDBRecord.containsField(siteName)) {
 				continue;
 			}
-			ArrayList<Document> siteSpecificList = (ArrayList<Document>) inventoryDBRecord.get(siteName);
+			ArrayList<BasicDBObject> siteSpecificList = (ArrayList<BasicDBObject>) inventoryDBRecord.get(siteName);
 			Boolean hasSiteSpecificIndex = false;
 			int siteSpecificIndex = 0;
 			for (int index = 0; index < siteSpecificList.size(); index++) {
-				Document siteSpecific = siteSpecificList.get(index);
-				if (siteSpecific.containsKey("status")
+				BasicDBObject siteSpecific = siteSpecificList.get(index);
+				if (siteSpecific.containsField("status")
 						&& !siteSpecific.getString("status").equals(SIAInventoryStatus.ACTIVE.toString())) {
 					continue;
 				}
@@ -79,7 +83,7 @@ public class UpdateInventoryForBidMessage implements Processor {
 
 				// This case may happen for auction and buy it now sync with
 				// different quantity
-				if (siteSpecific.getInteger("noOfItem") <= 0) {
+				if (siteSpecific.getInt("noOfItem") <= 0) {
 					continue;
 				}
 
@@ -93,8 +97,8 @@ public class UpdateInventoryForBidMessage implements Processor {
 					// Update other sites only if sync is true. Skip if the site
 					// specific quantity is lesser than (overall quantity - bid
 					// quantity).
-					int invNoOfItem = inventoryDBRecord.getInteger("noOfItem");
-					int siteNoOfItem = siteSpecific.getInteger("noOfItem");
+					int invNoOfItem = inventoryDBRecord.getInt("noOfItem");
+					int siteNoOfItem = siteSpecific.getInt("noOfItem");
 					if ((invNoOfItem - BID_QUANTITY) >= siteNoOfItem) {
 						continue;
 					}
@@ -109,10 +113,10 @@ public class UpdateInventoryForBidMessage implements Processor {
 						updateInventoryQuantity);
 				incrementSetter(quantityModifier, siteName + "." + siteSpecificIndex + ".noOfItemsold", BID_QUANTITY,
 						updateInventoryQuantity);
-				Document valuesSet = new Document(siteName + "." + siteSpecificIndex + ".status",
+				BasicDBObject valuesSet = new BasicDBObject(siteName + "." + siteSpecificIndex + ".status",
 						SIAInventoryStatus.BIDDING.toString());
 				valuesSet.put(siteName + "." + siteSpecificIndex + ".highBidAmount",
-						Document.parse(bidMessage.getJSONObject("bidAmount").toString()));
+						(BasicDBObject) JSON.parse(bidMessage.getJSONObject("bidAmount").toString()));
 				if (bidMessage.has("bidder")) {
 					String highBidderEmailId = "";
 					String highBidderUserId = "";
@@ -140,7 +144,7 @@ public class UpdateInventoryForBidMessage implements Processor {
 		incrementSetter(quantityModifier, "noOfItemsold", BID_QUANTITY, updateInventoryQuantity);
 	}
 
-	private void incrementSetter(Document modifier, String key, int value, Document updateInventoryQuantity) {
+	private void incrementSetter(BasicDBObject modifier, String key, int value, BasicDBObject updateInventoryQuantity) {
 		modifier.append(key, value);
 		updateInventoryQuantity.put("$inc", modifier);
 	}

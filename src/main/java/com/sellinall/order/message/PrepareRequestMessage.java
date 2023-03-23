@@ -3,9 +3,9 @@ package com.sellinall.order.message;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
-import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
 import com.sellinall.order.util.OrderUtil;
 
 /**
@@ -20,9 +20,9 @@ public class PrepareRequestMessage implements Processor {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderRecord = OrderUtil
-				.parseToJsonObject(Document.parse(exchange.getProperty("orderRecord", String.class)));
+				.parseToJsonObject(exchange.getProperty("orderRecord", BasicDBObject.class));
 		orderRecord.put("merchantID", exchange.getProperty("merchantID", String.class));
-		if (exchange.getProperties().containsKey("countryCode")) {
+		if(exchange.getProperties().containsKey("countryCode")){
 			orderRecord.put("countryCode", exchange.getProperty("countryCode"));
 		}
 		JSONObject getIdObject = orderRecord.getJSONObject("_id");
@@ -30,7 +30,7 @@ public class PrepareRequestMessage implements Processor {
 		orderRecord.put("objectId", orderObjectId);
 		orderRecord.remove("_id");
 		// prepare publish message to fee management server
-		exchange.setProperty("publishMessage", orderRecord);
+		exchange.setProperty("publishMessage", orderRecord);		
 		// prepare publish message for create in quickbooks server
 		exchange.setProperty("publishToQuickBooks", false);
 		if (exchange.getProperty("isNewOrder", boolean.class)) {
@@ -50,7 +50,7 @@ public class PrepareRequestMessage implements Processor {
 		exchange.setProperty("publishToJTExpress", false);
 		Boolean isAramexShippingCarrier = exchange.getProperty("isAramexShippingCarrier", Boolean.class);
 		exchange.setProperty("publishToAramexShipping", false);
-		// if the order does not contains wmsID, we are skipping to generate airwayBill
+		//if the order does not contains wmsID, we are skipping to generate airwayBill
 		boolean needToGenerateAirwayBill = true;
 		if (exchange.getProperties().containsKey("needToGenerateAirwayBill")) {
 			needToGenerateAirwayBill = exchange.getProperty("needToGenerateAirwayBill", Boolean.class);
@@ -64,7 +64,7 @@ public class PrepareRequestMessage implements Processor {
 				exchange.setProperty("publishToNinjaVan", true);
 			} else if (isSingPostShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 				exchange.setProperty("publishToSingPost", true);
-			} else if (isJTExpressShippingCarrier && !isOrderUpdatedByShippingCarrier) {
+			}  else if (isJTExpressShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 				exchange.setProperty("publishToJTExpress", true);
 			} else if (isAramexShippingCarrier && !isOrderUpdatedByShippingCarrier) {
 				exchange.setProperty("publishToAramexShipping", true);
@@ -107,14 +107,14 @@ public class PrepareRequestMessage implements Processor {
 		if (isAramex) {
 			exchange.setProperty("publishToAramex", true);
 		}
-
+		
 		// prepare publish message for create & update in vend server
 		boolean isVend = exchange.getProperty("isVend", Boolean.class);
 		exchange.setProperty("publishToVend", false);
 		if (isVend) {
 			exchange.setProperty("publishToVend", true);
 		}
-
+		
 		boolean isMaatramBridgeIntegratedShippingCarrier = exchange
 				.getProperty("isMaatramBridgeIntegratedShippingCarrier", Boolean.class);
 		boolean isMaatramBridgeIntegratedWms = exchange.getProperty("isMaatramBridgeIntegratedWms", Boolean.class);

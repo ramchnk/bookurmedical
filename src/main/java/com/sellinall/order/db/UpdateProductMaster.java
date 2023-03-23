@@ -7,7 +7,10 @@ import org.apache.camel.Processor;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.util.JSON;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
@@ -19,7 +22,7 @@ public class UpdateProductMaster implements Processor {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		JSONObject inventoryDBRecordJSON = OrderUtil
-				.parseToJsonObject(Document.parse(exchange.getProperty("inventory", String.class)));
+				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
@@ -51,13 +54,13 @@ public class UpdateProductMaster implements Processor {
 
 	private void updateProductMaster(String accountNumber, String sellerSKU, String wmsName, int quantitySold,
 			boolean isNewOrder, boolean isCancelledOrder, boolean isOutOfStock) {
-		Document searchQueryProductMaster = new Document();
+		BasicDBObject searchQueryProductMaster = new BasicDBObject();
 		searchQueryProductMaster.put("accountNumber", accountNumber);
 		searchQueryProductMaster.put("sellerSKU", sellerSKU);
 		searchQueryProductMaster.put("quantities.warehouseID", wmsName);
-		Document updateProductMaster = new Document();
-		Document incObject = new Document();
-		Document setObject = new Document();
+		BasicDBObject updateProductMaster = new BasicDBObject();
+		BasicDBObject incObject = new BasicDBObject();
+		BasicDBObject setObject = new BasicDBObject();
 		if (isNewOrder) {
 			incObject.put("quantities.$.quantity", -quantitySold);
 		} else if (isCancelledOrder) {

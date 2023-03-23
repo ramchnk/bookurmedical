@@ -8,9 +8,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<SPRING.RELEASE>4.2.0.RELEASE</SPRING.RELEASE>
-		<CAMEL.RELEASE>3.0.0</CAMEL.RELEASE>
-		<SERVER.JETTY>9.4.12.v20180830</SERVER.JETTY>
-		<JERSEY.RELEASE>1.19.4</JERSEY.RELEASE>
+		<CAMEL.RELEASE>2.15.2</CAMEL.RELEASE>
 		<jdk.version>1.8</jdk.version>
 	</properties>
 	<dependencies>
@@ -18,24 +16,24 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>${SERVER.JETTY}</version>
+			<version>9.3.8.v20160314</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<version>${SERVER.JETTY}</version>
+			<version>9.3.8.v20160314</version>
 		</dependency>
 
 		<!-- Jersey -->
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
-			<version>${JERSEY.RELEASE}</version>
+			<version>1.16</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-json</artifactId>
-			<version>${JERSEY.RELEASE}</version>
+			<version>1.16</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.xml.bind</groupId>
@@ -129,7 +127,7 @@
 		<dependency>
 			<groupId>com.sellinall.util</groupId>
 			<artifactId>sellinall-util</artifactId>
-			<version>2.0.5-RELEASE</version>
+			<version>1.2.71-RELEASE</version>
 		</dependency>
 
 		<dependency>
@@ -172,27 +170,6 @@
 		    <groupId>javax.xml.bind</groupId>
 		    <artifactId>jaxb-api</artifactId>
 		    <version>2.3.1</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.sun.activation</groupId>
-		    <artifactId>javax.activation</artifactId>
-		    <version>1.2.0</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.glassfish.jaxb</groupId>
-		    <artifactId>jaxb-runtime</artifactId>
-		    <version>2.3.1</version>
-		    <scope>runtime</scope>
-		</dependency>
-		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-core</artifactId>
-		    <version>2.3.0.1</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-impl</artifactId>
-		    <version>2.3.2</version>
 		</dependency>
 	</dependencies>
 

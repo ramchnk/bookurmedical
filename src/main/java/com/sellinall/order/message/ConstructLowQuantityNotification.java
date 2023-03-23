@@ -5,22 +5,22 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.bson.Document;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
 import com.mudra.sellinall.config.PostingSites;
 
 public class ConstructLowQuantityNotification implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		Map<String, JSONObject> skuDetailMap = (Map<String, JSONObject>) exchange.getProperty("skuDetailMap");
-		ArrayList<Document> inventoryListFromDB = (ArrayList<Document>) exchange.getIn().getBody();
+		ArrayList<BasicDBObject> inventoryListFromDB = (ArrayList<BasicDBObject>) exchange.getIn().getBody();
 		exchange.getOut().setBody(null);
 		JSONObject outBody = new JSONObject();
 		JSONObject message = new JSONObject();
 		JSONArray items = new JSONArray();
-		for (Document inventory : inventoryListFromDB) {
+		for (BasicDBObject inventory : inventoryListFromDB) {
 			ArrayList<String> nickNameIDs = getNickNameIDs(inventory, exchange);
 
 			if (!nickNameIDs.isEmpty()) {
@@ -29,7 +29,7 @@ public class ConstructLowQuantityNotification implements Processor {
 				if (skuDetailMap.containsKey(SKU)) {
 					JSONObject skuDetail = skuDetailMap.get(SKU);
 					itemDetail.put("SKU", SKU);
-					if (inventory.containsKey("customSKU")) {
+					if (inventory.containsField("customSKU")) {
 						itemDetail.put("customSKU", inventory.get("customSKU"));
 					}
 
@@ -53,23 +53,23 @@ public class ConstructLowQuantityNotification implements Processor {
 		}
 	}
 
-	private ArrayList<String> getNickNameIDs(Document inventory, Exchange exchange) {
-		Map<String, Document> nickNameObjectMap = (Map<String, Document>) exchange
+	private ArrayList<String> getNickNameIDs(BasicDBObject inventory, Exchange exchange) {
+		Map<String, BasicDBObject> nickNameObjectMap = (Map<String, BasicDBObject>) exchange
 				.getProperty("nickNameObjectMap");
 		String[] sitesList = PostingSites.getConfig().getSitesList();
 		ArrayList<String> nickNameIDs = new ArrayList<String>();
 		for (String site : sitesList) {
-			if (inventory.containsKey(site)) {
-				ArrayList<Document> siteInventoryList = (ArrayList<Document>) inventory.get(site);
-				for (Document siteInventoryObject : siteInventoryList) {
+			if (inventory.containsField(site)) {
+				ArrayList<BasicDBObject> siteInventoryList = (ArrayList<BasicDBObject>) inventory.get(site);
+				for (BasicDBObject siteInventoryObject : siteInventoryList) {
 					String nickNameID = siteInventoryObject.getString("nickNameID");
 					if (nickNameObjectMap.containsKey(nickNameID)) {
-						Document siteAccountObject = (Document) nickNameObjectMap.get(nickNameID);
-						if (siteAccountObject.containsKey("enableLowQuantityNotification")
+						BasicDBObject siteAccountObject = (BasicDBObject) nickNameObjectMap.get(nickNameID);
+						if (siteAccountObject.containsField("enableLowQuantityNotification")
 								&& siteAccountObject.getBoolean("enableLowQuantityNotification")) {
-							int thresholdQuantity = (siteAccountObject.containsKey("lowQuantityThreshold"))
-									? siteAccountObject.getInteger("lowQuantityThreshold") : 0;
-							if (siteInventoryObject.getInteger("noOfItem") < thresholdQuantity) {
+							int thresholdQuantity = (siteAccountObject.containsField("lowQuantityThreshold"))
+									? siteAccountObject.getInt("lowQuantityThreshold") : 0;
+							if (siteInventoryObject.getInt("noOfItem") < thresholdQuantity) {
 								nickNameIDs.add(siteInventoryObject.getString("nickNameID"));
 							}
 						}

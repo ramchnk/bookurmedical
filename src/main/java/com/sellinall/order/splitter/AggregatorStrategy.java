@@ -4,7 +4,7 @@
 package com.sellinall.order.splitter;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.AggregationStrategy;
+import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

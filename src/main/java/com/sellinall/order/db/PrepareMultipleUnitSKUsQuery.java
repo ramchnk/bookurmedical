@@ -9,9 +9,10 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.mongodb.MongoDbConstants;
 import org.apache.log4j.Logger;
-import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mudra.sellinall.config.PostingSites;
 
 /**
@@ -24,12 +25,12 @@ public class PrepareMultipleUnitSKUsQuery implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		String customSKU = exchange.getProperty("customSKU", String.class);
-		Document searchQuery = new Document();
+		DBObject searchQuery = new BasicDBObject();
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		searchQuery.put("customSKU", Pattern.compile(customSKU + "(x|X)[1-9]+[0-9]*$"));
-		searchQuery.put("variants", new Document("$exists", false));
-		Document fieldsFilter = new Document("SKU", 1);
+		searchQuery.put("variants", new BasicDBObject("$exists", false));
+		BasicDBObject fieldsFilter = new BasicDBObject("SKU", 1);
 		fieldsFilter.put("sync", 1);
 		fieldsFilter.put("customSKU", 1);
 		fieldsFilter.put("noOfItem", 1);
@@ -40,7 +41,7 @@ public class PrepareMultipleUnitSKUsQuery implements Processor {
 			fieldsFilter.put(sites[i] + ".noOfItem", 1);
 			fieldsFilter.put(sites[i] + ".status", 1);
 		}
-		exchange.getOut().setHeader(MongoDbConstants.FIELDS_PROJECTION, fieldsFilter);
+		exchange.getOut().setHeader(MongoDbConstants.FIELDS_FILTER, fieldsFilter);
 
 		exchange.getOut().setBody(searchQuery);
 		log.debug("searchQuery " + searchQuery + " fieldsFilter " + fieldsFilter);

@@ -21,12 +21,16 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.http.HttpStatus;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
+import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.Config;
 import com.sellinall.database.DbUtilities;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
@@ -56,7 +60,7 @@ public class UpdateOrderDBQuery implements Processor {
 	public static final int MC_MAX_EXPIRE_TIME = 15 * 60;
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inBody = OrderUtil.parseToJsonObject(Document.parse(exchange.getIn().getBody(String.class)));
+		JSONObject inBody = OrderUtil.parseToJsonObject((DBObject) JSON.parse(exchange.getIn().getBody(String.class)));
 		exchange.setProperty("stopProcess", false);
 		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
 				.getProperty("notificationOrderActionStatus");
@@ -68,10 +72,10 @@ public class UpdateOrderDBQuery implements Processor {
 			exchange.setProperty("isOrderUpdatedByShippingCarrier", true);
 		}
 		exchange.setProperty("isFreeGiftAddedToOrder", true);
-		Document orderMessage = Document.parse(orderMessageJSON.toString());
+		BasicDBObject orderMessage = (BasicDBObject) JSON.parse(orderMessageJSON.toString());
 		String nickNameID = orderMessage.getString("nickNameID");
 		String channel = nickNameID.split("-")[0];
-		if (!channel.equalsIgnoreCase("offline")) {
+		if(!channel.equalsIgnoreCase("offline")) {
 			boolean isValidDocUrl = checkValidDocumentUrl(orderMessage);
 			if (!isValidDocUrl) {
 				exchange.setProperty("stopProcess", true);
@@ -90,10 +94,10 @@ public class UpdateOrderDBQuery implements Processor {
 		checkIsOrderFulfilledByChannel(exchange, orderMessageJSON);
 	}
 
-	private boolean checkValidDocumentUrl(Document orderMessage) {
-		if (orderMessage.containsKey("documents")
-				&& ((Document) orderMessage.get("documents")).containsKey("shippingLabelUrl")) {
-			String url = ((Document) orderMessage.get("documents")).getString("shippingLabelUrl");
+	private boolean checkValidDocumentUrl(BasicDBObject orderMessage) {
+		if (orderMessage.containsField("documents")
+				&& ((BasicDBObject) orderMessage.get("documents")).containsField("shippingLabelUrl")) {
+			String url = ((BasicDBObject) orderMessage.get("documents")).getString("shippingLabelUrl");
 			if (url.contains(Config.getConfig().getDocUploadPath())) {
 				String orderID = orderMessage.getString("orderID");
 				List<String> values = Arrays.asList(url.split("/"));
@@ -112,18 +116,18 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	private void insertOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
-			Document orderMessage, JSONObject inBody) throws Exception {
-		Document site = new Document();
+			BasicDBObject orderMessage, JSONObject inBody) throws Exception {
+		BasicDBObject site = new BasicDBObject();
 		String nickNameID = orderMessage.getString("nickNameID");
 		String accountNumber = orderMessage.getString("accountNumber");
 		String orderID = orderMessage.getString("orderID");
 		String siteName = orderMessage.getString("site");
 		site.put("name", siteName);
 		site.put("nickNameID", nickNameID);
-		Document orderRecord = new Document();
+		BasicDBObject orderRecord = new BasicDBObject();
 		orderRecord.put("site", site);
 		orderRecord.put("orderID", orderID);
-		if (orderMessage.containsKey("invoiceNumber")) {
+		if (orderMessage.containsField("invoiceNumber")) {
 			orderRecord.put("invoiceNumber", orderMessage.get("invoiceNumber"));
 		} else if (exchange.getProperties().containsKey("profileID")) {
 			String profileID = exchange.getProperty("profileID", String.class);
@@ -146,8 +150,8 @@ public class UpdateOrderDBQuery implements Processor {
 			updateBradIDInOrderItem(exchange, orderMessage);
 		}
 		fillOrderRecord(exchange, notificationOrderActionStatus, orderRecord, orderMessage);
-		// TODO: need to remove isWhatsAppEnabled after whatsapp approval
-		if (orderRecord.containsKey("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
+		//TODO: need to remove isWhatsAppEnabled after whatsapp approval
+		if (orderRecord.containsField("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
 			exchange.setProperty("isNotifyOrderUpdates", orderRecord.getBoolean("isNotifyOrderUpdates"));
 			orderRecord.remove("isNotifyOrderUpdates");
 			if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.CANCELLED.toString())) {
@@ -167,78 +171,78 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
-		if (orderMessage.containsKey("timeOrderCreated")) {
+		if (orderMessage.containsField("timeOrderCreated")) {
 			orderRecord.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
 		} else {
 			orderRecord.put("timeOrderCreated", System.currentTimeMillis() / 1000);
 		}
-		if (orderMessage.containsKey("timeOrderCancelled")) {
+		if (orderMessage.containsField("timeOrderCancelled")) {
 			orderRecord.put("timeOrderCancelled", orderMessage.getLong("timeOrderCancelled"));
+		} 
+		if (orderMessage.containsField("timeOrderUpdated")) {
+			orderRecord.put("timeOrderUpdated",  orderMessage.getLong("timeOrderUpdated"));
 		}
-		if (orderMessage.containsKey("timeOrderUpdated")) {
-			orderRecord.put("timeOrderUpdated", orderMessage.getLong("timeOrderUpdated"));
+		if (orderMessage.containsField("timeOrderReturnRequested")) {
+			orderRecord.put("timeOrderReturnRequested",  orderMessage.getLong("timeOrderReturnRequested"));
 		}
-		if (orderMessage.containsKey("timeOrderReturnRequested")) {
-			orderRecord.put("timeOrderReturnRequested", orderMessage.getLong("timeOrderReturnRequested"));
-		}
-		if (orderMessage.containsKey("shippingAmount")) {
+		if (orderMessage.containsField("shippingAmount")) {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
 		}
-		if (orderMessage.containsKey("isPosOrder")) {
+		if (orderMessage.containsField("isPosOrder")) {
 			orderRecord.put("isPosOrder", orderMessage.getBoolean("isPosOrder"));
 		}
-		if (orderMessage.containsKey("sourceChannel")) {
+		if (orderMessage.containsField("sourceChannel")) {
 			orderRecord.put("sourceChannel", orderMessage.get("sourceChannel"));
 		}
-		if (orderMessage.containsKey("channelApiVersion")) {
+		if (orderMessage.containsField("channelApiVersion")) {
 			orderRecord.put("channelApiVersion", orderMessage.get("channelApiVersion"));
 		}
-		if (orderMessage.containsKey("packageWeight")) {
+		if (orderMessage.containsField("packageWeight")) {
 			orderRecord.put("packageWeight", orderMessage.get("packageWeight"));
 		}
-		if (orderMessage.containsKey("orderTypes")) {
+		if (orderMessage.containsField("orderTypes")) {
 			orderRecord.put("orderTypes", orderMessage.get("orderTypes"));
 		}
-		if (orderMessage.containsKey("shippingTypes")) {
+		if (orderMessage.containsField("shippingTypes")) {
 			orderRecord.put("shippingTypes", orderMessage.get("shippingTypes"));
 		}
-		if (orderMessage.containsKey("buyerOwedAmount")) {
+		if (orderMessage.containsField("buyerOwedAmount")) {
 			orderRecord.put("buyerOwedAmount", orderMessage.get("buyerOwedAmount"));
 		}
-		if (orderMessage.containsKey("salesPerson")) {
+		if (orderMessage.containsField("salesPerson")) {
 			orderRecord.put("salesPerson", orderMessage.get("salesPerson"));
 		}
-		if (orderMessage.containsKey("totalRefundAmount")) {
+		if (orderMessage.containsField("totalRefundAmount")) {
 			orderRecord.put("totalRefundAmount", orderMessage.get("totalRefundAmount"));
 		}
-		if (orderMessage.containsKey("totalTaxAmount")) {
+		if (orderMessage.containsField("totalTaxAmount")) {
 			orderRecord.put("totalTaxAmount", orderMessage.get("totalTaxAmount"));
 		}
-		if (orderMessage.containsKey("vouchers")) {
+		if (orderMessage.containsField("vouchers")) {
 			orderRecord.put("vouchers", orderMessage.get("vouchers"));
 		}
-		if (orderMessage.containsKey("landingURL")) {
+		if (orderMessage.containsField("landingURL")) {
 			orderRecord.put("landingURL", orderMessage.get("landingURL"));
 		}
-		if (orderMessage.containsKey("paymentChannels")) {
+		if (orderMessage.containsField("paymentChannels")) {
 			orderRecord.put("paymentChannels", orderMessage.get("paymentChannels"));
 		}
-		if (orderMessage.containsKey("billingDetails")) {
+		if (orderMessage.containsField("billingDetails")) {
 			orderRecord.put("billingDetails", orderMessage.get("billingDetails"));
 		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
 		exchange.setProperty("groupOrderByCartNumber", false);
-		if (orderMessage.containsKey("cartNumber")) {
+		if (orderMessage.containsField("cartNumber")) {
 			String cartNumber = (String) orderMessage.get("cartNumber");
 			orderRecord.put("cartNumber", cartNumber);
 			int totalOrderItemsInCart = 0;
-			if (orderMessage.containsKey("totalOrderItemsInCart")) {
-				totalOrderItemsInCart = orderMessage.getInteger("totalOrderItemsInCart");
+			if (orderMessage.containsField("totalOrderItemsInCart")) {
+				totalOrderItemsInCart = orderMessage.getInt("totalOrderItemsInCart");
 				orderRecord.put("totalOrderItemsInCart", totalOrderItemsInCart);
 			}
-			checkIfgroupOrderByCartNumberNeeded(exchange, totalOrderItemsInCart, cartNumber);
-		}
+			checkIfgroupOrderByCartNumberNeeded(exchange,totalOrderItemsInCart,cartNumber);
+		}		
 		caculateAndStoreOrderSoldAmount(orderMessage, orderRecord);
 		fillAdditionDetails(exchange, orderRecord, siteName, orderMessage);
 		if (!checkIsValidOrderForAccount(orderRecord)) {
@@ -250,14 +254,14 @@ public class UpdateOrderDBQuery implements Processor {
 				&& exchange.getProperties().containsKey("airwayBillExists")) {
 			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));
 		}
-		if (orderRecord.containsKey("orderItems")) {
-			List<Document> orderItems = (List<Document>) orderRecord.get("orderItems");
+		if (orderRecord.containsField("orderItems")) {
+			List<BasicDBObject> orderItems = (List<BasicDBObject>) orderRecord.get("orderItems");
 			if (orderItems.size() == 0) {
 				log.error("Insert - orderItems List is Empty for this orderId: " + orderMessage.getString("orderID"));
 			}
 		}
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
-		Document searchQuery = new Document();
+		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", accountNumber);
 		searchQuery.put("orderID", orderID);
 		searchQuery.put("site.nickNameID", nickNameID);
@@ -265,7 +269,7 @@ public class UpdateOrderDBQuery implements Processor {
 		UpdateOptions options = new UpdateOptions();
 		options.upsert(true);
 		try {
-			Document orderDocument = orderRecord;
+			Document orderDocument = getDocument(orderRecord);
 			if (exchange.getProperties().containsKey("merchantID")) {
 				orderDocument.append("merchantID", exchange.getProperty("merchantID"));
 			}
@@ -281,17 +285,17 @@ public class UpdateOrderDBQuery implements Processor {
 		exchange.getOut().setBody(orderMessage);
 	}
 
-	private void updateBradIDInOrderItem(Exchange exchange, Document orderMessage) {
+	private void updateBradIDInOrderItem(Exchange exchange, BasicDBObject orderMessage) {
 		Map<String, String> brandIDMap = exchange.getProperty("brandIDMap", HashMap.class);
-		List<Document> orderItems = (List<Document>) orderMessage.get("orderItems");
-		for (Document orderItem : orderItems) {
+		List<BasicDBObject> orderItems = (List<BasicDBObject>) orderMessage.get("orderItems");
+		for (BasicDBObject orderItem : orderItems) {
 			if (orderItem.containsKey("customSKU") && brandIDMap.containsKey(orderItem.getString("customSKU"))) {
 				orderItem.put("graasBrandID", brandIDMap.get(orderItem.getString("customSKU")));
 			}
 		}
 	}
 
-	private void fillMaatramIntegratedDetails(Exchange exchange, Document orderRecord) {
+	private void fillMaatramIntegratedDetails(Exchange exchange, BasicDBObject orderRecord) {
 		if (exchange.getProperties().containsKey("isMaatramIntegratedErp")
 				&& exchange.getProperty("isMaatramIntegratedErp", Boolean.class)) {
 			orderRecord.put("erpStatus", SIAErpUpdateStatuses.NOT_INITIATED.toString());
@@ -319,9 +323,9 @@ public class UpdateOrderDBQuery implements Processor {
 		exchange.setProperty("cartNumber", cartNumber);
 	}
 
-	private void fillOrderAmountInUSD(Document orderRecord) {
-		if (orderRecord.containsKey("orderAmount")) {
-			Document orderAmount = (Document) orderRecord.get("orderAmount");
+	private void fillOrderAmountInUSD(BasicDBObject orderRecord) {
+		if (orderRecord.containsField("orderAmount")) {
+			BasicDBObject orderAmount = (BasicDBObject) orderRecord.get("orderAmount");
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderAmount.getString("currencyCode"), "USD");
 				if (exchangeRate == 0) {
@@ -329,7 +333,7 @@ public class UpdateOrderDBQuery implements Processor {
 					return;
 				}
 				long amount = Math.round(orderAmount.getLong("amount") * exchangeRate);
-				Document orderAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
+				DBObject orderAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				orderRecord.put("orderAmountInUSD", orderAmountInUSD);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -367,11 +371,11 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
-	private Boolean checkIsValidOrderForAccount(Document orderRecord) {
-		if (!orderRecord.containsKey("orderItems")) {
+	private Boolean checkIsValidOrderForAccount(BasicDBObject orderRecord) {
+		if (!orderRecord.containsField("orderItems")) {
 			return false;
 		}
-		List<Document> orderItems = (List<Document>) orderRecord.get("orderItems");
+		List<BasicDBObject> orderItems = (List<BasicDBObject>) orderRecord.get("orderItems");
 		if (orderItems.size() == 0 || orderItems == null) {
 			return false;
 		}
@@ -379,9 +383,9 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	private void updateOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
-			Document orderMessage) throws Exception {
-		Document orderRecord = new Document();
-		Document searchQuery = new Document();
+			BasicDBObject orderMessage) throws Exception {
+		BasicDBObject orderRecord = new BasicDBObject();
+		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
 		String siteName = orderMessage.getString("site");
@@ -394,90 +398,88 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 
 		String updateStatus = OrderUpdateStatus.COMPLETE.toString();
-		if (orderMessage.containsKey("updateStatus")) {
+		if (orderMessage.containsField("updateStatus")) {
 			updateStatus = orderMessage.getString("updateStatus");
 		}
-		// TODO: need to remove isReconciliation check after disable the finops1.0
+		//TODO: need to remove isReconciliation check after disable the finops1.0
 		if (orderMessage.getBoolean("isReconciliation")) {
 			exchange.setProperty("isReconciliation", orderMessage.getBoolean("isReconciliation"));
 		}
-		if (orderMessage.containsKey("timeSettled")) {
+		if (orderMessage.containsField("timeSettled")) {
 			orderRecord.put("timeSettled", orderMessage.getLong("timeSettled"));
 		}
-		if (orderMessage.containsKey("timeSettlementProcessed")) {
+		if (orderMessage.containsField("timeSettlementProcessed")) {
 			orderRecord.put("timeSettlementProcessed", orderMessage.getLong("timeSettlementProcessed"));
 		}
-		if (orderMessage.containsKey("settlementStatus")) {
+		if (orderMessage.containsField("settlementStatus")) {
 			orderRecord.put("settlementStatus", orderMessage.getString("settlementStatus"));
 		}
-		if (orderMessage.containsKey("returnSettlementStatus")) {
+		if (orderMessage.containsField("returnSettlementStatus")) {
 			orderRecord.put("returnSettlementStatus", orderMessage.getString("returnSettlementStatus"));
 		}
-		if (orderMessage.containsKey("transactionPeriod")) {
+		if (orderMessage.containsField("transactionPeriod")) {
 			orderRecord.put("transactionPeriod", orderMessage.getString("transactionPeriod"));
 		}
-		if (orderMessage.containsKey("timeOrderUpdated")) {
+		if (orderMessage.containsField("timeOrderUpdated")) {
 			orderRecord.put("timeOrderUpdated", orderMessage.getLong("timeOrderUpdated"));
 		}
-		if (orderMessage.containsKey("timeOrderCancelled")) {
+		if (orderMessage.containsField("timeOrderCancelled")) {
 			orderRecord.put("timeOrderCancelled", orderMessage.getLong("timeOrderCancelled"));
-		}
-		if (orderMessage.containsKey("timeOrderReturnRequested")) {
+		} 
+		if (orderMessage.containsField("timeOrderReturnRequested")) {
 			orderRecord.put("timeOrderReturnRequested", orderMessage.getLong("timeOrderReturnRequested"));
 		}
 		if (exchange.getProperties().containsKey("isPartnerLogistics")
 				&& exchange.getProperties().containsKey("airwayBillExists")) {
 			orderRecord.put("isPartnerLogistics", exchange.getProperty("isPartnerLogistics"));
 		}
-		if (orderMessage.containsKey("isPosOrder")) {
+		if (orderMessage.containsField("isPosOrder")) {
 			orderRecord.put("isPosOrder", orderMessage.getBoolean("isPosOrder"));
 		}
-		if (orderMessage.containsKey("sourceChannel")) {
+		if (orderMessage.containsField("sourceChannel")) {
 			orderRecord.put("sourceChannel", orderMessage.get("sourceChannel"));
 		}
-		if (orderMessage.containsKey("isPreOrder")) {
+		if (orderMessage.containsField("isPreOrder")) {
 			orderRecord.put("isPreOrder", orderMessage.getBoolean("isPreOrder"));
 		}
-		if (orderMessage.containsKey("channelApiVersion")) {
+		if (orderMessage.containsField("channelApiVersion")) {
 			orderRecord.put("channelApiVersion", orderMessage.get("channelApiVersion"));
 		}
-		if (orderMessage.containsKey("packageWeight")) {
+		if (orderMessage.containsField("packageWeight")) {
 			orderRecord.put("packageWeight", orderMessage.get("packageWeight"));
 		}
-		if (orderMessage.containsKey("orderTypes")) {
+		if (orderMessage.containsField("orderTypes")) {
 			orderRecord.put("orderTypes", orderMessage.get("orderTypes"));
 		}
-		if (orderMessage.containsKey("shippingTypes")) {
+		if (orderMessage.containsField("shippingTypes")) {
 			orderRecord.put("shippingTypes", orderMessage.get("shippingTypes"));
 		}
-		if (orderMessage.containsKey("buyerOwedAmount")) {
+		if (orderMessage.containsField("buyerOwedAmount")) {
 			orderRecord.put("buyerOwedAmount", orderMessage.get("buyerOwedAmount"));
 		}
-		if (orderMessage.containsKey("salesPerson")) {
+		if (orderMessage.containsField("salesPerson")) {
 			orderRecord.put("salesPerson", orderMessage.get("salesPerson"));
 		}
-		if (orderMessage.containsKey("totalRefundAmount")) {
+		if (orderMessage.containsField("totalRefundAmount")) {
 			orderRecord.put("totalRefundAmount", orderMessage.get("totalRefundAmount"));
 		}
-		if (orderMessage.containsKey("totalTaxAmount")) {
+		if (orderMessage.containsField("totalTaxAmount")) {
 			orderRecord.put("totalTaxAmount", orderMessage.get("totalTaxAmount"));
 		}
-		if (orderMessage.containsKey("vouchers")) {
+		if (orderMessage.containsField("vouchers")) {
 			orderRecord.put("vouchers", orderMessage.get("vouchers"));
 		}
-		if (orderMessage.containsKey("landingURL")) {
+		if (orderMessage.containsField("landingURL")) {
 			orderRecord.put("landingURL", orderMessage.get("landingURL"));
 		}
-		if (orderMessage.containsKey("paymentChannels")) {
+		if (orderMessage.containsField("paymentChannels")) {
 			orderRecord.put("paymentChannels", orderMessage.get("paymentChannels"));
 		}
-		if (orderMessage.containsKey("billingDetails")) {
+		if (orderMessage.containsField("billingDetails")) {
 			orderRecord.put("billingDetails", orderMessage.get("billingDetails"));
 		}
-		/*
-		 * Need to set this flag in exchange and in out going message for re-pushing
-		 * infor orders again
-		 */
+		/* Need to set this flag in exchange and in out going message for re-pushing
+		   infor orders again*/
 		if (isItemsReAllocatedNeeded(orderMessage, exchange)) {
 			exchange.setProperty("isItemsReAllocated", true);
 		}
@@ -486,15 +488,16 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		// update order data only when the update is complete
 		if (OrderUpdateStatus.COMPLETE.toString().equals(updateStatus)) {
-			if (orderMessage.containsKey("orderStatus")
+			if (orderMessage.containsField("orderStatus")
 					&& (orderMessage.get("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
 							|| orderMessage.get("orderStatus").equals(SIAOrderStatus.PROCESSING.toString())
 							|| orderMessage.get("orderStatus").equals(SIAOrderStatus.DISPATCHED.toString()))
-					&& orderMessage.containsKey("shippingDetails")) {
-				Document shippingDetails = (Document) orderMessage.get("shippingDetails");
-				if (shippingDetails.containsKey("shippingTrackingDetails")) {
-					Document shippingTrackingDetails = (Document) shippingDetails.get("shippingTrackingDetails");
-					if (shippingTrackingDetails.containsKey("airwayBill")
+					&& orderMessage.containsField("shippingDetails")) {
+				BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
+				if (shippingDetails.containsField("shippingTrackingDetails")) {
+					BasicDBObject shippingTrackingDetails = (BasicDBObject) shippingDetails
+							.get("shippingTrackingDetails");
+					if (shippingTrackingDetails.containsField("airwayBill")
 							&& !shippingTrackingDetails.getString("airwayBill").isEmpty()) {
 						orderMessage.put("shippingCarrierStatus",
 								SIAShippingCarrierUpdateStatuses.SHIPMENT_CREATED.toString());
@@ -503,8 +506,8 @@ public class UpdateOrderDBQuery implements Processor {
 				}
 			}
 			fillOrderRecord(exchange, notificationOrderActionStatus, orderRecord, orderMessage);
-			// TODO: need to remove isWhatsAppEnabled after whatsapp approval
-			if (orderRecord.containsKey("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
+			//TODO: need to remove isWhatsAppEnabled after whatsapp approval
+			if (orderRecord.containsField("isNotifyOrderUpdates") && Config.getConfig().getWhatsAppEnabled()) {
 				exchange.setProperty("isNotifyOrderUpdates", orderRecord.getBoolean("isNotifyOrderUpdates"));
 				orderRecord.remove("isNotifyOrderUpdates");
 				if (orderRecord.getString("orderStatus").equals(SIAOrderStatus.CANCELLED.toString())) {
@@ -523,17 +526,17 @@ public class UpdateOrderDBQuery implements Processor {
 		orderRecord.put("updateStatus", updateStatus);
 		if (updateStatus.equals(OrderUpdateStatus.FAILED.toString()) && orderMessage.containsKey("failureReason")) {
 			orderRecord.put("failureReason", orderMessage.getString("failureReason"));
-			if (orderMessage.containsKey("orderStatus")
-					&& orderMessage.get("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString())
-					&& orderMessage.containsKey("shippingDetails")) {
-				Document shippingDetails = (Document) orderMessage.get("shippingDetails");
-				if (shippingDetails.containsKey("shippingTrackingDetails")) {
-					Document shippingTrackingDetails = (Document) shippingDetails.get("shippingTrackingDetails");
+			if (orderMessage.containsField("orderStatus")
+					&& orderMessage.get("orderStatus").equals(SIAOrderStatus.ACCEPTED.toString()) && orderMessage.containsField("shippingDetails")) {
+				BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
+				if (shippingDetails.containsField("shippingTrackingDetails")) {
+					BasicDBObject shippingTrackingDetails = (BasicDBObject) shippingDetails
+							.get("shippingTrackingDetails");
 					String courierName = shippingTrackingDetails.getString("courierName");
 					if (courierName.equals("janio")
 							|| (courierName.toLowerCase().replaceAll(" ", "")).contains("ninjavan")) {
-						if ((!shippingTrackingDetails.containsKey("airwayBill")
-								|| (shippingTrackingDetails.containsKey("airwayBill")
+						if ((!shippingTrackingDetails.containsField("airwayBill")
+								|| (shippingTrackingDetails.containsField("airwayBill")
 										&& shippingTrackingDetails.getString("airwayBill").isEmpty()))) {
 							orderRecord.put("shippingCarrierStatus",
 									SIAShippingCarrierUpdateStatuses.SHIPMENT_CREATE_FAILED.toString());
@@ -544,43 +547,42 @@ public class UpdateOrderDBQuery implements Processor {
 			}
 		}
 		fillTransactionKeyValuePair(orderRecord, "failureMessage", orderMessage);
-		if (orderRecord.containsKey("orderItems")) {
+		if (orderRecord.containsField("orderItems")) {
 			if (orderRecord.get("orderItems") != null) {
-				List<Document> orderItems = (List<Document>) orderRecord.get("orderItems");
+				List<BasicDBObject> orderItems = (List<BasicDBObject>) orderRecord.get("orderItems");
 				if (orderItems.size() == 0) {
-					log.error(
-							"Update - orderItems List is Empty for this orderId: " + orderMessage.getString("orderID"));
+					log.error("Update - orderItems List is Empty for this orderId: "
+						+ orderMessage.getString("orderID"));
 				}
 			} else {
 				log.error("Null orderItem came for orderID : " + orderMessage.getString("orderID"));
 			}
 		}
 		// if we pass true then will modified data
-		UpdateResult result = table.updateOne(searchQuery, new Document("$set", orderRecord));
+		UpdateResult result = table.updateOne(searchQuery, new BasicDBObject("$set", orderRecord));
 		if (result.getModifiedCount() == 0) {
 			log.info("Order :" + orderMessage.getString("orderID") + " is already updated. this is duplicate message.");
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
-		Document order = updateAndGetLatestUpdatedOrder(searchQuery, orderMessage);
-		if (order.containsKey("totalOrderItemsInCart") && order.containsKey("cartNumber")) {
-			checkIfgroupOrderByCartNumberNeeded(exchange, order.getInteger("totalOrderItemsInCart"),
-					order.getString("cartNumber"));
+		BasicDBObject order = updateAndGetLatestUpdatedOrder(searchQuery, orderMessage);
+		if (order.containsField("totalOrderItemsInCart") && order.containsField("cartNumber")) {
+			checkIfgroupOrderByCartNumberNeeded(exchange, order.getInt("totalOrderItemsInCart"), order.getString("cartNumber"));
 		}
 		exchange.setProperty("orderRecord", order);
 		exchange.getOut().setBody(orderMessage);
 	}
 
-	private void caculateAndStoreOrderSoldAmount(Document orderMessage, Document orderRecord) {
-		if (orderMessage.containsKey("orderAmount")) {
-			Document orderAmount = (Document) orderMessage.get("orderAmount");
+	private void caculateAndStoreOrderSoldAmount(BasicDBObject orderMessage, BasicDBObject orderRecord) {
+		if (orderMessage.containsField("orderAmount")) {
+			BasicDBObject orderAmount = (BasicDBObject) orderMessage.get("orderAmount");
 			String currencyCode = orderAmount.getString("currencyCode");
 			long orderSoldAmount = orderAmount.getLong("amount");
-			if (orderMessage.containsKey("voucherAmount")) {
-				Document voucherAmount = (Document) orderMessage.get("voucherAmount");
+			if (orderMessage.containsField("voucherAmount")) {
+				BasicDBObject voucherAmount = (BasicDBObject) orderMessage.get("voucherAmount");
 				orderSoldAmount = orderSoldAmount - voucherAmount.getLong("amount");
-			} else if (orderMessage.containsKey("sellerDiscountAmount")) {
-				Document sellerDiscountAmount = (Document) orderMessage.get("sellerDiscountAmount");
+			} else if (orderMessage.containsField("sellerDiscountAmount")) {
+				BasicDBObject sellerDiscountAmount = (BasicDBObject) orderMessage.get("sellerDiscountAmount");
 				orderSoldAmount = orderSoldAmount - sellerDiscountAmount.getLong("amount");
 			}
 			orderRecord.put("orderSoldAmount", CurrencyUtil.getAmountObject(orderSoldAmount, currencyCode));
@@ -588,9 +590,9 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
-	private void fillOrderSoldAmountInUSD(Document orderRecord) {
-		if (orderRecord.containsKey("orderSoldAmount")) {
-			Document orderSoldAmount = (Document) orderRecord.get("orderSoldAmount");
+	private void fillOrderSoldAmountInUSD(BasicDBObject orderRecord) {
+		if (orderRecord.containsField("orderSoldAmount")) {
+			BasicDBObject orderSoldAmount = (BasicDBObject) orderRecord.get("orderSoldAmount");
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderSoldAmount.getString("currencyCode"), "USD");
 				if (exchangeRate == 0) {
@@ -599,7 +601,7 @@ public class UpdateOrderDBQuery implements Processor {
 					return;
 				}
 				long amount = Math.round(orderSoldAmount.getLong("amount") * exchangeRate);
-				Document orderSoldAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
+				DBObject orderSoldAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				orderRecord.put("orderSoldAmountInUSD", orderSoldAmountInUSD);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -607,24 +609,29 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
-	private Document updateAndGetLatestUpdatedOrder(Document searchQuery, Document orderMessage) {
-		Document updateObject = new Document();
+	public static Document getDocument(BasicDBObject doc) {
+		if (doc == null)
+			return null;
+		return new Document(doc.toMap());
+	}
+	private BasicDBObject updateAndGetLatestUpdatedOrder(BasicDBObject searchQuery, BasicDBObject orderMessage) {
+		BasicDBObject updateObject = new BasicDBObject();
 		if (orderMessage.containsKey("notificationID")) {
 			// Append the OrderNotificationID to the database
-			updateObject.put("$push", new Document("notificationID", orderMessage.get("notificationID")));
+			updateObject.put("$push", new BasicDBObject("notificationID", orderMessage.get("notificationID")));
 		}
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		FindOneAndUpdateOptions options = new FindOneAndUpdateOptions();
 		options.returnDocument(ReturnDocument.AFTER);
-		Document update = new Document("timeLastUpdated", DateUtil.getSIADateFormat());
+		BasicDBObject update = new BasicDBObject("timeLastUpdated", DateUtil.getSIADateFormat());
 		updateObject.put("$set", update);
 		Document orderDoc = table.findOneAndUpdate(searchQuery, updateObject, options);
-		Document order = Document.parse(orderDoc.toJson());
+		BasicDBObject order = (BasicDBObject) JSON.parse(orderDoc.toJson());
 		return order;
 	}
 
 	private void fillOrderRecord(Exchange exchange, NotificationOrderActionStatus notificationOrderActionStatus,
-			Document orderRecord, Document orderMessage) {
+			BasicDBObject orderRecord, BasicDBObject orderMessage) {
 		fillTransactionKeyValuePair(orderRecord, "buyerDetails", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "orderNumber", orderMessage);
 		fillTransactionKeyValuePair(orderRecord, "returnOrderID", orderMessage);
@@ -671,45 +678,45 @@ public class UpdateOrderDBQuery implements Processor {
 		hashRequiredFields(exchange, orderRecord, orderMessage);
 	}
 
-	private void hashRequiredFields(Exchange exchange, Document orderRecord, Document orderMessage) {
+	private void hashRequiredFields(Exchange exchange, BasicDBObject orderRecord, BasicDBObject orderMessage) {
 		HashUtil hashUtil = new HashUtil();
 		List<String> sites = Arrays.asList(Config.getConfig().getRemoveBuyerDetailChannels().split("-"));
 		String siteName = orderMessage.getString("site");
 		boolean isHashedBuyerDetailsFound = false, isHashedBuyerAddressFound = false, isBuyerDetailsHashed = false;
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
-		Document addressHashed = new Document();
+		BasicDBObject addressHashed = new BasicDBObject();
 		if (hasOrderInDB) {
-			Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
-			Document shippingDetailsFromDB = new Document();
-			if (orderDBObject.containsKey("shippingDetails")) {
-				shippingDetailsFromDB = (Document) orderDBObject.get("shippingDetails");
+			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			BasicDBObject shippingDetailsFromDB = new BasicDBObject();
+			if (orderDBObject.containsField("shippingDetails")) {
+				shippingDetailsFromDB = (BasicDBObject) orderDBObject.get("shippingDetails");
 			}
-			if (sites.contains(siteName) && orderDBObject.containsKey("isPIIRemoved")) {
-				if (orderDBObject.getBoolean("isPIIRemoved") || orderDBObject.containsKey("buyerDetailsHashed")) {
+			if (sites.contains(siteName) && orderDBObject.containsField("isPIIRemoved")) {
+				if (orderDBObject.getBoolean("isPIIRemoved") || orderDBObject.containsField("buyerDetailsHashed")) {
 					isHashedBuyerDetailsFound = true;
 				}
 				if (orderDBObject.getBoolean("isPIIRemoved")) {
 					isHashedBuyerAddressFound = true;
-				} else if (shippingDetailsFromDB.containsKey("addressHashed")) {
+				} else if (shippingDetailsFromDB.containsField("addressHashed")) {
 					isHashedBuyerAddressFound = true;
-					addressHashed = (Document) shippingDetailsFromDB.get("addressHashed");
+					addressHashed = (BasicDBObject) shippingDetailsFromDB.get("addressHashed");
 				}
-			} else if (orderDBObject.containsKey("isPIIAnonymized")) {
-				if (orderDBObject.getBoolean("isPIIAnonymized") || orderDBObject.containsKey("buyerDetailsHashed")) {
+			} else if (orderDBObject.containsField("isPIIAnonymized")) {
+				if (orderDBObject.getBoolean("isPIIAnonymized") || orderDBObject.containsField("buyerDetailsHashed")) {
 					isHashedBuyerDetailsFound = true;
 				}
 				if (orderDBObject.getBoolean("isPIIAnonymized")) {
 					isHashedBuyerAddressFound = true;
-				} else if (shippingDetailsFromDB.containsKey("addressHashed")) {
+				} else if (shippingDetailsFromDB.containsField("addressHashed")) {
 					isHashedBuyerAddressFound = true;
-					addressHashed = (Document) shippingDetailsFromDB.get("addressHashed");
+					addressHashed = (BasicDBObject) shippingDetailsFromDB.get("addressHashed");
 				}
 			}
 		}
 		if (isHashedBuyerDetailsFound) {
 			fillTransactionKeyValuePair(orderRecord, "buyerDetailsHashed", orderMessage);
 		} else {
-			Document buyerDetailsHashed = hashObjectFields("buyerDetails", orderMessage, hashUtil);
+			BasicDBObject buyerDetailsHashed = hashObjectFields("buyerDetails", orderMessage, hashUtil);
 			if (buyerDetailsHashed != null) {
 				isBuyerDetailsHashed = true;
 				orderRecord.put("buyerDetailsHashed", buyerDetailsHashed);
@@ -717,19 +724,19 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (isHashedBuyerAddressFound) {
 			if (!addressHashed.isEmpty()) {
-				Document shippingDetailsFromDB = new Document();
-				if (orderRecord.containsKey("shippingDetails")) {
-					shippingDetailsFromDB = (Document) orderRecord.get("shippingDetails");
+				BasicDBObject shippingDetailsFromDB = new BasicDBObject();
+				if (orderRecord.containsField("shippingDetails")) {
+					shippingDetailsFromDB = (BasicDBObject) orderRecord.get("shippingDetails");
 				}
 				shippingDetailsFromDB.put("addressHashed", addressHashed);
 				orderRecord.put("shippingDetails", shippingDetailsFromDB);
 			}
 		} else {
-			if (orderMessage.containsKey("shippingDetails")) {
-				Document shippingDetails = (Document) orderMessage.get("shippingDetails");
-				Document shippingDetailsFromDB = orderRecord.containsKey("shippingDetails")
-						? (Document) orderRecord.get("shippingDetails")
-						: new Document();
+			if (orderMessage.containsField("shippingDetails")) {
+				BasicDBObject shippingDetails = (BasicDBObject) orderMessage.get("shippingDetails");
+				BasicDBObject shippingDetailsFromDB = orderRecord.containsField("shippingDetails")
+						? (BasicDBObject) orderRecord.get("shippingDetails")
+						: new BasicDBObject();
 				addressHashed = hashObjectFields("address", shippingDetails, hashUtil);
 				if (addressHashed != null) {
 					isBuyerDetailsHashed = true;
@@ -748,12 +755,12 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
-	private Document hashObjectFields(String key, Document orderMessage, HashUtil hashUtil) {
-		if (orderMessage.containsKey(key)) {
-			Document obj = (Document) orderMessage.get(key);
+	private BasicDBObject hashObjectFields(String key, BasicDBObject orderMessage, HashUtil hashUtil) {
+		if (orderMessage.containsField(key)) {
+			BasicDBObject obj = (BasicDBObject) orderMessage.get(key);
 			Set<String> keys = obj.keySet();
 
-			Document hashedObj = new Document();
+			BasicDBObject hashedObj = new BasicDBObject();
 			for (String objKey : keys) {
 				if (key.equals("address")
 						&& (objKey.equals("city") || objKey.equals("country") || objKey.equals("postalCode"))) {
@@ -769,29 +776,30 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void fillAdditionDetails(Exchange exchange, Document orderRecord, String siteName, Document orderMessage)
+	private void fillAdditionDetails(Exchange exchange, BasicDBObject orderRecord, String siteName, BasicDBObject orderMessage)
 			throws Exception {
-		Map<String, Document> inventoryDetailsMap = (Map<String, Document>) exchange.getProperty("inventoryDetailsMap");
+		Map<String, BasicDBObject> inventoryDetailsMap = (Map<String, BasicDBObject>) exchange
+				.getProperty("inventoryDetailsMap");
 		String orderID = exchange.getProperty("orderID", String.class);
 		String appType = "";
 		boolean isMaatramIntegratedExternalAPIUpdate = false;
 		boolean addOrderItemLocation = false;
 		boolean processOrdersWithSKUOnly = processOrdersWithtSKUOnly(exchange);
-		List<Document> newOrderItems = new ArrayList<Document>();
-		List<Document> freeGiftItems = new ArrayList<Document>();
+		List<BasicDBObject> newOrderItems = new ArrayList<BasicDBObject>();
+		List<BasicDBObject> freeGiftItems = new ArrayList<BasicDBObject>();
 		List<String> orderItemIDListFromDB = new ArrayList<String>();
 		Map<String, String> orderItemsStatusMap = new HashMap<String, String>();
 		int orderDBObjectSize = 0;
 		if ((Boolean) exchange.getProperty("hasOrderInDB")) {
-			JSONObject orderDBObject = OrderUtil.parseToJsonObject((Document) exchange.getProperty("orderDBObject"));
+			JSONObject orderDBObject = OrderUtil.parseToJsonObject((DBObject) exchange.getProperty("orderDBObject"));
 			JSONArray items = orderDBObject.getJSONArray("orderItems");
 			orderDBObjectSize = items.length();
 			for (int i = 0; i < items.length(); i++) {
 				if (items.getJSONObject(i).has("orderItemID")) {
 					orderItemIDListFromDB.add(items.getJSONObject(i).getString("orderItemID"));
 				}
-				if (items.getJSONObject(i).has("isFreeGift") && items.getJSONObject(i).getBoolean("isFreeGift")) {
-					freeGiftItems.add(Document.parse(items.getJSONObject(i).toString()));
+				if(items.getJSONObject(i).has("isFreeGift") && items.getJSONObject(i).getBoolean("isFreeGift")) {
+					freeGiftItems.add(BasicDBObject.parse(items.getJSONObject(i).toString()));
 				}
 				if (exchange.getProperties().containsKey("isStatusHandledInOrderItem")
 						&& exchange.getProperty("isStatusHandledInOrderItem", Boolean.class)
@@ -800,28 +808,27 @@ public class UpdateOrderDBQuery implements Processor {
 							items.getJSONObject(i).getString("orderStatus"));
 				}
 			}
-			Document addendum = orderMessage.containsKey("addendum") ? (Document) orderMessage.get("addendum")
-					: new Document();
+			BasicDBObject addendum = orderMessage.containsKey("addendum") ? (BasicDBObject) orderMessage.get("addendum")
+					: new BasicDBObject();
 			String eventType = addendum.containsKey("eventType") ? addendum.getString("eventType") : "";
 			appType = addendum.containsKey("appType") ? addendum.getString("appType") : "";
 			if (eventType.equals("API_UPDATE")
 					&& (appType.equals("ERP") || appType.equals("WMS") || appType.equals("OMS"))) {
-				// set maatram order status when it was an maatram integrated external API order
-				// update
+				// set maatram order status when it was an maatram integrated external API order update
 				setExternalAPIMaatramOrderStatus(orderRecord, exchange, orderMessage, appType);
 				isMaatramIntegratedExternalAPIUpdate = true;
 			}
 		}
 
 		int giftItemsSize = freeGiftItems.size();
-		if (orderRecord.containsKey("orderItems")) {
-			List<Document> orderItems = (ArrayList<Document>) orderRecord.get("orderItems");
+		if (orderRecord.containsField("orderItems")) {
+			List<BasicDBObject> orderItems = (ArrayList<BasicDBObject>) orderRecord.get("orderItems");
 			int requestOrderItemSize = orderItems.size();
 			for (int i = 0; i < orderItems.size(); i++) {
-				Document orderItem = orderItems.get(i);
+				BasicDBObject orderItem = orderItems.get(i);
 				if (exchange.getProperties().containsKey("isStatusHandledInOrderItem")
 						&& exchange.getProperty("isStatusHandledInOrderItem", Boolean.class)
-						&& orderItem.containsKey("orderStatus") && orderItem.containsKey("orderItemID")) {
+						&& orderItem.containsField("orderStatus") && orderItem.containsField("orderItemID")) {
 					String orderItemID = orderItem.getString("orderItemID");
 					if (orderItemsStatusMap.containsKey(orderItemID)) {
 						SIAOrderStatus orderItemDBStatus = SIAOrderStatus.valueOf(orderItemsStatusMap.get(orderItemID));
@@ -829,53 +836,52 @@ public class UpdateOrderDBQuery implements Processor {
 								.valueOf(orderItem.getString("orderStatus"));
 						NotificationOrderActionStatus notificationOrderActionStatus = OrderUtil
 								.handleExistingOrderStatus(notificationOrderStatus, orderItemDBStatus,
-										OrderUtil.parseToJsonObject((Document) orderItem), orderID, "orderItem");
+										OrderUtil.parseToJsonObject((DBObject) orderItem), orderID, "orderItem");
 						if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.NO_ACTION)) {
 							orderItem.put("orderStatus", orderItemDBStatus.toString());
 						}
 					}
 				}
-				if (!orderItem.containsKey("settlementAmount")
+				if (!orderItem.containsField("settlementAmount")
 						&& requestOrderItemSize == orderDBObjectSize - giftItemsSize) {
 					processSettlementAmountOrderItem(orderItem, i, exchange);
 				}
 				boolean orderHasInventory = false;
-				if (orderItem.containsKey("isFreeGift") && orderItem.getBoolean("isFreeGift")) {
-					// Free gift only set and handled in PNQ.so can be removed if incoming message
-					// has freeGift items.
-					// From DB existing free gift items will be retained.
+				if(orderItem.containsField("isFreeGift") && orderItem.getBoolean("isFreeGift")) {
+					//Free gift only set and handled in PNQ.so can be removed if incoming message has freeGift items.
+					//From DB existing free gift items will be retained.
 					continue;
 				}
-				if (orderItem.containsKey("SKU")) {
+				if (orderItem.containsField("SKU")) {
 					String SKU = orderItem.getString("SKU");
-					Document inventoryValue = inventoryDetailsMap.get(SKU);
+					BasicDBObject inventoryValue = inventoryDetailsMap.get(SKU);
 					if (inventoryValue != null) {
 						orderHasInventory = true;
-						if (!orderItem.containsKey("itemTitle")) {
+						if (!orderItem.containsField("itemTitle")) {
 							orderItem.put("itemTitle", inventoryValue.getString("itemTitle"));
 						}
 						if (!getImageURL(inventoryValue, siteName).isEmpty()) {
 							orderItem.put("imageURL", getImageURL(inventoryValue, siteName));
 						}
-						if (inventoryValue.containsKey("variantDetails")) {
+						if (inventoryValue.containsField("variantDetails")) {
 							orderItem.put("variantDetails", inventoryValue.get("variantDetails"));
 						}
-						if (inventoryValue.containsKey("customSKU")) {
+						if (inventoryValue.containsField("customSKU")) {
 							orderItem.put("customSKU", inventoryValue.get("customSKU"));
 						}
-						if (inventoryValue.containsKey("hsnCode")) {
+						if (inventoryValue.containsField("hsnCode")) {
 							orderItem.put("hsnCode", inventoryValue.get("hsnCode"));
 						}
-						Document site = (Document) inventoryValue.get(siteName);
+						BasicDBObject site = (BasicDBObject) inventoryValue.get(siteName);
 						if (site.containsKey("isOption")) {
 							orderItem.put("isOption", site.getBoolean("isOption"));
 						} else {
 							orderItem.put("isOption", false);
 						}
-						if (site.containsKey("categoryName")) {
+						if (site.containsField("categoryName")) {
 							orderItem.put("categoryName", site.get("categoryName"));
 						}
-						if (site.containsKey("categoryID")) {
+						if (site.containsField("categoryID")) {
 							orderItem.put("categoryID", site.get("categoryID"));
 						}
 						if (siteName.equals("eBay") && !addOrderItemLocation) {
@@ -887,37 +893,38 @@ public class UpdateOrderDBQuery implements Processor {
 						orderItem.remove("imageURL");
 					}
 				}
-				if (orderItem.containsKey("itemAmount")) {
-					orderItem.put("itemSoldAmount", (Document) orderItem.get("itemAmount"));
-					if (orderItem.containsKey("sellerDiscountAmount")) {
-						Document itemAmountObject = (Document) orderItem.get("itemAmount");
+				if (orderItem.containsField("itemAmount")) {
+					orderItem.put("itemSoldAmount", (BasicDBObject) orderItem.get("itemAmount"));
+					if (orderItem.containsField("sellerDiscountAmount")) {
+						BasicDBObject itemAmountObject = (BasicDBObject) orderItem.get("itemAmount");
 						long itemAmount = itemAmountObject.getLong("amount");
-						Document sellerDiscountAmountObject = (Document) orderItem.get("sellerDiscountAmount");
+						BasicDBObject sellerDiscountAmountObject = (BasicDBObject) orderItem
+								.get("sellerDiscountAmount");
 						long sellerDiscountAmount = sellerDiscountAmountObject.getLong("amount");
 						String currencyCode = itemAmountObject.getString("currencyCode");
 						long itemSoldAmount = itemAmount - sellerDiscountAmount;
-						orderItem.put("itemSoldAmount", Document
-								.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
+						orderItem.put("itemSoldAmount",
+								JSON.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
 					}
 				}
-				if (orderItem.containsKey("totalItemAmount")) {
-					orderItem.put("totalItemSoldAmount", (Document) orderItem.get("totalItemAmount"));
-					if (orderItem.containsKey("totalSellerDiscountAmount")) {
-						Document totalItemAmount = (Document) orderItem.get("totalItemAmount");
+				if (orderItem.containsField("totalItemAmount")) {
+					orderItem.put("totalItemSoldAmount", (BasicDBObject) orderItem.get("totalItemAmount"));
+					if (orderItem.containsField("totalSellerDiscountAmount")) {
+						BasicDBObject totalItemAmount = (BasicDBObject) orderItem.get("totalItemAmount");
 						long itemAmount = totalItemAmount.getLong("amount");
-						Document totalSellerDiscountAmount = (Document) orderItem.get("totalSellerDiscountAmount");
+						BasicDBObject totalSellerDiscountAmount = (BasicDBObject) orderItem
+								.get("totalSellerDiscountAmount");
 						long sellerDiscountAmount = totalSellerDiscountAmount.getLong("amount");
 						String currencyCode = totalItemAmount.getString("currencyCode");
 						long itemSoldAmount = itemAmount - sellerDiscountAmount;
-						orderItem.put("totalItemSoldAmount", Document
-								.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
+						orderItem.put("totalItemSoldAmount",
+								JSON.parse(CurrencyUtil.getJSONAmountObject(itemSoldAmount, currencyCode).toString()));
 					}
 				}
-				// Set maatram orderItem statuses
+				//Set maatram orderItem statuses
 				setMaatramItemStatusFromDbOrderItem(orderItem, i, exchange);
 				if (isMaatramIntegratedExternalAPIUpdate) {
-					// set maatram order status when it was an maatram integrated external API order
-					// update
+					// set maatram order status when it was an maatram integrated external API order update
 					setExternalAPIMaatramItemStatus(orderItem, i, exchange, orderMessage, appType);
 				}
 				if (processOrdersWithSKUOnly) {
@@ -929,37 +936,38 @@ public class UpdateOrderDBQuery implements Processor {
 				} else {
 					newOrderItems.add(orderItem);
 				}
-				if (orderItem.containsKey("settlementDetails")) {
-					Document settlementDetails = (Document) orderItem.get("settlementDetails");
-					if (settlementDetails.containsKey("refunded")) {
-						Document refunded = (Document) settlementDetails.get("refunded");
+				if(orderItem.containsField("settlementDetails"))
+				{
+					BasicDBObject settlementDetails = (BasicDBObject) orderItem.get("settlementDetails");
+					if (settlementDetails.containsField("refunded")) {
+						BasicDBObject refunded = (BasicDBObject) settlementDetails.get("refunded");
 						removeFeesFields(refunded);
 					}
 				}
 				removeFeesFields(orderItem);
 			}
-			if (freeGiftItems.size() > 0) {
-				// Retain freegift item from DB.
+			if(freeGiftItems.size()>0) {
+				//Retain freegift item from DB.
 				newOrderItems.addAll(freeGiftItems);
-			} else {
+			}else{
 				exchange.setProperty("isFreeGiftAddedToOrder", false);
 			}
 			orderRecord.put("orderItems", newOrderItems);
 		}
 	}
 
-	private void removeFeesFields(Document refunded) {
+	private void removeFeesFields(BasicDBObject refunded) {
 		refunded.remove("expectedMarketPlaceCommission");
 		refunded.remove("feesFieldsToUpdate");
 	}
 
-	private void processSettlementAmountOrderItem(Document orderItem, int orderItemIndex, Exchange exchange) {
+	private void processSettlementAmountOrderItem(BasicDBObject orderItem, int orderItemIndex, Exchange exchange) {
 		if (exchange.getProperty("hasOrderInDB", Boolean.class)) {
-			Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
-			if (orderDBObject.containsKey("orderItems")) {
-				List<Document> orderItems = (List<Document>) orderDBObject.get("orderItems");
-				Document orderItemDB = (Document) orderItems.get(orderItemIndex);
-				if (orderItemDB.containsKey("settlementAmount")) {
+			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			if (orderDBObject.containsField("orderItems")) {
+				BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
+				BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
+				if (orderItemDB.containsField("settlementAmount")) {
 					fillTransactionKeyValuePair(orderItem, "settlementAmount", orderItemDB);
 					fillTransactionKeyValuePair(orderItem, "settlementStatus", orderItemDB);
 					fillTransactionKeyValuePair(orderItem, "returnSettlementStatus", orderItemDB);
@@ -977,17 +985,17 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	private boolean processOrdersWithtSKUOnly(Exchange exchange) {
-		Document userSiteSpecificObject = exchange.getProperty("userSiteSpecificObject", Document.class);
-		if (!userSiteSpecificObject.containsKey("processOrdersWithSKUOnly")) {
+		BasicDBObject userSiteSpecificObject = exchange.getProperty("userSiteSpecificObject", BasicDBObject.class);
+		if (!userSiteSpecificObject.containsField("processOrdersWithSKUOnly")) {
 			return false;
 		}
 		return userSiteSpecificObject.getBoolean("processOrdersWithSKUOnly");
 	}
 
 	@SuppressWarnings("unchecked")
-	private String getImageURL(Document inventoryValues, String siteName) {
+	private String getImageURL(BasicDBObject inventoryValues, String siteName) {
 		String imageURL = inventoryValues.getString("imageURL");
-		Document site = (Document) inventoryValues.get(siteName);
+		BasicDBObject site = (BasicDBObject) inventoryValues.get(siteName);
 		List<String> imageURIs = (List<String>) site.get("imageURI");
 
 		if (imageURIs != null && imageURIs.size() > 0) {
@@ -1000,23 +1008,22 @@ public class UpdateOrderDBQuery implements Processor {
 	}
 
 	@SuppressWarnings("unchecked")
-	private boolean getItemLocation(Document inventoryValues, String siteName, Document orderRecord) {
-		Document site = (Document) inventoryValues.get(siteName);
-		if (site.containsKey("itemLocation") && site.get("itemLocation") != null) {
+	private boolean getItemLocation(BasicDBObject inventoryValues, String siteName, BasicDBObject orderRecord) {
+		BasicDBObject site = (BasicDBObject) inventoryValues.get(siteName);
+		if (site.containsField("itemLocation") && site.get("itemLocation") != null) {
 			orderRecord.put("itemLocation", site.get("itemLocation"));
 			return true;
 		}
 		return false;
 	}
 
-	private void fillTransactionKeyValuePair(Document orderRecord, String key, Document orderMessage) {
-		if (orderMessage.containsKey(key)) {
+	private void fillTransactionKeyValuePair(BasicDBObject orderRecord, String key, BasicDBObject orderMessage) {
+		if (orderMessage.containsField(key)) {
 			orderRecord.put(key, orderMessage.get(key));
 		}
 	}
 
-	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, Document orderRecord,
-			Document orderMessage) {
+	private void fillOrderTime(NotificationOrderActionStatus notificationOrderActionStatus, BasicDBObject orderRecord, BasicDBObject orderMessage) {
 		// TODO: need to get more insights on how these dates can be used, so as
 		// of now ignoring other state transition timestamps
 		if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING)
@@ -1035,7 +1042,7 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_DISPATCHED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_DISPATCHED)) {
 			// for offline orders update timeDispatched by user.
-			if (orderMessage.containsKey("timeDispatched")) {
+			if (orderMessage.containsField("timeDispatched")) {
 				orderRecord.put("timeDispatched", orderMessage.get("timeDispatched"));
 			} else {
 				orderRecord.put("timeDispatched", DateUtil.getSIADateFormat());
@@ -1047,8 +1054,8 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.ACCEPTED_TO_DELIVERED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_DELIVERED)) {
-			// for offline orders update timeDelivered by user.
-			if (orderMessage.containsKey("timeDelivered")) {
+			//for offline orders update timeDelivered by user.
+			if (orderMessage.containsField("timeDelivered")) {
 				orderRecord.put("timeDelivered", orderMessage.get("timeDelivered"));
 			} else {
 				orderRecord.put("timeDelivered", DateUtil.getSIADateFormat());
@@ -1064,14 +1071,13 @@ public class UpdateOrderDBQuery implements Processor {
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_CANCELLED)) {
 			orderRecord.put("timeCancelled", DateUtil.getSIADateFormat());
 			orderRecord.put("isNotifyOrderUpdates", true);
-		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURNED)
+		}  else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PARTIALLY_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.RETURN_REQUESTED_TO_RETURNED)
-				|| notificationOrderActionStatus
-						.equals(NotificationOrderActionStatus.PARTIAL_RETURN_REQUESTED_TO_PARTIALLY_RETURNED)
+				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.PARTIAL_RETURN_REQUESTED_TO_PARTIALLY_RETURNED)
 				|| notificationOrderActionStatus.equals(NotificationOrderActionStatus.INITIATED_TO_RETURNED)) {
 			orderRecord.put("timeReturned", DateUtil.getSIADateFormat());
 		} else if (notificationOrderActionStatus.equals(NotificationOrderActionStatus.LOST_BY_3PL)
@@ -1092,29 +1098,28 @@ public class UpdateOrderDBQuery implements Processor {
 		// So should stop inventory sync.
 		if (orderMessageJSON.has("orderFulfilledBy")
 				&& orderMessageJSON.getString("orderFulfilledBy").equals(OrderFulfilledBy.CHANNEL.toString())) {
-			log.info("Order : " + orderMessageJSON.getString("orderID")
-					+ " is fulfilled by channel. So stock sync not required to SIA system.");
+			log.info("Order : " + orderMessageJSON.getString("orderID") + " is fulfilled by channel. So stock sync not required to SIA system.");
 			exchange.setProperty("stopProcess", true);
 		}
 	}
 
-	private boolean isItemsReAllocatedNeeded(Document orderMessage, Exchange exchange) throws JSONException {
-		JSONObject orderRecord = OrderUtil.parseToJsonObject((Document) exchange.getProperty("orderDBObject"));
-		if (orderRecord.has("orderItems") && orderMessage.containsKey("orderItems")) {
+	private boolean isItemsReAllocatedNeeded(BasicDBObject orderMessage, Exchange exchange) throws JSONException {
+		JSONObject orderRecord = OrderUtil.parseToJsonObject((DBObject) exchange.getProperty("orderDBObject"));
+		if (orderRecord.has("orderItems") && orderMessage.containsField("orderItems")) {
 			JSONArray orderItemsFromDB = orderRecord.getJSONArray("orderItems");
-			// When size mismatches need to set the isItemReAllocated flag
-			List<Document> orderItemsMessage = (ArrayList<Document>) orderMessage.get("orderItems");
+			//When size mismatches need to set the isItemReAllocated flag
+			List<BasicDBObject> orderItemsMessage = (ArrayList<BasicDBObject>) orderMessage.get("orderItems");
 			if (orderItemsMessage.size() > 0 && (orderItemsMessage.size() != orderItemsFromDB.length())) {
 				return true;
 			}
 			HashSet<String> orderItemIDs = new HashSet<String>();
 			for (int i = 0; i < orderItemsMessage.size(); i++) {
-				Document orderItemMessage = orderItemsMessage.get(i);
-				if (orderItemMessage.containsKey("orderItemID")) {
+				BasicDBObject orderItemMessage = orderItemsMessage.get(i);
+				if (orderItemMessage.containsField("orderItemID")) {
 					orderItemIDs.add(orderItemMessage.getString("orderItemID"));
 				}
 			}
-			// When orderedItemID mismatches means need to set the isItemReAllocated
+			//When orderedItemID mismatches means need to set the isItemReAllocated
 			for (int j = 0; j < orderItemsFromDB.length(); j++) {
 				JSONObject orderItemFromDB = orderItemsFromDB.getJSONObject(j);
 				if (orderItemFromDB.has("orderItemID")
@@ -1122,15 +1127,14 @@ public class UpdateOrderDBQuery implements Processor {
 					return true;
 				}
 			}
-			// When wmsID not in orders data but in message then vice versa to set the
-			// isItemReAllocated
+			//When wmsID not in orders data but in message then vice versa to set the isItemReAllocated
 			for (int k = 0; k < orderItemsFromDB.length(); k++) {
 				JSONObject orderItemFromDB = orderItemsFromDB.getJSONObject(k);
 				for (int l = 0; l < orderItemsMessage.size(); l++) {
-					Document orderItemMessage = orderItemsMessage.get(l);
-					if (orderItemMessage.containsKey("orderItemID") && orderItemFromDB.has("orderItemID")) {
+					BasicDBObject orderItemMessage = orderItemsMessage.get(l);
+					if (orderItemMessage.containsField("orderItemID") && orderItemFromDB.has("orderItemID")) {
 						String orderItemIDFromMessage = orderItemMessage.getString("orderItemID");
-						if (orderItemMessage.containsKey("wmsID")) {
+						if (orderItemMessage.containsField("wmsID")) {
 							String wmsIDFromMessage = orderItemMessage.getString("wmsID");
 							if (orderItemFromDB.getString("orderItemID").equals(orderItemIDFromMessage)) {
 								if (deceideToSetReAllocationFlag(orderItemFromDB, wmsIDFromMessage)) {
@@ -1155,21 +1159,21 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		return false;
 	}
-
-	private void setMaatramItemStatusFromDbOrderItem(Document orderItem, int orderItemIndex, Exchange exchange) {
+	
+	private void setMaatramItemStatusFromDbOrderItem(BasicDBObject orderItem, int orderItemIndex, Exchange exchange) {
 		if (exchange.getProperty("hasOrderInDB", Boolean.class)) {
-			Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
-			if (orderDBObject.containsKey("orderItems")) {
-				List<Document> orderItems = (List<Document>) orderDBObject.get("orderItems");
+			BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+			if (orderDBObject.containsField("orderItems")) {
+				BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
 				if (orderItems.size() > orderItemIndex) {
-					Document orderItemDB = (Document) orderItems.get(orderItemIndex);
-					if (orderItemDB.containsKey("omsStatus")) {
+					BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
+					if (orderItemDB.containsField("omsStatus")) {
 						fillTransactionKeyValuePair(orderItem, "omsStatus", orderItemDB);
 					}
-					if (orderItemDB.containsKey("wmsStatus")) {
+					if (orderItemDB.containsField("wmsStatus")) {
 						fillTransactionKeyValuePair(orderItem, "wmsStatus", orderItemDB);
 					}
-					if (orderItemDB.containsKey("erpStatus")) {
+					if (orderItemDB.containsField("erpStatus")) {
 						fillTransactionKeyValuePair(orderItem, "erpStatus", orderItemDB);
 					}
 				}
@@ -1177,14 +1181,14 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
-	private void setExternalAPIMaatramItemStatus(Document orderItem, int orderItemIndex, Exchange exchange,
-			Document orderMessage, String appType) {
+	private void setExternalAPIMaatramItemStatus(BasicDBObject orderItem, int orderItemIndex, Exchange exchange,
+			BasicDBObject orderMessage, String appType) {
 		String incomingOrderStatus = orderItem.containsKey("orderStatus") ? orderItem.getString("orderStatus") : "";
-		Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
-		if (orderDBObject.containsKey("orderItems")) {
-			List<Document> orderItems = (List<Document>) orderDBObject.get("orderItems");
+		BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
+		if (orderDBObject.containsField("orderItems")) {
+			BasicDBList orderItems = (BasicDBList) orderDBObject.get("orderItems");
 			if (orderItems.size() > orderItemIndex) {
-				Document orderItemDB = (Document) orderItems.get(orderItemIndex);
+				BasicDBObject orderItemDB = (BasicDBObject) orderItems.get(orderItemIndex);
 				if (!orderItemDB.getString("orderStatus").equals(incomingOrderStatus)) {
 					String integrateType = appType.toLowerCase();
 					if (incomingOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())) {
@@ -1197,30 +1201,30 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 	}
 
-	private void setExternalAPIMaatramOrderStatus(Document orderRecord, Exchange exchange, Document orderMessage,
-			String appType) {
+	private void setExternalAPIMaatramOrderStatus(BasicDBObject orderRecord, Exchange exchange,
+			BasicDBObject orderMessage, String appType) {
 		String incomingOrderStatus = orderRecord.containsKey("orderStatus") ? orderRecord.getString("orderStatus") : "";
-		Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
+		BasicDBObject orderDBObject = exchange.getProperty("orderDBObject", BasicDBObject.class);
 		if (orderDBObject.containsKey("orderStatus")
 				&& !orderDBObject.getString("orderStatus").equals(incomingOrderStatus)) {
 			String integrateType = appType.toLowerCase();
 			if (incomingOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())) {
 				orderRecord.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_CANCELLED.toString());
-				List<Document> integrateUpdateStatuses = new ArrayList<Document>();
+				BasicDBList integrateUpdateStatuses = new BasicDBList();
 				if (orderDBObject.containsKey(integrateType + "UpdateStatuses")
-						&& orderDBObject.get(integrateType + "UpdateStatuses") instanceof List<?>) {
-					integrateUpdateStatuses = (List<Document>) orderDBObject.get(integrateType + "UpdateStatuses");
+						&& orderDBObject.get(integrateType + "UpdateStatuses") instanceof BasicDBList) {
+					integrateUpdateStatuses = (BasicDBList) orderDBObject.get(integrateType + "UpdateStatuses");
 				}
-				integrateUpdateStatuses.add(Document.parse(SIAErpUpdateStatuses.ORDER_CANCELLED.toString()));
+				integrateUpdateStatuses.add(SIAErpUpdateStatuses.ORDER_CANCELLED.toString());
 				orderRecord.put(integrateType + "UpdateStatuses", integrateUpdateStatuses);
 			} else if (incomingOrderStatus.equals(SIAOrderStatus.RETURNED.toString())) {
 				orderRecord.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_RETURNED.toString());
-				List<Document> integrateUpdateStatuses = new ArrayList<Document>();
+				BasicDBList integrateUpdateStatuses = new BasicDBList();
 				if (orderDBObject.containsKey(integrateType + "UpdateStatuses")
-						&& orderDBObject.get(integrateType + "UpdateStatuses") instanceof List<?>) {
-					integrateUpdateStatuses = (List<Document>) orderDBObject.get(integrateType + "UpdateStatuses");
+						&& orderDBObject.get(integrateType + "UpdateStatuses") instanceof BasicDBList) {
+					integrateUpdateStatuses = (BasicDBList) orderDBObject.get(integrateType + "UpdateStatuses");
 				}
-				integrateUpdateStatuses.add(Document.parse(SIAErpUpdateStatuses.ORDER_RETURNED.toString()));
+				integrateUpdateStatuses.add(SIAErpUpdateStatuses.ORDER_RETURNED.toString());
 				orderRecord.put(integrateType + "UpdateStatuses", integrateUpdateStatuses);
 			}
 		}

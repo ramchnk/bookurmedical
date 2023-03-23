@@ -6,8 +6,9 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.mongodb.MongoDbConstants;
-import org.bson.Document;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.sellinall.util.enums.SIAInventoryStatus;
 
 public class GetRuleList implements Processor {
@@ -18,20 +19,20 @@ public class GetRuleList implements Processor {
 		nicknameIdList.add("DEFAULT");
 		nicknameIdList.add(nickNameID);
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
-		Document searchQuery = new Document();
+		BasicDBObject searchQuery = new BasicDBObject();
 		searchQuery.put("accountNumber", accountNumber);
-		searchQuery.put("nickNameID", new Document("$in", nicknameIdList));
+		searchQuery.put("nickNameID", new BasicDBObject("$in", nicknameIdList));
 
-		Document elemMatch = new Document();
+		BasicDBObject elemMatch = new BasicDBObject();
 		elemMatch.put("leftOperand", "timeOrderCreated");
 		elemMatch.put("operator", "LESS_THAN");
-		elemMatch.put("rightOperand", new Document("$gt", System.currentTimeMillis() / 1000));
+		elemMatch.put("rightOperand", new BasicDBObject("$gt", System.currentTimeMillis() / 1000));
 
-		Document conditions = new Document();
+		BasicDBObject conditions = new BasicDBObject();
 		conditions.put("$elemMatch", elemMatch);
 		searchQuery.put("conditions",conditions);
 		searchQuery.put("status", SIAInventoryStatus.ACTIVE.toString());
-		Document sort = new Document();
+		DBObject sort = new BasicDBObject();
 		sort.put("priority", -1);
 		exchange.getOut().setHeader(MongoDbConstants.SORT_BY, sort);
 		exchange.getOut().setBody(searchQuery);

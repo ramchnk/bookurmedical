@@ -80,6 +80,12 @@ public class ProcessOrderStatus implements Processor {
 			SIAPaymentStatus orderDBPayementStatus = SIAPaymentStatus.valueOf(orderDBObject.getString("paymentStatus"));
 			notificationPaymentActionStatus = OrderUtil.handleExistingPaymentStatus(notificationPaymentStatus,
 					orderDBPayementStatus, orderMessage);
+			//Note : handled payment status for Cash On Delivery(COD) cancelled/returned orders
+			if (notificationOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())
+					|| notificationOrderStatus.equals(SIAOrderStatus.RETURNED.toString())) {
+				orderMessage.put("paymentStatus", orderDBPayementStatus.equals(SIAPaymentStatus.COMPLETED.toString())
+								? SIAPaymentStatus.REFUNDED.toString() : orderDBPayementStatus.toString());
+			}
 			buildOrderUpdateJournal(exchange, hasOrderInDB, orderDBObject, orderMessage);
 		} else {
 			buildOrderUpdateJournal(exchange, hasOrderInDB, null, orderMessage);

@@ -5,7 +5,7 @@ import org.apache.camel.Processor;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class ByteArrayToJSONTypeConverters  implements Processor  {
+public class ByteArrayToJSONTypeConverters implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		JSONObject json = null;

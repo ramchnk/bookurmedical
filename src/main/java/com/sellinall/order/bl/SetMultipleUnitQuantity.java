@@ -5,8 +5,6 @@ import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
-
-
 public class SetMultipleUnitQuantity implements Processor {
 
 	static Logger log = Logger.getLogger(SetMultipleUnitQuantity.class.getName());

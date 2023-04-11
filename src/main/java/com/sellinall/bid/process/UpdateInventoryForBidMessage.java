@@ -29,7 +29,8 @@ public class UpdateInventoryForBidMessage implements Processor {
 	static String siteNames[] = PostingSites.getConfig().getSitesList();
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject inventoryDBRecordJSON = OrderUtil.parseToJsonObject(Document.parse(exchange.getProperty("inventory", String.class)));
+		JSONObject inventoryDBRecordJSON = OrderUtil
+				.parseToJsonObject(Document.parse(exchange.getProperty("inventory", String.class)));
 		Document inventoryDBRecord = Document.parse(inventoryDBRecordJSON.toString());
 		JSONObject bidMessage = exchange.getProperty("message", JSONObject.class);
 		Document updateInventoryQuantity = new Document();
@@ -43,7 +44,7 @@ public class UpdateInventoryForBidMessage implements Processor {
 				updateFields, siteMap);
 		Document searchQuery = new Document();
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
-		searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
+		searchQuery.put("accountNumber", bidMessage.get("accountNumber").toString());
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");
 		if (quantityModifier.isEmpty()) {
 			syncSites.clear();

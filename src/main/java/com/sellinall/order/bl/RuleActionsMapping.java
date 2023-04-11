@@ -6,7 +6,6 @@ import java.util.Map;
 
 import com.sellinall.order.enums.RuleActionEnum;
 
-
 public class RuleActionsMapping {
 	private static final Map<Object, String> ruleInventoryMethodsMapping = Collections
 			.unmodifiableMap(new HashMap<Object, String>() {

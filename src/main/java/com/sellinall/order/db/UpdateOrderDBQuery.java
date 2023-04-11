@@ -4,6 +4,7 @@
 package com.sellinall.order.db;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -115,7 +116,7 @@ public class UpdateOrderDBQuery implements Processor {
 			Document orderMessage, JSONObject inBody) throws Exception {
 		Document site = new Document();
 		String nickNameID = orderMessage.getString("nickNameID");
-		String accountNumber = orderMessage.getString("accountNumber");
+		String accountNumber = orderMessage.get("accountNumber").toString();
 		String orderID = orderMessage.getString("orderID");
 		String siteName = orderMessage.getString("site");
 		site.put("name", siteName);
@@ -168,18 +169,19 @@ public class UpdateOrderDBQuery implements Processor {
 		orderRecord.put("timeCreated", DateUtil.getSIADateFormat());
 		orderRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		if (orderMessage.containsKey("timeOrderCreated")) {
-			orderRecord.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
+			orderRecord.put("timeOrderCreated", new BigDecimal(orderMessage.get("timeOrderCreated").toString()).longValue());
 		} else {
 			orderRecord.put("timeOrderCreated", System.currentTimeMillis() / 1000);
 		}
 		if (orderMessage.containsKey("timeOrderCancelled")) {
-			orderRecord.put("timeOrderCancelled", orderMessage.getLong("timeOrderCancelled"));
+			orderRecord.put("timeOrderCancelled", new BigDecimal(orderMessage.get("timeOrderCancelled").toString()).longValue());
 		}
 		if (orderMessage.containsKey("timeOrderUpdated")) {
-			orderRecord.put("timeOrderUpdated", orderMessage.getLong("timeOrderUpdated"));
+			orderRecord.put("timeOrderUpdated", new BigDecimal(orderMessage.get("timeOrderUpdated").toString()).longValue());
 		}
 		if (orderMessage.containsKey("timeOrderReturnRequested")) {
-			orderRecord.put("timeOrderReturnRequested", orderMessage.getLong("timeOrderReturnRequested"));
+			
+			orderRecord.put("timeOrderReturnRequested", new BigDecimal(orderMessage.get("timeOrderReturnRequested").toString()).longValue());
 		}
 		if (orderMessage.containsKey("shippingAmount")) {
 			orderRecord.put("shippingAmount", orderMessage.get("shippingAmount"));
@@ -227,7 +229,7 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("billingDetails", orderMessage.get("billingDetails"));
 		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
-		exchange.setProperty("accountNumber", orderRecord.getString("accountNumber"));
+		exchange.setProperty("accountNumber", orderRecord.get("accountNumber").toString());
 		exchange.setProperty("groupOrderByCartNumber", false);
 		if (orderMessage.containsKey("cartNumber")) {
 			String cartNumber = (String) orderMessage.get("cartNumber");
@@ -265,12 +267,11 @@ public class UpdateOrderDBQuery implements Processor {
 		UpdateOptions options = new UpdateOptions();
 		options.upsert(true);
 		try {
-			Document orderDocument = orderRecord;
 			if (exchange.getProperties().containsKey("merchantID")) {
-				orderDocument.append("merchantID", exchange.getProperty("merchantID"));
+				orderRecord.append("merchantID", exchange.getProperty("merchantID"));
 			}
-			table.insertOne(orderDocument);
-			orderRecord.put("_id", orderDocument.getObjectId("_id"));
+			table.insertOne(orderRecord);
+			orderRecord.put("_id", orderRecord.getObjectId("_id"));
 		} catch (MongoWriteException e) {
 			log.info("Order Insert - Duplicate message received for orderID: " + orderID);
 			exchange.setProperty("stopProcess", true);
@@ -328,7 +329,7 @@ public class UpdateOrderDBQuery implements Processor {
 					log.error("orderAmountInUSD field is not set for the orderID: " + orderRecord.getString("orderID"));
 					return;
 				}
-				long amount = Math.round(orderAmount.getLong("amount") * exchangeRate);
+				long amount = Math.round(new BigDecimal(orderAmount.get("amount").toString()).longValue() * exchangeRate);
 				Document orderAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				orderRecord.put("orderAmountInUSD", orderAmountInUSD);
 			} catch (Exception e) {
@@ -382,7 +383,7 @@ public class UpdateOrderDBQuery implements Processor {
 			Document orderMessage) throws Exception {
 		Document orderRecord = new Document();
 		Document searchQuery = new Document();
-		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+		searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());
 		searchQuery.put("orderID", orderMessage.getString("orderID"));
 		String siteName = orderMessage.getString("site");
 		searchQuery.put("site.name", siteName);
@@ -398,14 +399,14 @@ public class UpdateOrderDBQuery implements Processor {
 			updateStatus = orderMessage.getString("updateStatus");
 		}
 		// TODO: need to remove isReconciliation check after disable the finops1.0
-		if (orderMessage.getBoolean("isReconciliation")) {
+		if (orderMessage.containsKey("isReconciliation")) {
 			exchange.setProperty("isReconciliation", orderMessage.getBoolean("isReconciliation"));
 		}
 		if (orderMessage.containsKey("timeSettled")) {
-			orderRecord.put("timeSettled", orderMessage.getLong("timeSettled"));
+			orderRecord.put("timeSettled", new BigDecimal(orderMessage.get("timeSettled").toString()).longValue());
 		}
 		if (orderMessage.containsKey("timeSettlementProcessed")) {
-			orderRecord.put("timeSettlementProcessed", orderMessage.getLong("timeSettlementProcessed"));
+			orderRecord.put("timeSettlementProcessed", new BigDecimal(orderMessage.get("timeSettlementProcessed").toString()).longValue());
 		}
 		if (orderMessage.containsKey("settlementStatus")) {
 			orderRecord.put("settlementStatus", orderMessage.getString("settlementStatus"));
@@ -417,13 +418,13 @@ public class UpdateOrderDBQuery implements Processor {
 			orderRecord.put("transactionPeriod", orderMessage.getString("transactionPeriod"));
 		}
 		if (orderMessage.containsKey("timeOrderUpdated")) {
-			orderRecord.put("timeOrderUpdated", orderMessage.getLong("timeOrderUpdated"));
+			orderRecord.put("timeOrderUpdated", new BigDecimal(orderMessage.get("timeOrderUpdated").toString()).longValue());
 		}
 		if (orderMessage.containsKey("timeOrderCancelled")) {
-			orderRecord.put("timeOrderCancelled", orderMessage.getLong("timeOrderCancelled"));
+			orderRecord.put("timeOrderCancelled", new BigDecimal(orderMessage.get("timeOrderCancelled").toString()).longValue());
 		}
 		if (orderMessage.containsKey("timeOrderReturnRequested")) {
-			orderRecord.put("timeOrderReturnRequested", orderMessage.getLong("timeOrderReturnRequested"));
+			orderRecord.put("timeOrderReturnRequested", new BigDecimal(orderMessage.get("timeOrderReturnRequested").toString()).longValue());
 		}
 		if (exchange.getProperties().containsKey("isPartnerLogistics")
 				&& exchange.getProperties().containsKey("airwayBillExists")) {
@@ -575,13 +576,13 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsKey("orderAmount")) {
 			Document orderAmount = (Document) orderMessage.get("orderAmount");
 			String currencyCode = orderAmount.getString("currencyCode");
-			long orderSoldAmount = orderAmount.getLong("amount");
+			long orderSoldAmount = new BigDecimal(orderAmount.get("amount").toString()).longValue();
 			if (orderMessage.containsKey("voucherAmount")) {
 				Document voucherAmount = (Document) orderMessage.get("voucherAmount");
-				orderSoldAmount = orderSoldAmount - voucherAmount.getLong("amount");
+				orderSoldAmount = orderSoldAmount - new BigDecimal(voucherAmount.get("amount").toString()).longValue();
 			} else if (orderMessage.containsKey("sellerDiscountAmount")) {
 				Document sellerDiscountAmount = (Document) orderMessage.get("sellerDiscountAmount");
-				orderSoldAmount = orderSoldAmount - sellerDiscountAmount.getLong("amount");
+				orderSoldAmount = orderSoldAmount - new BigDecimal(sellerDiscountAmount.get("amount").toString()).longValue();
 			}
 			orderRecord.put("orderSoldAmount", CurrencyUtil.getAmountObject(orderSoldAmount, currencyCode));
 			fillOrderSoldAmountInUSD(orderRecord);
@@ -598,7 +599,7 @@ public class UpdateOrderDBQuery implements Processor {
 							+ orderRecord.getString("orderID"));
 					return;
 				}
-				long amount = Math.round(orderSoldAmount.getLong("amount") * exchangeRate);
+				long amount = Math.round(new BigDecimal(orderSoldAmount.get("amount").toString()).longValue() * exchangeRate);
 				Document orderSoldAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				orderRecord.put("orderSoldAmountInUSD", orderSoldAmountInUSD);
 			} catch (Exception e) {
@@ -618,8 +619,7 @@ public class UpdateOrderDBQuery implements Processor {
 		options.returnDocument(ReturnDocument.AFTER);
 		Document update = new Document("timeLastUpdated", DateUtil.getSIADateFormat());
 		updateObject.put("$set", update);
-		Document orderDoc = table.findOneAndUpdate(searchQuery, updateObject, options);
-		Document order = Document.parse(orderDoc.toJson());
+		Document order = table.findOneAndUpdate(searchQuery, updateObject, options);
 		return order;
 	}
 
@@ -891,9 +891,9 @@ public class UpdateOrderDBQuery implements Processor {
 					orderItem.put("itemSoldAmount", (Document) orderItem.get("itemAmount"));
 					if (orderItem.containsKey("sellerDiscountAmount")) {
 						Document itemAmountObject = (Document) orderItem.get("itemAmount");
-						long itemAmount = itemAmountObject.getLong("amount");
+						long itemAmount = new BigDecimal(itemAmountObject.get("amount").toString()).longValue();
 						Document sellerDiscountAmountObject = (Document) orderItem.get("sellerDiscountAmount");
-						long sellerDiscountAmount = sellerDiscountAmountObject.getLong("amount");
+						long sellerDiscountAmount = new BigDecimal(sellerDiscountAmountObject.get("amount").toString()).longValue();
 						String currencyCode = itemAmountObject.getString("currencyCode");
 						long itemSoldAmount = itemAmount - sellerDiscountAmount;
 						orderItem.put("itemSoldAmount", Document
@@ -904,9 +904,9 @@ public class UpdateOrderDBQuery implements Processor {
 					orderItem.put("totalItemSoldAmount", (Document) orderItem.get("totalItemAmount"));
 					if (orderItem.containsKey("totalSellerDiscountAmount")) {
 						Document totalItemAmount = (Document) orderItem.get("totalItemAmount");
-						long itemAmount = totalItemAmount.getLong("amount");
+						long itemAmount = new BigDecimal(totalItemAmount.get("amount").toString()).longValue();
 						Document totalSellerDiscountAmount = (Document) orderItem.get("totalSellerDiscountAmount");
-						long sellerDiscountAmount = totalSellerDiscountAmount.getLong("amount");
+						long sellerDiscountAmount = new BigDecimal(totalSellerDiscountAmount.get("amount").toString()).longValue();
 						String currencyCode = totalItemAmount.getString("currencyCode");
 						long itemSoldAmount = itemAmount - sellerDiscountAmount;
 						orderItem.put("totalItemSoldAmount", Document
@@ -1206,21 +1206,21 @@ public class UpdateOrderDBQuery implements Processor {
 			String integrateType = appType.toLowerCase();
 			if (incomingOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())) {
 				orderRecord.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_CANCELLED.toString());
-				List<Document> integrateUpdateStatuses = new ArrayList<Document>();
+				List<String> integrateUpdateStatuses = new ArrayList<String>();
 				if (orderDBObject.containsKey(integrateType + "UpdateStatuses")
 						&& orderDBObject.get(integrateType + "UpdateStatuses") instanceof List<?>) {
-					integrateUpdateStatuses = (List<Document>) orderDBObject.get(integrateType + "UpdateStatuses");
+					integrateUpdateStatuses = (List<String>) orderDBObject.get(integrateType + "UpdateStatuses");
 				}
-				integrateUpdateStatuses.add(Document.parse(SIAErpUpdateStatuses.ORDER_CANCELLED.toString()));
+				integrateUpdateStatuses.add(SIAErpUpdateStatuses.ORDER_CANCELLED.toString());
 				orderRecord.put(integrateType + "UpdateStatuses", integrateUpdateStatuses);
 			} else if (incomingOrderStatus.equals(SIAOrderStatus.RETURNED.toString())) {
 				orderRecord.put(integrateType + "Status", SIAErpUpdateStatuses.ORDER_RETURNED.toString());
-				List<Document> integrateUpdateStatuses = new ArrayList<Document>();
+				List<String> integrateUpdateStatuses = new ArrayList<String>();
 				if (orderDBObject.containsKey(integrateType + "UpdateStatuses")
 						&& orderDBObject.get(integrateType + "UpdateStatuses") instanceof List<?>) {
-					integrateUpdateStatuses = (List<Document>) orderDBObject.get(integrateType + "UpdateStatuses");
+					integrateUpdateStatuses = (List<String>) orderDBObject.get(integrateType + "UpdateStatuses");
 				}
-				integrateUpdateStatuses.add(Document.parse(SIAErpUpdateStatuses.ORDER_RETURNED.toString()));
+				integrateUpdateStatuses.add(SIAErpUpdateStatuses.ORDER_RETURNED.toString());
 				orderRecord.put(integrateType + "UpdateStatuses", integrateUpdateStatuses);
 			}
 		}

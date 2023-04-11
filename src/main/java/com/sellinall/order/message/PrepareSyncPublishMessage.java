@@ -37,8 +37,8 @@ public class PrepareSyncPublishMessage implements Processor {
 		publishMessage.put("isQuantityUpdateByNewOrder", true);
 		publishMessage.put("fieldsToUpdate", syncFieldsToUpdate);
 		publishMessage.put("SKU", inventoryDBRecord.getString("SKU"));
-		publishMessage.put("accountNumber", inventoryDBRecord.getString("accountNumber"));
-		exchange.setProperty("accountNumber", inventoryDBRecord.getString("accountNumber"));
+		publishMessage.put("accountNumber", inventoryDBRecord.get("accountNumber").toString());
+		exchange.setProperty("accountNumber", inventoryDBRecord.get("accountNumber").toString());
 		exchange.getOut().setBody(publishMessage);
 	}
 }

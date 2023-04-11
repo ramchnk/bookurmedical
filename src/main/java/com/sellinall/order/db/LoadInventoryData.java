@@ -12,8 +12,9 @@ import org.codehaus.jettison.json.JSONException;
 import com.mongodb.client.MongoCollection;
 import com.sellinall.database.DbUtilities;
 
-public class LoadInventoryData implements Processor{
+public class LoadInventoryData implements Processor {
 	static Logger log = Logger.getLogger(LoadInventoryData.class.getName());
+
 	public void process(Exchange exchange) throws Exception {
 		Document query = createQuery(exchange);
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");

@@ -22,9 +22,9 @@ public class InsertBidNotification implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 
-		JSONObject bidMessageJSON = exchange.getProperty("message",JSONObject.class);
+		JSONObject bidMessageJSON = exchange.getProperty("message", JSONObject.class);
 		bidMessageJSON.remove("type");
-		Document bidMessage = (Document) Document.parse(bidMessageJSON.toString());
+		Document bidMessage = Document.parse(bidMessageJSON.toString());
 		insertBidRecord(bidMessage);
 		exchange.getOut().setBody(bidMessageJSON);
 	}

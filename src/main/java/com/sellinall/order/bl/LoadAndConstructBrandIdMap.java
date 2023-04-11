@@ -25,7 +25,7 @@ public class LoadAndConstructBrandIdMap implements Processor {
 				String sellerSKU = orderItemMessage.getString("customSKU");
 				MongoCollection<Document> productMasterTable = DbUtilities.getInventoryDBCollection("productMaster");
 				Document searchQuery = new Document();
-				searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+				searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());
 				searchQuery.put("sellerSKU", sellerSKU);
 				Document projection = new Document("graasBrandID", 1);
 				Document pmDocument = productMasterTable.find(searchQuery).projection(projection).first();
@@ -38,13 +38,13 @@ public class LoadAndConstructBrandIdMap implements Processor {
 			} else {
 				log.error("CustomSKU not available for orderID :" + exchange.getProperty("orderID", String.class)
 						+ ", nicknameID: " + orderMessage.getString("nickNameID") + ", accountNumber: "
-						+ orderMessage.getString("accountNumber"));
+						+ orderMessage.get("accountNumber").toString());
 			}
 		} catch (Exception e) {
 			log.error("Some exception occured while get brandID from PM for orderID :"
 					+ exchange.getProperty("orderID", String.class) + ", nicknameID: "
 					+ orderMessage.getString("nickNameID") + ", accountNumber: "
-					+ orderMessage.getString("accountNumber"));
+					+ orderMessage.get("accountNumber").toString());
 			e.printStackTrace();
 		}
 	}

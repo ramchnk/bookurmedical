@@ -4,6 +4,7 @@
 package com.sellinall.order.db;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 	private void insertOrderRecord(Exchange exchange, Document checkoutMessage, JSONObject inBody) throws Exception {
 		Document site = new Document();
 		String nickNameID = checkoutMessage.getString("nickNameID");
-		String accountNumber = checkoutMessage.getString("accountNumber");
+		String accountNumber = checkoutMessage.get("accountNumber").toString();
 		String checkoutID = checkoutMessage.getString("checkoutID");
 		String siteName = checkoutMessage.getString("site");
 		site.put("name", siteName);
@@ -68,18 +69,18 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		checkoutRecord.put("timeCreated", DateUtil.getSIADateFormat());
 		checkoutRecord.put("timeLastUpdated", DateUtil.getSIADateFormat());
 		if (checkoutMessage.containsKey("timeAbandonedCartCreated")) {
-			checkoutRecord.put("timeAbandonedCartCreated", checkoutMessage.getLong("timeAbandonedCartCreated"));
+			checkoutRecord.put("timeAbandonedCartCreated", new BigDecimal(checkoutMessage.get("timeAbandonedCartCreated").toString()).longValue());
 		} else {
 			checkoutRecord.put("timeAbandonedCartCreated", System.currentTimeMillis() / 1000);
 		}
 		if (checkoutMessage.containsKey("timeAbandonedCartUpdated")) {
-			checkoutRecord.put("timeAbandonedCartUpdated", checkoutMessage.getLong("timeAbandonedCartUpdated"));
+			checkoutRecord.put("timeAbandonedCartUpdated", new BigDecimal(checkoutMessage.get("timeAbandonedCartUpdated").toString()).longValue());
 		}
 		if (checkoutMessage.containsKey("timeAbandonedCartCompleted")) {
-			checkoutRecord.put("timeAbandonedCartCompleted", checkoutMessage.getLong("timeAbandonedCartCompleted"));
+			checkoutRecord.put("timeAbandonedCartCompleted", new BigDecimal(checkoutMessage.get("timeAbandonedCartCompleted").toString()).longValue());
 		}
 		if (checkoutMessage.containsKey("timeAbandonedCartClosed")) {
-			checkoutRecord.put("timeAbandonedCartClosed", checkoutMessage.getLong("timeAbandonedCartClosed"));
+			checkoutRecord.put("timeAbandonedCartClosed", new BigDecimal(checkoutMessage.get("timeAbandonedCartClosed").toString()).longValue());
 		}
 		if (checkoutRecord.containsKey("orderItems")) {
 			List<Document> orderItems = (List<Document>) checkoutRecord.get("orderItems");
@@ -137,7 +138,7 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 	private void updateOrderRecord(Exchange exchange, Document checkoutMessage) throws Exception {
 		Document checkoutRecord = new Document();
 		Document searchQuery = new Document();
-		searchQuery.put("accountNumber", checkoutMessage.getString("accountNumber"));
+		searchQuery.put("accountNumber", checkoutMessage.get("accountNumber").toString());
 		searchQuery.put("checkoutID", checkoutMessage.getString("checkoutID"));
 		String siteName = checkoutMessage.getString("site");
 		searchQuery.put("site.name", siteName);
@@ -171,7 +172,7 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 							+ checkoutRecord.getString("checkoutID"));
 					return;
 				}
-				long amount = Math.round(orderSoldAmount.getLong("amount") * exchangeRate);
+				long amount = (long) (Math.round(new BigDecimal(orderSoldAmount.get("amount").toString()).longValue()) * exchangeRate);
 				Document orderSoldAmountInUSD = CurrencyUtil.getAmountObject(amount, "USD");
 				checkoutRecord.put("orderSoldAmountInUSD", orderSoldAmountInUSD);
 			} catch (Exception e) {

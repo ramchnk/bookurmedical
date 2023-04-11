@@ -12,7 +12,6 @@ import org.bson.Document;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
@@ -29,11 +28,13 @@ import com.sellinall.util.enums.SIAOrderCancelReasons;
  */
 public class UpdateInventoryDBQuery implements Processor {
 	static Logger log = Logger.getLogger(UpdateInventoryDBQuery.class.getName());
-	static String siteNames[] = PostingSites.getConfig().getSitesList() ;
+	static String siteNames[] = PostingSites.getConfig().getSitesList();
+
 	public void process(Exchange exchange) throws Exception {
 		JSONObject inventoryDBRecordJSON = OrderUtil
 				.parseToJsonObject(Document.parse(exchange.getProperty("inventory", String.class)));
-		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange.getProperty("notificationOrderActionStatus");
+		NotificationOrderActionStatus notificationOrderActionStatus = (NotificationOrderActionStatus) exchange
+				.getProperty("notificationOrderActionStatus");
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		Document inventoryDBRecord = Document.parse(inventoryDBRecordJSON.toString());
 		String SKU = inventoryDBRecord.getString("SKU");
@@ -46,11 +47,11 @@ public class UpdateInventoryDBQuery implements Processor {
 		List<String> syncSites = new ArrayList<String>();
 		Document quantityIncDecModifier = new Document();
 		Document quantitySetModifier = new Document();
-		Map<String,List<String>> siteMap = new HashMap<String,List<String>>();
+		Map<String, List<String>> siteMap = new HashMap<String, List<String>>();
 		processQuantityUpdates(notificationOrderActionStatus, orderMessage, inventoryDBRecord, quantity, syncSites,
 				quantityIncDecModifier, quantitySetModifier, syncInventory, siteMap, exchange, isMultipleUnitSKUUpdate);
-		log.debug("updateInventoryRecord: Quantity: "+quantityIncDecModifier);
-		if ( quantityIncDecModifier.isEmpty()) {
+		log.debug("updateInventoryRecord: Quantity: " + quantityIncDecModifier);
+		if (quantityIncDecModifier.isEmpty()) {
 			syncSites.clear();
 		} else {
 			exchange.setProperty("quantityModified", true);
@@ -62,7 +63,7 @@ public class UpdateInventoryDBQuery implements Processor {
 
 			Document queryToDB = new Document();
 			queryToDB.put("$inc", quantityIncDecModifier);
-			if(!quantitySetModifier.isEmpty()){
+			if (!quantitySetModifier.isEmpty()) {
 				queryToDB.put("$set", quantitySetModifier);
 			}
 			log.debug("searchQuery: " + searchQuery + " queryToDB: " + queryToDB);
@@ -80,23 +81,23 @@ public class UpdateInventoryDBQuery implements Processor {
 		exchange.getOut().setBody(syncSites);
 	}
 
-
-
 	@SuppressWarnings("unchecked")
 	private void processQuantityUpdates(NotificationOrderActionStatus notificationOrderActionStatus,
 			JSONObject orderMessage, Document inventoryDBRecord, int quantitySold, List<String> syncSites,
 			Document quantityIncDecModifier, Document quantitySetModifier, boolean syncInventory,
-			Map<String, List<String>> siteMap, Exchange exchange, boolean isMultipleUnitSKUUpdate) throws JSONException {
+			Map<String, List<String>> siteMap, Exchange exchange, boolean isMultipleUnitSKUUpdate)
+			throws JSONException {
 		boolean isOutOfStock = false;
 		boolean newOrder = OrderUtil.checkIsNewOrder(notificationOrderActionStatus);
 		boolean cancelledOrder = OrderUtil.checkIsCancelledOrder(notificationOrderActionStatus);
 		if (cancelledOrder && orderMessage.has("cancelDetails")) {
 			JSONObject cancelDetails = orderMessage.getJSONObject("cancelDetails");
-			//SELLER_UNABLE_TO_RESERVE_STOCK usually came from lazada for which no need to decrement the stock.
+			// SELLER_UNABLE_TO_RESERVE_STOCK usually came from lazada for which no need to
+			// decrement the stock.
 			if (cancelDetails.has("cancelReason") && !cancelDetails.getString("cancelReason").isEmpty()
 					&& (cancelDetails.getString("cancelReason").equals(SIAOrderCancelReasons.OUT_OF_STOCK.toString())
 							|| cancelDetails.getString("cancelReason")
-							.equals(SIAOrderCancelReasons.SELLER_UNABLE_TO_RESERVE_STOCK.toString()))) {
+									.equals(SIAOrderCancelReasons.SELLER_UNABLE_TO_RESERVE_STOCK.toString()))) {
 				isOutOfStock = true;
 			}
 		}
@@ -163,7 +164,8 @@ public class UpdateInventoryDBQuery implements Processor {
 					siteSpecificIndex = index;
 					hasSiteSpecificIndex = true;
 				}
-				quantitySetModifier.append(siteName + "." + index + ".lastSoldTime", System.currentTimeMillis()/1000L);
+				quantitySetModifier.append(siteName + "." + index + ".lastSoldTime",
+						System.currentTimeMillis() / 1000L);
 			}
 			if (newOrder) {
 				if (hasSiteSpecificIndex) {
@@ -201,7 +203,6 @@ public class UpdateInventoryDBQuery implements Processor {
 			incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantitySold);
 		}
 	}
-	
 	private void incrementSetter(Document modifier, String key, int value) {
 		modifier.append(key, value);
 	}

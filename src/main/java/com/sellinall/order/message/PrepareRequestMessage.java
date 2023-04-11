@@ -5,8 +5,7 @@ import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
-
-import com.sellinall.order.util.OrderUtil;
+import com.sellinall.util.ParserUtil;
 
 /**
  * 
@@ -19,8 +18,8 @@ public class PrepareRequestMessage implements Processor {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		JSONObject orderRecord = OrderUtil
-				.parseToJsonObject(Document.parse(exchange.getProperty("orderRecord", String.class)));
+		Document orderRecordDoc = exchange.getProperty("orderRecord", Document.class);
+		JSONObject orderRecord = ParserUtil.parseToJsonObject(orderRecordDoc);
 		orderRecord.put("merchantID", exchange.getProperty("merchantID", String.class));
 		if (exchange.getProperties().containsKey("countryCode")) {
 			orderRecord.put("countryCode", exchange.getProperty("countryCode"));

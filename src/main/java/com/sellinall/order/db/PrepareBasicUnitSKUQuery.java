@@ -38,7 +38,7 @@ public class PrepareBasicUnitSKUQuery implements Processor {
 		exchange.setProperty("quantity", quantity);
 		exchange.setProperty("processBasicUnitSKU", true);
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		Document searchQuery = new Document("accountNumber", orderMessage.getString("accountNumber"));
+		Document searchQuery = new Document("accountNumber", orderMessage.get("accountNumber").toString());
 		searchQuery.put("customSKU", basicUnitCustomSKU);
 		searchQuery.put("variants", new Document("$exists", false));
 		searchQuery.put("variantDetails", new Document("$exists", false));

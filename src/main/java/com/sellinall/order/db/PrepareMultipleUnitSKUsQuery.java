@@ -26,7 +26,7 @@ public class PrepareMultipleUnitSKUsQuery implements Processor {
 		String customSKU = exchange.getProperty("customSKU", String.class);
 		Document searchQuery = new Document();
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		searchQuery.put("accountNumber", orderMessage.getString("accountNumber"));
+		searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());
 		searchQuery.put("customSKU", Pattern.compile(customSKU + "(x|X)[1-9]+[0-9]*$"));
 		searchQuery.put("variants", new Document("$exists", false));
 		Document fieldsFilter = new Document("SKU", 1);

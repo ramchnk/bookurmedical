@@ -1,6 +1,7 @@
 package com.sellinall.order.bl;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -42,12 +43,12 @@ public class RuleEngine {
 		if (isConditionSatisfied) {
 			Map<String, Integer> sellerSKUAndQuantityMap = new LinkedHashMap<>();
 			List<Document> freeGiftInventoryListFromDb = getFreeGiftInvetnoryFromDB(rule,
-					order.getString("accountNumber"), sellerSKUAndQuantityMap, giftItemSKUs);
+					order.get("accountNumber").toString(), sellerSKUAndQuantityMap, giftItemSKUs);
 			constructFreeGiftOrderItems(order, freeGiftInventoryListFromDb, sellerSKUAndQuantityMap, freeGiftOrderItems,
 					selectedWMS);
 		} else {
 			log.info("Free gift rule not satisfied for orderID : " + order.getString("orderID") + ", accountNumber : "
-					+ order.getString("accountNumber") + ", gift doc id : " + rule.getString("_id"));
+					+ order.get("accountNumber").toString() + ", gift doc id : " + rule.getString("_id"));
 		}
 		return isConditionSatisfied;
 	}
@@ -64,8 +65,7 @@ public class RuleEngine {
 	}
 
 	private static void constructFreeGiftOrderItems(Document order, List<Document> freeGiftInevntoryListFromDb,
-			Map<String, Integer> sellerSKUAndQuantityMap,
-			List<Document> freeGiftOrderItems, String selectedWMS)
+			Map<String, Integer> sellerSKUAndQuantityMap, List<Document> freeGiftOrderItems, String selectedWMS)
 			throws JSONException {
 		Document orderAmount = (Document) order.get("orderAmount");
 		String currencyCode = orderAmount.getString("currencyCode");
@@ -140,7 +140,7 @@ public class RuleEngine {
 	private static void decrementQuantityForGiftItem(Document order, String sellerSKU, int freeGiftQuantity,
 			String selectedWMS) throws JSONException {
 		try {
-			String accountNumber = order.getString("accountNumber");
+			String accountNumber = order.get("accountNumber").toString();
 			Document siteObj = (Document) order.get("site");
 			JSONObject quantityObj = new JSONObject();
 			quantityObj.put("warehouseID", selectedWMS);
@@ -153,7 +153,7 @@ public class RuleEngine {
 			addendum.put("orderID", order.getString("orderID"));
 			addendum.put("nickNameID", siteObj.getString("nickNameID"));
 			addendum.put("quantitySold", freeGiftQuantity);
-			addendum.put("timeOrderCreated", order.getLong("timeOrderCreated"));
+			addendum.put("timeOrderCreated", new BigDecimal(order.get("timeOrderCreated").toString()).longValue());
 			JSONObject payload = new JSONObject();
 			payload.put("sellerSKU", sellerSKU);
 			payload.put("quantityDiffs", quantityArray);
@@ -325,7 +325,7 @@ public class RuleEngine {
 				&& (fieldName.equals("orderSoldAmount") || fieldName.equals("orderAmount"))) {
 			Document order = (Document) data;
 			Document orderSoldAmountObj = (Document) order.get(fieldName);
-			long amount = orderSoldAmountObj.getLong("amount");
+			long amount = new BigDecimal(orderSoldAmountObj.get("amount").toString()).longValue();
 			return processOperands(amount, condition.get("rightOperand"), condition.getString("operator"));
 		} else if (data instanceof Document && fieldName.equals("paymentStatus")) {
 			Document order = (Document) data;
@@ -333,7 +333,7 @@ public class RuleEngine {
 					condition.getString("operator"));
 		} else if (data instanceof Document && fieldName.equals("timeOrderCreated")) {
 			Document order = (Document) data;
-			return processOperands(order.getLong("timeOrderCreated"), condition.get("rightOperand"),
+			return processOperands(new BigDecimal(order.get("timeOrderCreated").toString()).longValue(), condition.get("rightOperand"),
 					condition.getString("operator"));
 		}
 		return false;

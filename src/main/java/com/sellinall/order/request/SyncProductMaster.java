@@ -1,6 +1,7 @@
 package com.sellinall.order.request;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -122,7 +123,7 @@ public class SyncProductMaster implements Processor {
 					addendum.put("SKU", orderItemMessage.getString("SKU"));
 				}
 				if (orderMessage.has("timeOrderCreated")) {
-					addendum.put("timeOrderCreated", orderMessage.getLong("timeOrderCreated"));
+					addendum.put("timeOrderCreated", new BigDecimal(orderMessage.get("timeOrderCreated").toString()).longValue());
 				} else {
 					addendum.put("timeOrderCreated", System.currentTimeMillis() / 1000);
 				}

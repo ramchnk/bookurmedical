@@ -68,20 +68,20 @@ public class GroupOrderByCartNumber implements Processor {
 						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderSoldAmount").toString())));
 			}
 			if (relatedOrder.containsKey("orderSoldAmountInUSD")) {
-				orderSoldAmountInUSDObj = CurrencyUtil.addAmountObject(orderSoldAmountInUSDObj,
-						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderSoldAmountInUSD").toString())));
+				orderSoldAmountInUSDObj = CurrencyUtil.addAmountObject(orderSoldAmountInUSDObj, OrderUtil
+						.parseToJsonObject(Document.parse(relatedOrder.get("orderSoldAmountInUSD").toString())));
 			}
 			if (relatedOrder.containsKey("sellerDiscountAmount")) {
-				sellerDiscountAmountObj = CurrencyUtil.addAmountObject(sellerDiscountAmountObj,
-						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("sellerDiscountAmount").toString())));
+				sellerDiscountAmountObj = CurrencyUtil.addAmountObject(sellerDiscountAmountObj, OrderUtil
+						.parseToJsonObject(Document.parse(relatedOrder.get("sellerDiscountAmount").toString())));
 			}
 			if (relatedOrder.containsKey("shippingAmount")) {
 				shippingAmountObj = CurrencyUtil.addAmountObject(shippingAmountObj,
 						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("shippingAmount").toString())));
 			}
 			if (relatedOrder.containsKey("channelDiscountAmount")) {
-				channelDiscountAmountObj = CurrencyUtil.addAmountObject(channelDiscountAmountObj,
-						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("channelDiscountAmount").toString())));
+				channelDiscountAmountObj = CurrencyUtil.addAmountObject(channelDiscountAmountObj, OrderUtil
+						.parseToJsonObject(Document.parse(relatedOrder.get("channelDiscountAmount").toString())));
 			}
 		}
 		order.put("orderNumber", orderNumber);
@@ -95,7 +95,7 @@ public class GroupOrderByCartNumber implements Processor {
 		order.put("channelDiscountAmount", Document.parse(channelDiscountAmountObj.toString()));
 		order.put("shippingAmount", Document.parse(shippingAmountObj.toString()));
 		return OrderUtil.parseToJsonObject(order);
-	}	
+	}
 
 	private List<Document> getOrderList(String cartNumber, String accountNumber) {
 		List<Document> orderList = new ArrayList<Document>();

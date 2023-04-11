@@ -22,7 +22,7 @@ public class LoadAndProcessCheckoutFromDB implements Processor {
 		exchange.setProperty("checkoutID", checkoutID);
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("abandonedCheckouts");
 		Document searchQuery = new Document();
-		searchQuery.put("accountNumber", checkoutMessage.getString("accountNumber"));
+		searchQuery.put("accountNumber", checkoutMessage.get("accountNumber").toString());
 		searchQuery.put("checkoutID", checkoutID);
 		searchQuery.put("site.nickNameID", checkoutMessage.getString("nickNameID"));
 		searchQuery.put("site.name", checkoutMessage.getString("site"));

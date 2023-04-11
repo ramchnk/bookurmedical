@@ -24,7 +24,7 @@ public class PrepareDuplicateSKUsDBQuery implements Processor {
 		String customSKU = exchange.getProperty("customSKU", String.class);
 		String SKU = exchange.getProperty("SKU", String.class);
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		Document searchQuery = new Document("accountNumber", orderMessage.getString("accountNumber"));
+		Document searchQuery = new Document("accountNumber", orderMessage.get("accountNumber").toString());
 		searchQuery.put("SKU", new Document("$ne", SKU));
 		searchQuery.put("customSKU", customSKU);
 		searchQuery.put("variants", new Document("$exists", false));

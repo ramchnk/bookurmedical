@@ -33,11 +33,11 @@ public class ConstructOrderNotification implements Processor {
 			String nickNameID = nickName.getString("id");
 			String orderPageUrl = Config.getConfig().getSIAOrderPageURL() + orderRecord.get("orderID") + "&site="
 					+ nickNameID;
-			String siteNickname = nickNameID.split("-")[0] + "-" + nickName.getString("value");
+			String siteNickname = nickNameID.split("-")[0] + "-" + nickName.get("value").toString();
 			message.put("siteNickname", siteNickname);
 			message.put("nicknameId", nickNameID);
 			JSONArray orderItems = orderRecord.getJSONArray("orderItems");
-			if(orderItems.length() == 0){
+			if (orderItems.length() == 0) {
 				exchange.getOut().setBody(null);
 				return;
 			}
@@ -57,8 +57,8 @@ public class ConstructOrderNotification implements Processor {
 					itemDetails.put("imageUrl", orderItem.getString("imageURL"));
 				}
 				if (orderItem.has("SKU")) {
-					SKUListInOrder.add(orderItem.getString("SKU"));
-					skuDetailMap.put(orderItem.getString("SKU"), itemDetails);
+					SKUListInOrder.add(orderItem.get("SKU").toString());
+					skuDetailMap.put(orderItem.get("SKU").toString(), itemDetails);
 				}
 				items.put(itemDetails);
 			}
@@ -72,7 +72,7 @@ public class ConstructOrderNotification implements Processor {
 				JSONObject buyerDetails = orderRecord.getJSONObject("buyerDetails");
 				// for shopee only having buyerID
 				if (buyerDetails.has("buyerID")) {
-					message.put("buyerId", buyerDetails.getString("buyerID"));
+					message.put("buyerId", buyerDetails.get("buyerID").toString());
 				} else if (buyerDetails.has("name")) {
 					// for rest of all channels has name only.
 					message.put("buyerId", buyerDetails.getString("name"));
@@ -98,12 +98,13 @@ public class ConstructOrderNotification implements Processor {
 				message.put("documents", orderRecord.get("documents"));
 			}
 			if (orderRecord.has("cancelDetails") && orderRecord.getJSONObject("cancelDetails").has("cancelReason")) {
-				message.put("cancelReason", orderRecord.getJSONObject("cancelDetails").getString("cancelReason").replaceAll("_", " "));
+				message.put("cancelReason",
+						orderRecord.getJSONObject("cancelDetails").getString("cancelReason").replaceAll("_", " "));
 			}
 			outBody.put("accountNumber", orderRecord.get("accountNumber"));
 			outBody.put("merchantID", exchange.getProperty("merchantID"));
-			if(orderRecord.has("invoiceNumber")) {
-				message.put("invoiceNumber", orderRecord.get("invoiceNumber"));	
+			if (orderRecord.has("invoiceNumber")) {
+				message.put("invoiceNumber", orderRecord.get("invoiceNumber"));
 			}
 			outBody.put("userMessageName", (String) exchange.getIn().getHeader("userMessageName"));
 			outBody.put("message", message);

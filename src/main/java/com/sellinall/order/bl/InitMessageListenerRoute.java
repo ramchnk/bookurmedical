@@ -22,7 +22,7 @@ public class InitMessageListenerRoute implements Processor {
 		String siteName = nickNameID.split("-")[0];
 		exchange.setProperty("siteName", siteName);
 		exchange.setProperty("nickNameID", nickNameID);
-		exchange.setProperty("accountNumber", message.getString("accountNumber"));
+		exchange.setProperty("accountNumber", message.get("accountNumber").toString());
 		exchange.setProperty("updateStock", true);
 		if (message.has("updateStock")) {
 			exchange.setProperty("updateStock", message.getBoolean("updateStock"));

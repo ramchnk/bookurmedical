@@ -12,28 +12,25 @@ import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 
 /**
- *  * Allow the system to serve xhr level 2 from all cross domain site  *  * @author
- * Vikraman (LGPLv3)  * @version 0.1  
+ *  * Allow the system to serve xhr level 2 from all cross domain site  *
+ *  * @author Vikraman (LGPLv3)  * @version 0.1  
  */
 public class AuthorizationRequestFilter implements ContainerRequestFilter {
-	static Logger log = Logger.getLogger(AuthorizationRequestFilter.class
-			.getName());
+	static Logger log = Logger.getLogger(AuthorizationRequestFilter.class.getName());
 
 	// private AuthorizationLifeCycle authLifeCycle;
 
-	public ContainerRequest filter(ContainerRequest arg0)
-			throws WebApplicationException {
+	public ContainerRequest filter(ContainerRequest arg0) throws WebApplicationException {
 		arg0.getProperties().put("apiExecutionStartTime", System.currentTimeMillis());
 		if (arg0.getMethod().equals("OPTIONS")) {
 			throw new WebApplicationException(Status.ACCEPTED);
 		}
-		if(arg0.getPath().contains("health")) {
+		if (arg0.getPath().contains("health")) {
 			log.debug("No Need To authorize this url because it is from PARTNERNOTIFSERV / health service ");
 			return arg0;
 		}
 		/*
-		 * if (arg0.getAbsolutePath().getHost().equals("localhost")) { return
-		 * arg0; }
+		 * if (arg0.getAbsolutePath().getHost().equals("localhost")) { return arg0; }
 		 */
 
 		log.debug("method is " + arg0.getMethod());

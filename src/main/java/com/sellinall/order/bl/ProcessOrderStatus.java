@@ -1,5 +1,6 @@
 package com.sellinall.order.bl;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ public class ProcessOrderStatus implements Processor {
 		exchange.setProperty("isOldOrder", false);
 		if (exchange.getProperties().containsKey("timeLinked")) {
 			long timeLinked = exchange.getProperty("timeLinked", Long.class);
-			long timeOrderCreated = orderMessage.getLong("timeOrderCreated");
+			long timeOrderCreated = new BigDecimal(orderMessage.get("timeOrderCreated").toString()).longValue();
 			if (timeOrderCreated < timeLinked) {
 				exchange.setProperty("isOldOrder", true);
 			}
@@ -55,13 +56,13 @@ public class ProcessOrderStatus implements Processor {
 		NotificationOrderActionStatus notificationOrderActionStatus = NotificationOrderActionStatus.NO_ACTION;
 		NotificationPaymentActionStatus notificationPaymentActionStatus = NotificationPaymentActionStatus.NO_ACTION;
 		exchange.setProperty("hasCombinedOrderIds", false);
-		if ( orderMessage.has("combinedOrderIds") && !orderMessage.isNull("combinedOrderIds")) {
+		if (orderMessage.has("combinedOrderIds") && !orderMessage.isNull("combinedOrderIds")) {
 			exchange.setProperty("hasCombinedOrderIds", true);
 		}
-		if ( ( SIAOrderStatus.UNKNOWN.equals(notificationOrderStatus) ||
-			  SIAOrderStatus.UNSUPPORTED.equals(notificationOrderStatus) ) ) {
+		if ((SIAOrderStatus.UNKNOWN.equals(notificationOrderStatus)
+				|| SIAOrderStatus.UNSUPPORTED.equals(notificationOrderStatus))) {
 			log.warn("Notification Order Status : " + notificationOrderStatus);
-			throw new Exception("Unknown Notification Order Status"); 
+			throw new Exception("Unknown Notification Order Status");
 		}
 		notificationOrderActionStatus = NotificationOrderActionStatus.valueOf(orderMessage.getString("orderStatus"));
 		try {
@@ -79,6 +80,12 @@ public class ProcessOrderStatus implements Processor {
 			SIAPaymentStatus orderDBPayementStatus = SIAPaymentStatus.valueOf(orderDBObject.getString("paymentStatus"));
 			notificationPaymentActionStatus = OrderUtil.handleExistingPaymentStatus(notificationPaymentStatus,
 					orderDBPayementStatus, orderMessage);
+			//Note : handled payment status for Cash On Delivery(COD) cancelled/returned orders
+			if (notificationOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())
+					|| notificationOrderStatus.equals(SIAOrderStatus.RETURNED.toString())) {
+				orderMessage.put("paymentStatus", orderDBPayementStatus.equals(SIAPaymentStatus.COMPLETED.toString())
+								? SIAPaymentStatus.REFUNDED.toString() : orderDBPayementStatus.toString());
+			}
 			buildOrderUpdateJournal(exchange, hasOrderInDB, orderDBObject, orderMessage);
 		} else {
 			buildOrderUpdateJournal(exchange, hasOrderInDB, null, orderMessage);
@@ -118,7 +125,8 @@ public class ProcessOrderStatus implements Processor {
 		Map<String, Document> inventoryDetailsMap = new HashMap<String, Document>();
 		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);
 
-		// For qoo10 orders orderItems doesn't exist in update polling msg so pushed orderItems from existing db object to satisfy free gift rule cases
+		// For qoo10 orders orderItems doesn't exist in update polling msg so pushed
+		// orderItems from existing db object to satisfy free gift rule cases
 		if (exchange.getProperty("processRule", Boolean.class) && exchange.getProperty("hasOrderInDB", Boolean.class)
 				&& exchange.getProperties().containsKey("siteName")
 				&& exchange.getProperty("siteName", String.class).equals("qoo10") && !orderMessage.has("orderItems")) {
@@ -142,7 +150,7 @@ public class ProcessOrderStatus implements Processor {
 					orderMessage.getString("shippingStatus"));
 		}
 		exchange.setProperty("isEligiblePublishToJournal", false);
-		
+
 		String updateStatus = OrderUpdateStatus.COMPLETE.toString();
 		if (orderMessage.has("updateStatus")) {
 			updateStatus = orderMessage.getString("updateStatus");

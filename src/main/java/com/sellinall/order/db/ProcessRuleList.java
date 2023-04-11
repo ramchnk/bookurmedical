@@ -28,8 +28,8 @@ public class ProcessRuleList implements Processor {
 			Document action = (Document) rule.get("action");
 			String ruleEngineMethod = RuleActionsMapping
 					.getRuleEngineMethod(RuleActionEnum.valueOf(action.getString("name")));
-			Method method = RuleEngine.class.getMethod(ruleEngineMethod, Document.class, Document.class,
-					List.class, String.class, List.class);
+			Method method = RuleEngine.class.getMethod(ruleEngineMethod, Document.class, Document.class, List.class,
+					String.class, List.class);
 			boolean isRuleSatisfied = (boolean) method.invoke(new RuleEngine(), orderDetails, rule, freeGiftOrderItems,
 					selectedWMS, giftItemSKUs);
 			if (action.getString("name").equals(RuleActionEnum.REMOVE_ALL_ITEM.toString()) && isRuleSatisfied) {

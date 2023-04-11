@@ -54,8 +54,7 @@ public class ConstructLowQuantityNotification implements Processor {
 	}
 
 	private ArrayList<String> getNickNameIDs(Document inventory, Exchange exchange) {
-		Map<String, Document> nickNameObjectMap = (Map<String, Document>) exchange
-				.getProperty("nickNameObjectMap");
+		Map<String, Document> nickNameObjectMap = (Map<String, Document>) exchange.getProperty("nickNameObjectMap");
 		String[] sitesList = PostingSites.getConfig().getSitesList();
 		ArrayList<String> nickNameIDs = new ArrayList<String>();
 		for (String site : sitesList) {
@@ -68,7 +67,8 @@ public class ConstructLowQuantityNotification implements Processor {
 						if (siteAccountObject.containsKey("enableLowQuantityNotification")
 								&& siteAccountObject.getBoolean("enableLowQuantityNotification")) {
 							int thresholdQuantity = (siteAccountObject.containsKey("lowQuantityThreshold"))
-									? siteAccountObject.getInteger("lowQuantityThreshold") : 0;
+									? siteAccountObject.getInteger("lowQuantityThreshold")
+									: 0;
 							if (siteInventoryObject.getInteger("noOfItem") < thresholdQuantity) {
 								nickNameIDs.add(siteInventoryObject.getString("nickNameID"));
 							}

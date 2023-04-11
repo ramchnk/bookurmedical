@@ -1,5 +1,7 @@
 package com.sellinall.order.message;
 
+import java.math.BigDecimal;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
@@ -14,13 +16,13 @@ public class InitializeJournalMessage implements Processor {
 		JSONArray eventMessagesArray = new JSONArray();
 		JSONObject eventMessages = new JSONObject();
 		eventMessages.put("orderID", orderMessage.getString("orderID"));
-		eventMessages.put("accountNumber", orderMessage.getString("accountNumber"));
+		eventMessages.put("accountNumber", orderMessage.get("accountNumber").toString());
 		eventMessages.put("nickNameID", orderMessage.getString("nickNameID"));
 		eventMessages.put("channel", orderMessage.getString("site"));
 		if (orderMessage.has("addendum")) {
 			JSONObject addendum = orderMessage.getJSONObject("addendum");
 			if (addendum.has("eventTime")) {
-				eventMessages.put("eventTime", addendum.getLong("eventTime"));
+				eventMessages.put("eventTime", new BigDecimal(addendum.get("eventTime").toString()).longValue());
 			}
 			if (addendum.has("adjustedBy")) {
 				eventMessages.put("adjustedBy", addendum.getString("adjustedBy"));

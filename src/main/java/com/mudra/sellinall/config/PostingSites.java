@@ -15,11 +15,11 @@ public class PostingSites {
 		this.sites = sites;
 	}
 
-	public String[] getSitesList() {	
+	public String[] getSitesList() {
 		sitesList = sites.split("-");
 		return sitesList;
 	}
-	
+
 	public static PostingSites getConfig() {
 		return (PostingSites) context.getBean("PostingSites");
 	}

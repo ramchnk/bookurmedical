@@ -1028,9 +1028,9 @@
 				</when>
 			</when>
 			<when>
-				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedWms} == true or
-						${exchangeProperty.publishToMaatramBridgeIntegratedErp} == true or
-						${exchangeProperty.publishToMaatramBridgeIntegratedShippingCarrier} == true or
+				<simple>${exchangeProperty.publishToMaatramBridgeIntegratedWms} == true ||
+						${exchangeProperty.publishToMaatramBridgeIntegratedErp} == true ||
+						${exchangeProperty.publishToMaatramBridgeIntegratedShippingCarrier} == true ||
 						${exchangeProperty.publishToMaatramBridgeIntegratedOms} == true
 				</simple>
 				<setProperty name="publishTo">
@@ -1327,7 +1327,7 @@
 
 		<route id="messageListner">
 			<from
-				uri="rabbitmq:partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true&amp;autoAck=false&amp;prefetchEnabled=true&amp;prefetchSize=0&amp;prefetchCount=1&amp;prefetchGlobal=false&amp;concurrentConsumers=4&amp;exchangePattern=InOnly" />
+				uri="rabbitmq:partnerNotifExchange?queue=partnerNotifQueue&amp;routingKey=partnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true&amp;autoAck=false&amp;prefetchEnabled=true&amp;prefetchSize=0&amp;prefetchCount=1&amp;prefetchGlobal=false&amp;concurrentConsumers=4" />
 			<process ref="initMessageListenerRoute" />
 			<when>
 				<simple>${exchangeProperty.messageType} == 'order'</simple>

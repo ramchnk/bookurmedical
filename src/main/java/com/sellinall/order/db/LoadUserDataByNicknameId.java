@@ -3,6 +3,7 @@
  */
 package com.sellinall.order.db;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -53,7 +54,8 @@ public class LoadUserDataByNicknameId implements Processor {
 			exchange.setProperty("profileID", profileID);
 		}
 		if (userSiteSpecificObject.containsKey("timeLinked") && userSiteSpecificObject.get("timeLinked") != null) {
-			exchange.setProperty("timeLinked", userSiteSpecificObject.getLong("timeLinked"));
+			exchange.setProperty("timeLinked",
+					new BigDecimal(userSiteSpecificObject.get("timeLinked").toString()).longValue());
 		}
 
 		exchange.setProperty("isAccountingChannel", false);
@@ -72,7 +74,7 @@ public class LoadUserDataByNicknameId implements Processor {
 		exchange.setProperty("isMaatramBridgeIntegratedShippingCarrier", false);
 		if (userSiteSpecificObject.containsKey("shippingCarrier")
 				&& userSiteSpecificObject.get("shippingCarrier") != null) {
-			List<Document> shippingCarrier = (List<Document>) userSiteSpecificObject.get("shippingCarrier");
+			List<String> shippingCarrier = (List<String>) userSiteSpecificObject.get("shippingCarrier");
 			if (shippingCarrier.contains("ninjaVan")) {
 				if (userSiteSpecificObject.containsKey("isAutoAcceptOrder")
 						&& !userSiteSpecificObject.getBoolean("isAutoAcceptOrder")
@@ -88,7 +90,7 @@ public class LoadUserDataByNicknameId implements Processor {
 			} else if (shippingCarrier.contains("janio")) {
 				exchange.setProperty("isJanioShippingCarrier", true);
 			} else if (shippingCarrier.size() > 0) {
-				String shippingCarrierName = shippingCarrier.get(0).toString();
+				String shippingCarrierName = shippingCarrier.get(0);
 				if (shippingCarrierName.startsWith("jtExpress")) {
 					exchange.setProperty("isJTExpressShippingCarrier", true);
 				} else if (shippingCarrierName.startsWith("singPost")) {

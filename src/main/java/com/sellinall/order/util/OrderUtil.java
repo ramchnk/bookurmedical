@@ -40,23 +40,26 @@ public class OrderUtil {
 				if (orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_INITIATED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_COMBINED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_RETURNED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.PROCESSING_TO_PARTIALLY_RETURNED.toString())
+						|| orderStateTransition
+								.equals(NotificationOrderActionStatus.PROCESSING_TO_PARTIALLY_RETURNED.toString())
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.DISPATCHED_TO_PROCESSING.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DISPATCHED_TO_RETURNED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.DISPATCHED_TO_PARTIALLY_RETURNED.toString())
+						|| orderStateTransition
+								.equals(NotificationOrderActionStatus.DISPATCHED_TO_PARTIALLY_RETURNED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_DISPATCHED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_CANCELLED.toString())
 						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_RETURNED.toString())
-						|| orderStateTransition.equals(NotificationOrderActionStatus.DELIVERED_TO_PARTIALLY_RETURNED.toString())
+						|| orderStateTransition
+								.equals(NotificationOrderActionStatus.DELIVERED_TO_PARTIALLY_RETURNED.toString())
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.CANCEL_REQUESTED_TO_ACCEPTED.toString())
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.DELIVERY_FAILED_TO_RETURN_SHIPPED.toString())
 						|| orderStateTransition
 								.equals(NotificationOrderActionStatus.RETURN_REQUESTED_TO_RETURN_SHIPPED.toString())
-						|| orderStateTransition
-								.equals(NotificationOrderActionStatus.PARTIAL_RETURN_REQUESTED_TO_RETURN_SHIPPED.toString())) {
+						|| orderStateTransition.equals(
+								NotificationOrderActionStatus.PARTIAL_RETURN_REQUESTED_TO_RETURN_SHIPPED.toString())) {
 					if (type.equals("order")) {
 						log.warn(" The backward transistion came for orderID is " + orderID
 								+ " and orderStateTransistion " + orderStateTransition);
@@ -79,7 +82,7 @@ public class OrderUtil {
 		}
 		return NotificationOrderActionStatus.NO_ACTION;
 	}
-	
+
 	public static NotificationPaymentActionStatus handleExistingPaymentStatus(
 			SIAPaymentStatus notificationPaymentStatus, SIAPaymentStatus orderDBPaymentStatus, JSONObject orderMessage)
 			throws Exception {
@@ -140,10 +143,11 @@ public class OrderUtil {
 
 	public static void initMemoryCached() {
 		try {
-			AuthDescriptor ad = new AuthDescriptor(new String[] { "PLAIN" }, new PlainCallbackHandler(Config
-					.getConfig().getMemcachedCloudUsername(), Config.getConfig().getMemcachedCloudPassword()));
-			MemcachedClient mc = new MemcachedClient(new ConnectionFactoryBuilder()
-					.setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setAuthDescriptor(ad).build(),
+			AuthDescriptor ad = new AuthDescriptor(new String[] { "PLAIN" }, new PlainCallbackHandler(
+					Config.getConfig().getMemcachedCloudUsername(), Config.getConfig().getMemcachedCloudPassword()));
+			MemcachedClient mc = new MemcachedClient(
+					new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+							.setAuthDescriptor(ad).build(),
 					AddrUtil.getAddresses(Config.getConfig().getMemcachedCloudServers()));
 			memcachedClient = mc;
 		} catch (IOException ex) {
@@ -152,7 +156,7 @@ public class OrderUtil {
 		}
 	}
 
-	public static MemcachedClient getMemcachedClient(){
+	public static MemcachedClient getMemcachedClient() {
 		return memcachedClient;
 	}
 
@@ -169,7 +173,7 @@ public class OrderUtil {
 		} catch (Exception e) {
 			if (retry) {
 				try {
-					log.error("Retrying to read value from  memcache, key:"+MCkey);
+					log.error("Retrying to read value from  memcache, key:" + MCkey);
 					memcachedClient.shutdown();
 					initMemoryCached();
 					return getValueFromMemcache(MCkey, false);
@@ -177,7 +181,7 @@ public class OrderUtil {
 					i.printStackTrace();
 				}
 			} else {
-				log.error("unable to get value from memcache, key :"+MCkey);
+				log.error("unable to get value from memcache, key :" + MCkey);
 				e.printStackTrace();
 			}
 		}

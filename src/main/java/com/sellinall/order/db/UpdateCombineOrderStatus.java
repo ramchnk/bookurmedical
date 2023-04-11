@@ -34,9 +34,9 @@ public class UpdateCombineOrderStatus implements Processor {
 
 	private void updateOrderCollection(Exchange exchange, JSONObject orderMessage) throws JSONException {
 		JSONArray combineOrderIds = orderMessage.getJSONArray("combinedOrderIds");
-		List<Document> combineOrderIdsList = new ArrayList<Document>();
+		List<String> combineOrderIdsList = new ArrayList<String>();
 		for (int index = 0; index < combineOrderIds.length(); index++) {
-			combineOrderIdsList.add(Document.parse(combineOrderIds.getString(index)));
+			combineOrderIdsList.add(combineOrderIds.getString(index));
 		}
 		Document query = new Document("accountNumber", exchange.getProperty("accountNumber", String.class));
 		query.put("orderID", new Document("$in", combineOrderIdsList));

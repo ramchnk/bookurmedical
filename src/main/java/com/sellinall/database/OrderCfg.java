@@ -10,9 +10,9 @@ import com.mudra.sellinall.config.Config;
 public class OrderCfg {
 
 	public @Bean MongoDatabase db() throws Exception {
-			MongoClient uri = (MongoClient) MongoClients.create(Config.getConfig().getOrderConfigDBURI());
-			MongoDatabase db = uri.getDatabase(Config.getConfig().getOrderConfigDBName());
-			return db;
+		MongoClient uri = (MongoClient) MongoClients.create(Config.getConfig().getOrderConfigDBURI());
+		MongoDatabase db = uri.getDatabase(Config.getConfig().getOrderConfigDBName());
+		return db;
 	}
 
 }

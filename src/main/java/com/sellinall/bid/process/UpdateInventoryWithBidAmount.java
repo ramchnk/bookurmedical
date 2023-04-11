@@ -32,7 +32,7 @@ public class UpdateInventoryWithBidAmount implements Processor {
 			throws JSONException {
 		Document searchQuery = new Document();
 		searchQuery.put("SKU", exchange.getProperty("SKU", String.class));
-		searchQuery.put("accountNumber", bidMessage.getString("accountNumber"));
+		searchQuery.put("accountNumber", bidMessage.get("accountNumber").toString());
 		String siteName = bidMessage.getString("site");
 		searchQuery.put(siteName + ".nickNameID", bidMessage.getString("nickNameID"));
 		MongoCollection<Document> table = DbUtilities.getInventoryDBCollection("inventory");

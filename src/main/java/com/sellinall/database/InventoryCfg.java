@@ -15,5 +15,5 @@ public class InventoryCfg {
 		MongoClient uri = (MongoClient) MongoClients.create(Config.getConfig().getInventoryConfigDBURI());
 		MongoDatabase db = uri.getDatabase(Config.getConfig().getInventoryConfigDBName());
 		return db;
-}
+	}
 }

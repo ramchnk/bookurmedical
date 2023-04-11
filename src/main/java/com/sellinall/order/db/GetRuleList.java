@@ -29,7 +29,7 @@ public class GetRuleList implements Processor {
 
 		Document conditions = new Document();
 		conditions.put("$elemMatch", elemMatch);
-		searchQuery.put("conditions",conditions);
+		searchQuery.put("conditions", conditions);
 		searchQuery.put("status", SIAInventoryStatus.ACTIVE.toString());
 		Document sort = new Document();
 		sort.put("priority", -1);

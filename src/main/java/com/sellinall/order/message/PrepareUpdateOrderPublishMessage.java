@@ -6,8 +6,7 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.sellinall.order.util.OrderUtil;
-
+import com.sellinall.util.ParserUtil;
 /**
  * 
  * @author Raguvaran
@@ -18,7 +17,7 @@ public class PrepareUpdateOrderPublishMessage implements Processor {
 	static Logger log = Logger.getLogger(PrepareUpdateOrderPublishMessage.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		JSONObject publishMessage = OrderUtil
+		JSONObject publishMessage = ParserUtil
 				.parseToJsonObject(Document.parse(exchange.getProperty("orderRecord", String.class)));
 		if (!publishMessage.has("site")) {
 			log.error("siteName not found in order message");

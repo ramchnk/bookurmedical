@@ -13,7 +13,7 @@ import com.mongodb.client.MongoCollection;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
 
-public class LoadAccountData implements Processor{
+public class LoadAccountData implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
@@ -21,9 +21,9 @@ public class LoadAccountData implements Processor{
 		Document accountDetails = getAccountDetails(accountNumber, sitesList);
 		Map<String, Document> nickNameObjectMap = new HashMap<String, Document>();
 		for (String site : sitesList) {
-			if(accountDetails.containsKey(site)){
+			if (accountDetails.containsKey(site)) {
 				ArrayList<Document> siteAccountList = (ArrayList<Document>) accountDetails.get(site);
-				for (Document siteAccountObject: siteAccountList){
+				for (Document siteAccountObject : siteAccountList) {
 					Document siteNickNameObject = (Document) siteAccountObject.get("nickName");
 					nickNameObjectMap.put(siteNickNameObject.getString("id"), siteAccountObject);
 				}
@@ -32,6 +32,7 @@ public class LoadAccountData implements Processor{
 		exchange.setProperty("nickNameObjectMap", nickNameObjectMap);
 		exchange.setProperty("accountDetails", accountDetails);
 	}
+	
 	private Document getAccountDetails(String accountNumber, String[] sitesName) {
 		Document searchQuery = new Document();
 		ObjectId objId = new ObjectId(accountNumber);

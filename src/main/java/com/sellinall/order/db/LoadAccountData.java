@@ -9,24 +9,22 @@ import org.apache.camel.Processor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.util.JSON;
 import com.mudra.sellinall.config.PostingSites;
 import com.sellinall.database.DbUtilities;
 
-public class LoadAccountData implements Processor{
+public class LoadAccountData implements Processor {
 
 	public void process(Exchange exchange) throws Exception {
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		String[] sitesList = PostingSites.getConfig().getSitesList();
-		BasicDBObject accountDetails = getAccountDetails(accountNumber, sitesList);
-		Map<String, BasicDBObject> nickNameObjectMap = new HashMap<String, BasicDBObject>();
+		Document accountDetails = getAccountDetails(accountNumber, sitesList);
+		Map<String, Document> nickNameObjectMap = new HashMap<String, Document>();
 		for (String site : sitesList) {
-			if(accountDetails.containsField(site)){
-				ArrayList<BasicDBObject> siteAccountList = (ArrayList<BasicDBObject>) accountDetails.get(site);
-				for (BasicDBObject siteAccountObject: siteAccountList){
-					BasicDBObject siteNickNameObject = (BasicDBObject) siteAccountObject.get("nickName");
+			if (accountDetails.containsKey(site)) {
+				ArrayList<Document> siteAccountList = (ArrayList<Document>) accountDetails.get(site);
+				for (Document siteAccountObject : siteAccountList) {
+					Document siteNickNameObject = (Document) siteAccountObject.get("nickName");
 					nickNameObjectMap.put(siteNickNameObject.getString("id"), siteAccountObject);
 				}
 			}
@@ -34,12 +32,13 @@ public class LoadAccountData implements Processor{
 		exchange.setProperty("nickNameObjectMap", nickNameObjectMap);
 		exchange.setProperty("accountDetails", accountDetails);
 	}
-	private BasicDBObject getAccountDetails(String accountNumber, String[] sitesName) {
-		BasicDBObject searchQuery = new BasicDBObject();
+
+	private Document getAccountDetails(String accountNumber, String[] sitesName) {
+		Document searchQuery = new Document();
 		ObjectId objId = new ObjectId(accountNumber);
 		searchQuery.put("_id", objId);
 
-		BasicDBObject projection = new BasicDBObject();
+		Document projection = new Document();
 		projection.put("merchantID", 1);
 		for (String site : sitesName) {
 			projection.put(site + ".nickName", 1);
@@ -48,7 +47,7 @@ public class LoadAccountData implements Processor{
 		}
 		MongoCollection<Document> table = DbUtilities.getDBCollection("accounts");
 		Document accountDocument = table.find(searchQuery).projection(projection).first();
-		BasicDBObject accountDetails = (BasicDBObject) JSON.parse(accountDocument.toJson());
+		Document accountDetails = Document.parse(accountDocument.toJson());
 		return accountDetails;
 	}
 

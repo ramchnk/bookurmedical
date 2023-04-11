@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.sellinall.database.DbUtilities;
 
@@ -22,8 +21,8 @@ public class LoadAndProcessCheckoutFromDB implements Processor {
 		String checkoutID = checkoutMessage.getString("checkoutID");
 		exchange.setProperty("checkoutID", checkoutID);
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("abandonedCheckouts");
-		BasicDBObject searchQuery = new BasicDBObject();
-		searchQuery.put("accountNumber", checkoutMessage.getString("accountNumber"));
+		Document searchQuery = new Document();
+		searchQuery.put("accountNumber", checkoutMessage.get("accountNumber").toString());
 		searchQuery.put("checkoutID", checkoutID);
 		searchQuery.put("site.nickNameID", checkoutMessage.getString("nickNameID"));
 		searchQuery.put("site.name", checkoutMessage.getString("site"));
@@ -34,6 +33,6 @@ public class LoadAndProcessCheckoutFromDB implements Processor {
 			return;
 		}
 		exchange.setProperty("hasCheckoutInDB", true);
-		exchange.setProperty("checkoutDBObject", BasicDBObject.parse(dbResult.toJson()));
+		exchange.setProperty("checkoutDBObject", Document.parse(dbResult.toJson()));
 	}
 }

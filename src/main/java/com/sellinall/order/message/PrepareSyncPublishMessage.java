@@ -7,10 +7,9 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 import com.sellinall.order.util.OrderUtil;
 
 public class PrepareSyncPublishMessage implements Processor {
@@ -18,7 +17,7 @@ public class PrepareSyncPublishMessage implements Processor {
 	@SuppressWarnings("unchecked")
 	public void process(Exchange exchange) throws Exception {
 		JSONObject inventoryDBRecord = OrderUtil
-				.parseToJsonObject((DBObject) JSON.parse(exchange.getProperty("inventory", String.class)));
+				.parseToJsonObject(Document.parse(exchange.getProperty("inventory", String.class)));
 		JSONObject publishMessage = new JSONObject();
 		Object body = exchange.getIn().getBody();
 		// publish updateItem msg to site
@@ -38,8 +37,8 @@ public class PrepareSyncPublishMessage implements Processor {
 		publishMessage.put("isQuantityUpdateByNewOrder", true);
 		publishMessage.put("fieldsToUpdate", syncFieldsToUpdate);
 		publishMessage.put("SKU", inventoryDBRecord.getString("SKU"));
-		publishMessage.put("accountNumber", inventoryDBRecord.getString("accountNumber"));
-		exchange.setProperty("accountNumber", inventoryDBRecord.getString("accountNumber"));
+		publishMessage.put("accountNumber", inventoryDBRecord.get("accountNumber").toString());
+		exchange.setProperty("accountNumber", inventoryDBRecord.get("accountNumber").toString());
 		exchange.getOut().setBody(publishMessage);
 	}
 }

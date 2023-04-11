@@ -13,14 +13,14 @@ public class LoggingProcessor implements Processor {
 		log.debug("LoggingProcessor " + ++si + " {");
 		log.debug("Received Bodyr: " +
 
-		exchange.getIn().getBody().toString());
+				exchange.getIn().getBody().toString());
 
 		log.debug("Received header: " +
 
-		exchange.getIn().getHeaders().toString());
+				exchange.getIn().getHeaders().toString());
 		try {
-			log.debug("Received Exception: " + exchange.getException() != null ? (exchange.getException().getMessage() != null ? exchange
-					.getException().getMessage() : "")
+			log.debug("Received Exception: " + exchange.getException() != null
+					? (exchange.getException().getMessage() != null ? exchange.getException().getMessage() : "")
 					: "no exception");
 		} catch (Exception e) {
 			log.debug("Exception" + e);

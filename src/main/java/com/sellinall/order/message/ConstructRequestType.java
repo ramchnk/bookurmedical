@@ -3,8 +3,6 @@ package com.sellinall.order.message;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 /**
@@ -38,11 +36,11 @@ public class ConstructRequestType implements Processor {
 			}
 			// for ninjaVan createOrder & updateOrder
 			// for infor createOrder & updateOrder
-			if (publishTo.equals("ninjaVan") || publishTo.equals("janio") || publishTo.equals("infor") || publishTo.equals("satsaco")
-					|| publishTo.equals("netSuite") || publishTo.equals("odoo") || publishTo.equals("singPost")
-					|| publishTo.equals("aramex") || publishTo.equals("vend") || publishTo.equals("jtExpress")
-					|| publishTo.equals("aramexShipping") || publishTo.equals("maatramBridgeIntegratedServer")
-					|| publishTo.equals("SiAWMS")) {
+			if (publishTo.equals("ninjaVan") || publishTo.equals("janio") || publishTo.equals("infor")
+					|| publishTo.equals("satsaco") || publishTo.equals("netSuite") || publishTo.equals("odoo")
+					|| publishTo.equals("singPost") || publishTo.equals("aramex") || publishTo.equals("vend")
+					|| publishTo.equals("jtExpress") || publishTo.equals("aramexShipping")
+					|| publishTo.equals("maatramBridgeIntegratedServer") || publishTo.equals("SiAWMS")) {
 				String requestType = "";
 				if (exchange.getProperty("isNewOrder", boolean.class)) {
 					requestType = "createOrder";

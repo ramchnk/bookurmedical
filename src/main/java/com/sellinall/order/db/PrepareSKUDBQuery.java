@@ -30,7 +30,7 @@ public class PrepareSKUDBQuery implements Processor {
 		}
 		Document searchQuery = new Document();
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());
+		searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());		
 		searchQuery.put("SKU", new Document("$in", in));
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = exchange.getProperty("siteName", String.class);

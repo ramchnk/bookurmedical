@@ -191,11 +191,11 @@ public class OrderUtil {
 	public static void updateMemcache(String MCKey, int MC_MAX_EXPIRE_TIME, double exchangeRate) {
 		memcachedClient.set(MCKey, MC_MAX_EXPIRE_TIME, exchangeRate);
 	}
-
-	public static List<String> parseDocumentListFromArray(JSONArray arrayObject) throws JSONException {
-		List<String> documentList = new ArrayList<String>();
+	
+	public static List<Document> parseDocumentListFromArray(JSONArray arrayObject) throws JSONException {
+		List<Document> documentList = new ArrayList<Document>();
 		for (int iterator = 0; iterator < arrayObject.length(); iterator++) {
-			documentList.add(arrayObject.get(iterator).toString());
+			documentList.add(Document.parse(arrayObject.get(iterator).toString()));
 		}
 		return documentList;
 	}

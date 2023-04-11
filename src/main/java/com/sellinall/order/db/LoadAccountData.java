@@ -32,7 +32,7 @@ public class LoadAccountData implements Processor {
 		exchange.setProperty("nickNameObjectMap", nickNameObjectMap);
 		exchange.setProperty("accountDetails", accountDetails);
 	}
-
+	
 	private Document getAccountDetails(String accountNumber, String[] sitesName) {
 		Document searchQuery = new Document();
 		ObjectId objId = new ObjectId(accountNumber);

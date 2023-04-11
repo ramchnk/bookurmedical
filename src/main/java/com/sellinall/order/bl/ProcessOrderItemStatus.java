@@ -40,7 +40,7 @@ public class ProcessOrderItemStatus implements Processor {
 									orderDBStatus, orderItemMessage, orderID, "orderItem");
 							// Note : handled payment status in orderItem level for Cash On Delivery(COD)
 							// cancelled/returned orders
-							if (orderItem.containsField("paymentStatus") && (notificationOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())
+							if (orderItem.containsKey("paymentStatus") && (notificationOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())
 											|| notificationOrderStatus.equals(SIAOrderStatus.RETURNED.toString()))) {
 								SIAPaymentStatus paymentDBStatus = SIAPaymentStatus
 										.valueOf(orderItem.getString("paymentStatus"));

@@ -267,7 +267,6 @@ public class UpdateOrderDBQuery implements Processor {
 		UpdateOptions options = new UpdateOptions();
 		options.upsert(true);
 		try {
-			
 			if (exchange.getProperties().containsKey("merchantID")) {
 				orderRecord.append("merchantID", exchange.getProperty("merchantID"));
 			}

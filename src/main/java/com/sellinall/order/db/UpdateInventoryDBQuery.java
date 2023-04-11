@@ -203,7 +203,6 @@ public class UpdateInventoryDBQuery implements Processor {
 			incrementSetter(quantityIncDecModifier, "noOfItemsold", -quantitySold);
 		}
 	}
-
 	private void incrementSetter(Document modifier, String key, int value) {
 		modifier.append(key, value);
 	}

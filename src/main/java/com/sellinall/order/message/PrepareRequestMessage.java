@@ -5,7 +5,6 @@ import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.codehaus.jettison.json.JSONObject;
-
 import com.sellinall.util.ParserUtil;
 
 /**

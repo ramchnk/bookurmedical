@@ -12,7 +12,6 @@ import org.codehaus.jettison.json.JSONObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.util.OrderUtil;
 import com.sellinall.util.enums.SIAOrderStatus;
-import com.sellinall.util.enums.SIAPaymentStatus;
 
 public class ProcessOrderItemStatus implements Processor {
 	static Logger log = Logger.getLogger(ProcessOrderItemStatus.class.getName());
@@ -38,17 +37,6 @@ public class ProcessOrderItemStatus implements Processor {
 							SIAOrderStatus orderDBStatus = SIAOrderStatus.valueOf(orderItem.getString("orderStatus"));
 							notificationOrderActionStatus = OrderUtil.handleExistingOrderStatus(notificationOrderStatus,
 									orderDBStatus, orderItemMessage, orderID, "orderItem");
-							// Note : handled payment status in orderItem level for Cash On Delivery(COD)
-							// cancelled/returned orders
-							if (orderItem.containsKey("paymentStatus") && (notificationOrderStatus.equals(SIAOrderStatus.CANCELLED.toString())
-											|| notificationOrderStatus.equals(SIAOrderStatus.RETURNED.toString()))) {
-								SIAPaymentStatus paymentDBStatus = SIAPaymentStatus
-										.valueOf(orderItem.getString("paymentStatus"));
-								orderItemMessage.put("paymentStatus",
-										paymentDBStatus.equals(SIAPaymentStatus.COMPLETED.toString())
-												? SIAPaymentStatus.REFUNDED.toString()
-												: paymentDBStatus.toString());
-							}
 							break;
 						}
 					} else {

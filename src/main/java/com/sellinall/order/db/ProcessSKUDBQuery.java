@@ -14,25 +14,25 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.sellinall.order.util.OrderUtil;
+import com.sellinall.util.ParserUtil;
 
 public class ProcessSKUDBQuery implements Processor {
 
 	static Logger log = Logger.getLogger(ProcessSKUDBQuery.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		List<Document> inventoryString = (List<Document>) exchange.getIn().getBody(List.class);
+		List<Document> inventoryList = (List<Document>) exchange.getIn().getBody(List.class);
 		exchange.setProperty("hasInventoryInDB", false);
-		if (inventoryString == null) {
-			log.debug("Inventory Record - may be deleted in our DB : " + inventoryString);
+		if (inventoryList == null) {
+			log.debug("Inventory Record - may be deleted in our DB : " + inventoryList);
 			return;
 		}
-		JSONArray inventoryList = new JSONArray(inventoryString);
 		String SKU = exchange.getProperty("SKU", String.class);
 		JSONObject inventory = getInventoryBySKU(inventoryList, SKU);
 		if (inventory != null) {
 			String itemTitle = "";
 			JSONObject parentInventory = new JSONObject();
-			if (inventoryList.length() > 1) {
+			if (inventoryList.size() > 1) {
 				parentInventory = getInventoryBySKU(inventoryList, SKU.split("-")[0]);
 				itemTitle = parentInventory.getString("itemTitle");
 			}
@@ -154,9 +154,9 @@ public class ProcessSKUDBQuery implements Processor {
 		exchange.setProperty("inventoryDetailsMap", inventoryDetailsMap);
 	}
 
-	private JSONObject getInventoryBySKU(JSONArray inventoryList, String SKU) throws Exception {
-		for (int i = 0; i < inventoryList.length(); i++) {
-			JSONObject inventory = inventoryList.getJSONObject(i);
+	private JSONObject getInventoryBySKU(List<Document> inventoryList, String SKU) throws Exception {
+		for (int i = 0; i < inventoryList.size(); i++) {
+			JSONObject inventory = ParserUtil.parseToJsonObject(inventoryList.get(i));
 			if (inventory.isNull("SKU")) {
 				throw new Exception("Inventory record doesn't exists for this SKU : " + SKU);
 			}

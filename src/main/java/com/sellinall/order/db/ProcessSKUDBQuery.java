@@ -20,7 +20,7 @@ public class ProcessSKUDBQuery implements Processor {
 	static Logger log = Logger.getLogger(ProcessSKUDBQuery.class.getName());
 
 	public void process(Exchange exchange) throws Exception {
-		String inventoryString = exchange.getIn().getBody(String.class);
+		List<Document> inventoryString = (List<Document>) exchange.getIn().getBody(List.class);
 		exchange.setProperty("hasInventoryInDB", false);
 		if (inventoryString == null) {
 			log.debug("Inventory Record - may be deleted in our DB : " + inventoryString);

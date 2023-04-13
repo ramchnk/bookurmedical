@@ -53,6 +53,7 @@ public class ProcessSKUDBQuery implements Processor {
 	@SuppressWarnings("unchecked")
 	private void extractInventoryValues(Exchange exchange, JSONObject inventory, String itemTitle,
 			JSONObject parentInventory) throws JSONException {
+		Document parentInventoryDocument = Document.parse(parentInventory.toString());
 		Map<String, Document> inventoryDetailsMap = new HashMap<String, Document>();
 		if (exchange.getProperties().containsKey("inventoryDetailsMap")) {
 			inventoryDetailsMap = (Map<String, Document>) exchange.getProperty("inventoryDetailsMap");
@@ -96,8 +97,7 @@ public class ProcessSKUDBQuery implements Processor {
 				if ((site.containsKey("imageURI") && siteJSON.getJSONArray("imageURI").length() == 0)
 						|| !site.containsKey("imageURI")) {
 					if (parentInventory.has("imageURI")) {
-						JSONArray imageURIarray = parentInventory.getJSONArray("imageURI");
-						site.put("imageURI", OrderUtil.parseDocumentListFromArray(imageURIarray));
+						site.put("imageURI", parentInventoryDocument.get("imageURI"));
 					}
 				}
 				break;

@@ -192,12 +192,4 @@ public class OrderUtil {
 		memcachedClient.set(MCKey, MC_MAX_EXPIRE_TIME, exchangeRate);
 	}
 	
-	public static List<Document> parseDocumentListFromArray(JSONArray arrayObject) throws JSONException {
-		List<Document> documentList = new ArrayList<Document>();
-		for (int iterator = 0; iterator < arrayObject.length(); iterator++) {
-			documentList.add(Document.parse(arrayObject.get(iterator).toString()));
-		}
-		return documentList;
-	}
-
 }

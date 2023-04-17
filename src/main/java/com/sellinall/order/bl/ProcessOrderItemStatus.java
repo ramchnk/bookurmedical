@@ -26,7 +26,7 @@ public class ProcessOrderItemStatus implements Processor {
 		String orderID = exchange.getProperty("orderID", String.class);
 		Boolean hasOrderInDB = (Boolean) exchange.getProperty("hasOrderInDB");
 		if (hasOrderInDB) {
-			String orderItemID = orderItemMessage.getString("orderItemID");
+			String orderItemID = orderItemMessage.get("orderItemID").toString();
 			Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
 			if (orderDBObject.containsKey("orderItems")) {
 				List<Document> orderItems = (ArrayList<Document>) orderDBObject.get("orderItems");

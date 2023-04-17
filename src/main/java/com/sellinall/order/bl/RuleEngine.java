@@ -92,8 +92,8 @@ public class RuleEngine {
 				decrementQuantityForGiftItem(order, sellerSKU, orderedFreeGiftQty, selectedWMS);
 				int giftItemCount = freeGiftOrderItems.size() + 1;
 				Document freeGiftOrderItem = new Document();
-				freeGiftOrderItem.put("orderItemID", order.getString("orderID") + "-gwp" + giftItemCount);
-				freeGiftOrderItem.put("siaOrderItemID", order.getString("orderID") + "-gwp" + giftItemCount);
+				freeGiftOrderItem.put("orderItemID", order.get("orderID").toString() + "-gwp" + giftItemCount);
+				freeGiftOrderItem.put("siaOrderItemID", order.get("orderID").toString() + "-gwp" + giftItemCount);
 				freeGiftOrderItem.put("customSKU", sellerSKU);
 				if (freeGift.containsKey("SKU") && freeGift.get("SKU") != null) {
 					freeGiftOrderItem.put("SKU", freeGift.getString("SKU"));

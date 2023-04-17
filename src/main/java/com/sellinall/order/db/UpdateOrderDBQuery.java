@@ -384,7 +384,7 @@ public class UpdateOrderDBQuery implements Processor {
 		Document orderRecord = new Document();
 		Document searchQuery = new Document();
 		searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());
-		searchQuery.put("orderID", orderMessage.getString("orderID"));
+		searchQuery.put("orderID", orderMessage.get("orderID").toString());
 		String siteName = orderMessage.getString("site");
 		searchQuery.put("site.name", siteName);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));

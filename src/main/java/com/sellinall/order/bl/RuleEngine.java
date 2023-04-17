@@ -47,7 +47,7 @@ public class RuleEngine {
 			constructFreeGiftOrderItems(order, freeGiftInventoryListFromDb, sellerSKUAndQuantityMap, freeGiftOrderItems,
 					selectedWMS);
 		} else {
-			log.info("Free gift rule not satisfied for orderID : " + order.getString("orderID") + ", accountNumber : "
+			log.info("Free gift rule not satisfied for orderID : " + order.get("orderID").toString() + ", accountNumber : "
 					+ order.get("accountNumber").toString() + ", gift doc id : " + rule.getString("_id"));
 		}
 		return isConditionSatisfied;
@@ -150,7 +150,7 @@ public class RuleEngine {
 			quantityArray.put(quantityObj);
 
 			JSONObject addendum = new JSONObject();
-			addendum.put("orderID", order.getString("orderID"));
+			addendum.put("orderID", order.get("orderID").toString());
 			addendum.put("nickNameID", siteObj.getString("nickNameID"));
 			addendum.put("quantitySold", freeGiftQuantity);
 			addendum.put("timeOrderCreated", new BigDecimal(order.get("timeOrderCreated").toString()).longValue());

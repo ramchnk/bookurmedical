@@ -96,7 +96,7 @@ public class UpdateOrderDBQuery implements Processor {
 				&& ((Document) orderMessage.get("documents")).containsKey("shippingLabelUrl")) {
 			String url = ((Document) orderMessage.get("documents")).getString("shippingLabelUrl");
 			if (url.contains(Config.getConfig().getDocUploadPath())) {
-				String orderID = orderMessage.getString("orderID");
+				String orderID = orderMessage.get("orderID").toString();
 				List<String> values = Arrays.asList(url.split("/"));
 				String fileName = values.get(values.size() - 1);
 				if (fileName.split("[.]")[0].isEmpty()) {
@@ -117,7 +117,7 @@ public class UpdateOrderDBQuery implements Processor {
 		Document site = new Document();
 		String nickNameID = orderMessage.getString("nickNameID");
 		String accountNumber = orderMessage.get("accountNumber").toString();
-		String orderID = orderMessage.getString("orderID");
+		String orderID = orderMessage.get("orderID").toString();
 		String siteName = orderMessage.getString("site");
 		site.put("name", siteName);
 		site.put("nickNameID", nickNameID);
@@ -255,7 +255,7 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderRecord.containsKey("orderItems")) {
 			List<Document> orderItems = (List<Document>) orderRecord.get("orderItems");
 			if (orderItems.size() == 0) {
-				log.error("Insert - orderItems List is Empty for this orderId: " + orderMessage.getString("orderID"));
+				log.error("Insert - orderItems List is Empty for this orderId: " + orderMessage.get("orderID").toString());
 			}
 		}
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
@@ -326,7 +326,7 @@ public class UpdateOrderDBQuery implements Processor {
 			try {
 				double exchangeRate = getExchangeRateFromApi(orderAmount.getString("currencyCode"), "USD");
 				if (exchangeRate == 0) {
-					log.error("orderAmountInUSD field is not set for the orderID: " + orderRecord.getString("orderID"));
+					log.error("orderAmountInUSD field is not set for the orderID: " + orderRecord.get("orderID").toString());
 					return;
 				}
 				long amount = Math.round(new BigDecimal(orderAmount.get("amount").toString()).longValue() * exchangeRate);
@@ -550,16 +550,16 @@ public class UpdateOrderDBQuery implements Processor {
 				List<Document> orderItems = (List<Document>) orderRecord.get("orderItems");
 				if (orderItems.size() == 0) {
 					log.error(
-							"Update - orderItems List is Empty for this orderId: " + orderMessage.getString("orderID"));
+							"Update - orderItems List is Empty for this orderId: " + orderMessage.get("orderID").toString());
 				}
 			} else {
-				log.error("Null orderItem came for orderID : " + orderMessage.getString("orderID"));
+				log.error("Null orderItem came for orderID : " + orderMessage.get("orderID").toString());
 			}
 		}
 		// if we pass true then will modified data
 		UpdateResult result = table.updateOne(searchQuery, new Document("$set", orderRecord));
 		if (result.getModifiedCount() == 0) {
-			log.info("Order :" + orderMessage.getString("orderID") + " is already updated. this is duplicate message.");
+			log.info("Order :" + orderMessage.get("orderID").toString() + " is already updated. this is duplicate message.");
 			exchange.setProperty("stopProcess", true);
 			return;
 		}
@@ -596,7 +596,7 @@ public class UpdateOrderDBQuery implements Processor {
 				double exchangeRate = getExchangeRateFromApi(orderSoldAmount.getString("currencyCode"), "USD");
 				if (exchangeRate == 0) {
 					log.error("orderSoldAmountInUSD field is not set for the orderID: "
-							+ orderRecord.getString("orderID"));
+							+ orderRecord.get("orderID").toString());
 					return;
 				}
 				long amount = Math.round(new BigDecimal(orderSoldAmount.get("amount").toString()).longValue() * exchangeRate);
@@ -1092,7 +1092,7 @@ public class UpdateOrderDBQuery implements Processor {
 		// So should stop inventory sync.
 		if (orderMessageJSON.has("orderFulfilledBy")
 				&& orderMessageJSON.getString("orderFulfilledBy").equals(OrderFulfilledBy.CHANNEL.toString())) {
-			log.info("Order : " + orderMessageJSON.getString("orderID")
+			log.info("Order : " + orderMessageJSON.get("orderID").toString()
 					+ " is fulfilled by channel. So stock sync not required to SIA system.");
 			exchange.setProperty("stopProcess", true);
 		}

@@ -31,7 +31,7 @@ public class SyncProductMaster implements Processor {
 	public void process(Exchange exchange) throws Exception {
 		JSONObject orderItemMessage = exchange.getProperty("orderItemMessage", JSONObject.class);
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
-		String orderID = orderMessage.getString("orderID");
+		String orderID = orderMessage.get("orderID").toString();
 		String accountNumber = exchange.getProperty("accountNumber", String.class);
 		String nickNameID = exchange.getProperty("nickNameID", String.class);
 		String siteName = nickNameID.split("-")[0];

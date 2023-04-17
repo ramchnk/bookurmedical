@@ -15,7 +15,7 @@ public class InitializeJournalMessage implements Processor {
 		JSONObject orderMessage = exchange.getProperty("message", JSONObject.class);
 		JSONArray eventMessagesArray = new JSONArray();
 		JSONObject eventMessages = new JSONObject();
-		eventMessages.put("orderID", orderMessage.getString("orderID"));
+		eventMessages.put("orderID", orderMessage.get("orderID").toString());
 		eventMessages.put("accountNumber", orderMessage.get("accountNumber").toString());
 		eventMessages.put("nickNameID", orderMessage.getString("nickNameID"));
 		eventMessages.put("channel", orderMessage.getString("site"));

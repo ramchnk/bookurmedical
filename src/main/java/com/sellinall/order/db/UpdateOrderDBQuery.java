@@ -758,9 +758,9 @@ public class UpdateOrderDBQuery implements Processor {
 				if (key.equals("address")
 						&& (objKey.equals("city") || objKey.equals("country") || objKey.equals("postalCode"))) {
 					// Note: we are skipping city, country & postalCode in buyer address
-					hashedObj.put(objKey, obj.getString(objKey));
+					hashedObj.put(objKey, obj.get(objKey).toString());
 				} else {
-					hashedObj.put(objKey, hashUtil.hash(obj.getString(objKey).toCharArray(), false));
+					hashedObj.put(objKey, hashUtil.hash(obj.get(objKey).toString().toCharArray(), false));
 				}
 			}
 			return hashedObj;
@@ -788,7 +788,7 @@ public class UpdateOrderDBQuery implements Processor {
 			orderDBObjectSize = items.length();
 			for (int i = 0; i < items.length(); i++) {
 				if (items.getJSONObject(i).has("orderItemID")) {
-					orderItemIDListFromDB.add(items.getJSONObject(i).getString("orderItemID"));
+					orderItemIDListFromDB.add(items.getJSONObject(i).get("orderItemID").toString());
 				}
 				if (items.getJSONObject(i).has("isFreeGift") && items.getJSONObject(i).getBoolean("isFreeGift")) {
 					freeGiftItems.add(Document.parse(items.getJSONObject(i).toString()));
@@ -822,7 +822,7 @@ public class UpdateOrderDBQuery implements Processor {
 				if (exchange.getProperties().containsKey("isStatusHandledInOrderItem")
 						&& exchange.getProperty("isStatusHandledInOrderItem", Boolean.class)
 						&& orderItem.containsKey("orderStatus") && orderItem.containsKey("orderItemID")) {
-					String orderItemID = orderItem.getString("orderItemID");
+					String orderItemID = orderItem.get("orderItemID").toString();
 					if (orderItemsStatusMap.containsKey(orderItemID)) {
 						SIAOrderStatus orderItemDBStatus = SIAOrderStatus.valueOf(orderItemsStatusMap.get(orderItemID));
 						SIAOrderStatus notificationOrderStatus = SIAOrderStatus
@@ -923,7 +923,7 @@ public class UpdateOrderDBQuery implements Processor {
 				if (processOrdersWithSKUOnly) {
 					// For managed accounts, add orderItem to list, only it has
 					// SKU
-					if (orderHasInventory || orderItemIDListFromDB.contains(orderItem.getString("orderItemID"))) {
+					if (orderHasInventory || orderItemIDListFromDB.contains(orderItem.get("orderItemID").toString())) {
 						newOrderItems.add(orderItem);
 					}
 				} else {
@@ -1111,7 +1111,7 @@ public class UpdateOrderDBQuery implements Processor {
 			for (int i = 0; i < orderItemsMessage.size(); i++) {
 				Document orderItemMessage = orderItemsMessage.get(i);
 				if (orderItemMessage.containsKey("orderItemID")) {
-					orderItemIDs.add(orderItemMessage.getString("orderItemID"));
+					orderItemIDs.add(orderItemMessage.get("orderItemID").toString());
 				}
 			}
 			// When orderedItemID mismatches means need to set the isItemReAllocated
@@ -1129,7 +1129,7 @@ public class UpdateOrderDBQuery implements Processor {
 				for (int l = 0; l < orderItemsMessage.size(); l++) {
 					Document orderItemMessage = orderItemsMessage.get(l);
 					if (orderItemMessage.containsKey("orderItemID") && orderItemFromDB.has("orderItemID")) {
-						String orderItemIDFromMessage = orderItemMessage.getString("orderItemID");
+						String orderItemIDFromMessage = orderItemMessage.get("orderItemID").toString();
 						if (orderItemMessage.containsKey("wmsID")) {
 							String wmsIDFromMessage = orderItemMessage.getString("wmsID");
 							if (orderItemFromDB.getString("orderItemID").equals(orderItemIDFromMessage)) {

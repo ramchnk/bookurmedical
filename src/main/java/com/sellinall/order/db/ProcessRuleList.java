@@ -39,7 +39,7 @@ public class ProcessRuleList implements Processor {
 		if (freeGiftOrderItems.size() > 0) {
 			List<Document> orderItems = (List<Document>) orderDetails.get("orderItems");
 			orderItems.addAll(freeGiftOrderItems);
-			addFreeGiftItemsToOrder(freeGiftOrderItems, orderDetails.getString("_id"));
+			addFreeGiftItemsToOrder(freeGiftOrderItems, orderDetails.getObjectId("_id").toString());
 		}
 	}
 

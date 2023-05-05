@@ -48,7 +48,7 @@ public class RuleEngine {
 					selectedWMS);
 		} else {
 			log.info("Free gift rule not satisfied for orderID : " + order.get("orderID").toString() + ", accountNumber : "
-					+ order.get("accountNumber").toString() + ", gift doc id : " + rule.getString("_id"));
+					+ order.get("accountNumber").toString() + ", gift doc id : " + rule.getObjectId("_id").toString());
 		}
 		return isConditionSatisfied;
 	}
@@ -234,7 +234,7 @@ public class RuleEngine {
 				sellerSKUList.add(item.getString("sellerSKU"));
 				sellerSKUAndQuantityMap.put(item.getString("sellerSKU"), item.getInteger("quantity"));
 				if (isAvailableStockFoundInDB) {
-					updateAvailableStockInRule(rule.getString("_id"), item.getString("sellerSKU"),
+					updateAvailableStockInRule(rule.getObjectId("_id").toString(), item.getString("sellerSKU"),
 							item.getInteger("quantity"));
 					isGiftItemAdded = true;
 				}

@@ -57,31 +57,31 @@ public class GroupOrderByCartNumber implements Processor {
 			}
 			if (relatedOrder.containsKey("orderAmount")) {
 				orderAmountObj = CurrencyUtil.addAmountObject(orderAmountObj,
-						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderAmount").toString())));
+						OrderUtil.parseToJsonObject((Document) relatedOrder.get("orderAmount")));
 			}
 			if (relatedOrder.containsKey("orderAmountInUSD")) {
 				orderAmountInUSDObj = CurrencyUtil.addAmountObject(orderAmountInUSDObj,
-						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderAmountInUSD").toString())));
+						OrderUtil.parseToJsonObject((Document) relatedOrder.get("orderAmountInUSD")));
 			}
 			if (relatedOrder.containsKey("orderSoldAmount")) {
 				orderSoldAmountObj = CurrencyUtil.addAmountObject(orderSoldAmountObj,
-						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("orderSoldAmount").toString())));
+						OrderUtil.parseToJsonObject((Document) relatedOrder.get("orderSoldAmount")));
 			}
 			if (relatedOrder.containsKey("orderSoldAmountInUSD")) {
 				orderSoldAmountInUSDObj = CurrencyUtil.addAmountObject(orderSoldAmountInUSDObj, OrderUtil
-						.parseToJsonObject(Document.parse(relatedOrder.get("orderSoldAmountInUSD").toString())));
+						.parseToJsonObject((Document) (relatedOrder.get("orderSoldAmountInUSD"))));
 			}
 			if (relatedOrder.containsKey("sellerDiscountAmount")) {
 				sellerDiscountAmountObj = CurrencyUtil.addAmountObject(sellerDiscountAmountObj, OrderUtil
-						.parseToJsonObject(Document.parse(relatedOrder.get("sellerDiscountAmount").toString())));
+						.parseToJsonObject((Document) relatedOrder.get("sellerDiscountAmount")));
 			}
 			if (relatedOrder.containsKey("shippingAmount")) {
 				shippingAmountObj = CurrencyUtil.addAmountObject(shippingAmountObj,
-						OrderUtil.parseToJsonObject(Document.parse(relatedOrder.get("shippingAmount").toString())));
+						OrderUtil.parseToJsonObject((Document) relatedOrder.get("shippingAmount")));
 			}
 			if (relatedOrder.containsKey("channelDiscountAmount")) {
 				channelDiscountAmountObj = CurrencyUtil.addAmountObject(channelDiscountAmountObj, OrderUtil
-						.parseToJsonObject(Document.parse(relatedOrder.get("channelDiscountAmount").toString())));
+						.parseToJsonObject((Document) relatedOrder.get("channelDiscountAmount")));
 			}
 		}
 		order.put("orderNumber", orderNumber);

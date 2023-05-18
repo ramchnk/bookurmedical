@@ -310,7 +310,7 @@ public class RuleEngine {
 			List<Document> orderItems = (List<Document>) data;
 			for (Document orderItem : orderItems) {
 				boolean isConditionSatisfied = false;
-				String value = orderItem.getString(fieldName);
+				String value = orderItem.get(fieldName).toString();
 				if (processOperands(value, condition.get("rightOperand"), condition.getString("operator"))) {
 					isConditionSatisfied = true;
 					if (!orderItem.containsKey("isConditionSatisfied")) {

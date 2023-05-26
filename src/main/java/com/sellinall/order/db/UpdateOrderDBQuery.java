@@ -143,7 +143,7 @@ public class UpdateOrderDBQuery implements Processor {
 				&& exchange.getProperty("isTransactionFee", boolean.class)) {
 			orderRecord.put("isTransactionFee", exchange.getProperty("isTransactionFee", boolean.class));
 		}
-		if (Config.getConfig().getIsEligibleToUpdateBrandID()) {
+		if (Config.getConfig().getIsEligibleToUpdateBrandID() && orderMessage.containsKey("orderItems")) {
 			updateBradIDInOrderItem(exchange, orderMessage);
 		}
 		fillOrderRecord(exchange, notificationOrderActionStatus, orderRecord, orderMessage);
@@ -482,7 +482,7 @@ public class UpdateOrderDBQuery implements Processor {
 		if (isItemsReAllocatedNeeded(orderMessage, exchange)) {
 			exchange.setProperty("isItemsReAllocated", true);
 		}
-		if (Config.getConfig().getIsEligibleToUpdateBrandID()) {
+		if (Config.getConfig().getIsEligibleToUpdateBrandID() && orderMessage.containsKey("orderItems")) {
 			updateBradIDInOrderItem(exchange, orderMessage);
 		}
 		// update order data only when the update is complete

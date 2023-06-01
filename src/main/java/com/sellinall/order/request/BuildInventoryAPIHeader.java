@@ -15,6 +15,7 @@ public class BuildInventoryAPIHeader implements Processor {
 		exchange.setProperty("inventoryUrl", inventoryUrl);
 		exchange.getOut().setHeader("accountNumber", exchange.getProperty("accountNumber", String.class));
 		exchange.getOut().setHeader(AuthConstant.RAGASIYAM_KEY, Config.getConfig().getRagasiyam());
+		exchange.getOut().setHeader("SIAServer", "true");
 		exchange.getOut().setBody(inBody);
 
 	}

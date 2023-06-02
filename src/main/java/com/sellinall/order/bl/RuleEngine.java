@@ -174,6 +174,7 @@ public class RuleEngine {
 		headers.put("Content-Type", "application/json");
 		headers.put(AuthConstant.RAGASIYAM_KEY, Config.getConfig().getRagasiyam());
 		headers.put("accountNumber", accountNumber);
+		headers.put("SIAServer", "true");
 		JSONObject response = new JSONObject();
 		try {
 			response = HttpsURLConnectionUtil.doPut(url, payload.toString(), headers);

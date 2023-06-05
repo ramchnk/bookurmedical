@@ -15,6 +15,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.sellinall.order.enums.NotificationOrderActionStatus;
 import com.sellinall.order.enums.NotificationPaymentActionStatus;
 import com.sellinall.order.util.OrderUtil;
+import com.sellinall.util.ParserUtil;
 import com.sellinall.util.enums.OrderUpdateStatus;
 import com.sellinall.util.enums.SIAOrderStatus;
 import com.sellinall.util.enums.SIAPaymentStatus;
@@ -125,8 +126,9 @@ public class ProcessOrderStatus implements Processor {
 				&& exchange.getProperties().containsKey("siteName")
 				&& exchange.getProperty("siteName", String.class).equals("qoo10") && !orderMessage.has("orderItems")) {
 			Document orderFromDB = exchange.getProperty("orderDBObject", Document.class);
-			if (orderFromDB.containsKey("orderItems")) {
-				orderMessage.put("orderItems", new JSONArray(orderFromDB.get("orderItems").toString()));
+			JSONObject orderFromDBParsed = ParserUtil.parseToJsonObject(orderFromDB);
+			if (orderFromDBParsed.has("orderItems")) {
+				orderMessage.put("orderItems", new JSONArray(orderFromDBParsed.get("orderItems").toString()));
 			}
 		}
 		exchange.getOut().setBody(orderMessage);

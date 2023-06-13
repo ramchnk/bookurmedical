@@ -314,7 +314,7 @@ public class RuleEngine {
 				String value = orderItem.get(fieldName).toString();
 				if (processOperands(value, condition.get("rightOperand"), condition.getString("operator"))) {
 					isConditionSatisfied = true;
-					if (!orderItem.containsKey("isConditionSatisfied")) {
+					if (!orderItem.containsKey("isConditionSatisfied") || !orderItem.getBoolean("isConditionSatisfied")) {
 						orderItem.put("isConditionSatisfied", isConditionSatisfied);
 					}
 				} else {

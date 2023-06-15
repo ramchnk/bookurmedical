@@ -264,6 +264,9 @@ public class UpdateOrderDBQuery implements Processor {
 				log.error("Insert - orderItems List is Empty for this orderId: " + orderMessage.get("orderID").toString());
 			}
 		}
+		if (orderMessage.containsKey("failureReason")) {
+			orderRecord.put("failureReason", orderMessage.getString("failureReason"));
+		}
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		Document searchQuery = new Document();
 		searchQuery.put("accountNumber", accountNumber);

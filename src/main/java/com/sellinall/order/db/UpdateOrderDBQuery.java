@@ -680,6 +680,13 @@ public class UpdateOrderDBQuery implements Processor {
 		Document addressHashed = new Document();
 		if (hasOrderInDB) {
 			Document orderDBObject = exchange.getProperty("orderDBObject", Document.class);
+			if (checkIfBuyerDetailsAlreadyAnonymized(siteName, orderDBObject)) {
+				/*
+				 * Note: If buyer details are already anonymized, then no need to proceed below
+				 * logics
+				 */
+				return;
+			}
 			Document shippingDetailsFromDB = new Document();
 			if (orderDBObject.containsKey("shippingDetails")) {
 				shippingDetailsFromDB = (Document) orderDBObject.get("shippingDetails");
@@ -746,6 +753,18 @@ public class UpdateOrderDBQuery implements Processor {
 				orderRecord.put("isPIIAnonymized", false);
 			}
 		}
+	}
+
+	private boolean checkIfBuyerDetailsAlreadyAnonymized(String siteName, Document orderDBObject) {
+		List<String> sites = Arrays.asList(Config.getConfig().getRemoveBuyerDetailChannels().split("-"));
+		String flag = "isPIIAnonymized";
+		if (sites.contains(siteName)) {
+			flag = "isPIIRemoved";
+		}
+		if (orderDBObject.containsKey(flag) && orderDBObject.getBoolean(flag)) {
+			return true;
+		}
+		return false;
 	}
 
 	private Document hashObjectFields(String key, Document orderMessage, HashUtil hashUtil) {

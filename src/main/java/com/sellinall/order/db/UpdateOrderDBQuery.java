@@ -231,6 +231,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsKey("billingDetails")) {
 			orderRecord.put("billingDetails", orderMessage.get("billingDetails"));
 		}
+		if (orderMessage.containsKey("isHistoricalOrder")) {
+			orderRecord.put("isHistoricalOrder", orderMessage.get("isHistoricalOrder"));
+		}
 		fillTransactionKeyValuePair(orderRecord, "finalShippingFeePaidToChannel", orderMessage);
 		exchange.setProperty("accountNumber", orderRecord.get("accountNumber").toString());
 		exchange.setProperty("groupOrderByCartNumber", false);
@@ -480,6 +483,9 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsKey("billingDetails")) {
 			orderRecord.put("billingDetails", orderMessage.get("billingDetails"));
+		}
+		if (orderMessage.containsKey("isHistoricalOrder")) {
+			orderRecord.put("isHistoricalOrder", orderMessage.get("isHistoricalOrder"));
 		}
 		/*
 		 * Need to set this flag in exchange and in out going message for re-pushing

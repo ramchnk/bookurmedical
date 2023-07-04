@@ -58,6 +58,7 @@
 	<bean id="syncProductMaster" class="com.sellinall.order.request.SyncProductMaster"/>
 	<bean id="initializeJournalMessage" class="com.sellinall.order.message.InitializeJournalMessage"/>
 	<bean id="loadAndConstructBrandIdMap" class="com.sellinall.order.bl.LoadAndConstructBrandIdMap"/>
+	<bean id="processHistoricalOrder" class="com.sellinall.order.bl.ProcessHistoricalOrder"/>
 
 	<bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
 		<property name="algorithm" value="PBEWithMD5AndDES" />
@@ -1059,6 +1060,17 @@
 			<to uri="direct:publishToJournal" />
 		</route>
 
+		<route id="processHistoricalOrderNotification">
+			<from uri="direct:processHistoricalOrderNotification" />
+			<process ref="loadAndProcessOrderFromDB" />
+			<process ref="loadUserDataByNicknameId" />
+			<process ref="processHistoricalOrder" />
+			<when>
+				<simple>${exchangeProperty.isEligibleToProcessOrder} == true</simple>
+				<process ref="updateOrderDBQuery" />
+			</when>
+		</route>
+
 		<route id="publishToJournal">
 			<from uri="direct:publishToJournal" />
 			<setHeader name="rabbitmq.ROUTING_KEY">
@@ -1341,6 +1353,13 @@
 				<simple>${exchangeProperty.messageType} == 'abandonedCheckouts'</simple>
 				<to uri="direct:processCheckoutsNotification" />
 			</when>
+		</route>
+
+		<route id="historicalMessageListner">
+			<from
+				uri="rabbitmq:partnerNotifExchange?queue=historicalPartnerNotifQueue&amp;routingKey=historicalPartnerNotifKey&amp;exchangeType=topic&amp;connectionFactory=#partnerNotifRxConnectionFactory&amp;autoDelete=false&amp;durable=true&amp;autoAck=false&amp;prefetchEnabled=true&amp;prefetchSize=0&amp;prefetchCount=1&amp;prefetchGlobal=false&amp;concurrentConsumers=4" />
+			<process ref="initMessageListenerRoute" />
+			<to uri="direct:processHistoricalOrderNotification" />
 		</route>
 
 	</camelContext>

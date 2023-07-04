@@ -207,6 +207,9 @@ public class UpdateOrderDBQuery implements Processor {
 		if (orderMessage.containsKey("buyerOwedAmount")) {
 			orderRecord.put("buyerOwedAmount", orderMessage.get("buyerOwedAmount"));
 		}
+		if (orderMessage.containsKey("shopId")) {
+			orderRecord.put("shopId", orderMessage.get("shopId"));
+		}
 		if (orderMessage.containsKey("salesPerson")) {
 			orderRecord.put("salesPerson", orderMessage.get("salesPerson"));
 		}
@@ -453,6 +456,9 @@ public class UpdateOrderDBQuery implements Processor {
 		}
 		if (orderMessage.containsKey("buyerOwedAmount")) {
 			orderRecord.put("buyerOwedAmount", orderMessage.get("buyerOwedAmount"));
+		}
+		if (orderMessage.containsKey("shopId")) {
+			orderRecord.put("shopId", orderMessage.get("shopId"));
 		}
 		if (orderMessage.containsKey("salesPerson")) {
 			orderRecord.put("salesPerson", orderMessage.get("salesPerson"));

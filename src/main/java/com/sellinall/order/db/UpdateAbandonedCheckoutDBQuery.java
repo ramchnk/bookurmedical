@@ -139,10 +139,8 @@ public class UpdateAbandonedCheckoutDBQuery implements Processor {
 		Document checkoutRecord = new Document();
 		Document searchQuery = new Document();
 		searchQuery.put("accountNumber", checkoutMessage.get("accountNumber").toString());
-		searchQuery.put("checkoutID", checkoutMessage.getString("checkoutID"));
-		String siteName = checkoutMessage.getString("site");
-		searchQuery.put("site.name", siteName);
 		searchQuery.put("site.nickNameID", checkoutMessage.getString("nickNameID"));
+		searchQuery.put("checkoutID", checkoutMessage.getString("checkoutID"));
 
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("abandonedCheckouts");
 		fillTransactionKeyValuePair(checkoutRecord, "buyerDetails", checkoutMessage);

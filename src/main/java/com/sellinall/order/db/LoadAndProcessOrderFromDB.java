@@ -27,9 +27,8 @@ public class LoadAndProcessOrderFromDB implements Processor {
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		Document searchQuery = new Document();
 		searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());
-		searchQuery.put("orderID", orderID);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
-		searchQuery.put("site.name", orderMessage.getString("site"));
+		searchQuery.put("orderID", orderID);
 		Document dbResult = table.find(searchQuery).first();
 		exchange.setProperty("hasOrderInDB", false);
 		exchange.setProperty("isEligibleToUpdateBrandID", Config.getConfig().getIsEligibleToUpdateBrandID());

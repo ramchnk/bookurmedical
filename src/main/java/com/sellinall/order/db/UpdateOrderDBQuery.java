@@ -270,9 +270,8 @@ public class UpdateOrderDBQuery implements Processor {
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		Document searchQuery = new Document();
 		searchQuery.put("accountNumber", accountNumber);
-		searchQuery.put("orderID", orderID);
 		searchQuery.put("site.nickNameID", nickNameID);
-		searchQuery.put("site.name", siteName);
+		searchQuery.put("orderID", orderID);
 		UpdateOptions options = new UpdateOptions();
 		options.upsert(true);
 		try {
@@ -393,10 +392,9 @@ public class UpdateOrderDBQuery implements Processor {
 		Document orderRecord = new Document();
 		Document searchQuery = new Document();
 		searchQuery.put("accountNumber", orderMessage.get("accountNumber").toString());
-		searchQuery.put("orderID", orderMessage.get("orderID").toString());
-		String siteName = orderMessage.getString("site");
-		searchQuery.put("site.name", siteName);
 		searchQuery.put("site.nickNameID", orderMessage.getString("nickNameID"));
+		searchQuery.put("orderID", orderMessage.get("orderID").toString());
+		String siteName = orderMessage.getString("site");		
 
 		MongoCollection<Document> table = DbUtilities.getOrderDBCollection("order");
 		if (exchange.getProperties().containsKey("isManaged") && exchange.getProperty("isManaged", Boolean.class)) {

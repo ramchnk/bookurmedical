@@ -48,6 +48,7 @@ public class UserService {
             System.err.println("Failed to send welcome email: " + e.getMessage());
         }
     }
+<<<<<<< HEAD
 
     public void forgotPassword(String email) {
         User user = userRepository.findByEmail(email)
@@ -87,4 +88,6 @@ public class UserService {
 
         userRepository.save(user);
     }
+=======
+>>>>>>> 96d0f91b3637f55db93cce76dd31b9df811f1d68
 }

@@ -31,6 +31,7 @@ public class EmailService {
 
         mailSender.send(message);
     }
+<<<<<<< HEAD
 
     @Async
     public void sendPasswordResetEmail(String toEmail, String token) {
@@ -43,4 +44,6 @@ public class EmailService {
 
         mailSender.send(message);
     }
+=======
+>>>>>>> 96d0f91b3637f55db93cce76dd31b9df811f1d68
 }

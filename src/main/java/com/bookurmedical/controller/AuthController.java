@@ -19,11 +19,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -63,6 +68,9 @@ public class AuthController {
                     .status(HttpStatus.FORBIDDEN)
                     .body("Please verify your email address before logging in. Check your inbox for the verification link.");
         } catch (Exception e) {
+            // Log the REAL exception so it's visible in backend logs
+            log.error("[SignIn] Login failed for user '{}': [{}] {}",
+                    loginRequest.getUsername(), e.getClass().getSimpleName(), e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid username or password.");

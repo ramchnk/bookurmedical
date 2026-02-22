@@ -11,6 +11,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Transparent field-level encryption/decryption for MongoDB entities.
@@ -28,6 +30,8 @@ import java.lang.reflect.Field;
  */
 @Component
 public class MongoEncryptionEventListener extends AbstractMongoEventListener<Object> {
+
+    private static final Logger log = LoggerFactory.getLogger(MongoEncryptionEventListener.class);
 
     @Autowired
     private FieldEncryptionService encryptionService;
@@ -88,8 +92,9 @@ public class MongoEncryptionEventListener extends AbstractMongoEventListener<Obj
                         : encryptionService.decrypt(value);
 
                 document.put(mongoFieldName, processed);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("Failed to access field: " + field.getName(), e);
+            } catch (Exception e) {
+                log.warn("[Encryption] Skipping field '{}' on {}: {}",
+                        field.getName(), clazz.getSimpleName(), e.getMessage());
             }
         }
     }
@@ -111,18 +116,23 @@ public class MongoEncryptionEventListener extends AbstractMongoEventListener<Obj
             if (field.getType() != String.class)
                 continue;
 
-            String mongoFieldName = resolveMongoFieldName(field);
-            Object rawValue = document.get(mongoFieldName);
-            if (!(rawValue instanceof String value))
-                continue;
-            if (value.isBlank())
-                continue;
+            try {
+                String mongoFieldName = resolveMongoFieldName(field);
+                Object rawValue = document.get(mongoFieldName);
+                if (!(rawValue instanceof String value))
+                    continue;
+                if (value.isBlank())
+                    continue;
 
-            String processed = encrypt
-                    ? encryptionService.encrypt(value)
-                    : encryptionService.decrypt(value);
+                String processed = encrypt
+                        ? encryptionService.encrypt(value)
+                        : encryptionService.decrypt(value);
 
-            document.put(mongoFieldName, processed);
+                document.put(mongoFieldName, processed);
+            } catch (Exception e) {
+                log.warn("[Encryption] Skipping field '{}' on {} during load: {}",
+                        field.getName(), clazz.getSimpleName(), e.getMessage());
+            }
         }
     }
 

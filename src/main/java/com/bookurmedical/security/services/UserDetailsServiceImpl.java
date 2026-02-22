@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
+
     @Autowired
     UserRepository userRepository;
 
@@ -20,6 +21,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+
+        // ── Backward-compatibility migration ──────────────────────────────────
+        // Users created BEFORE the email-verification system was added will have
+        // emailVerified=false but no emailVerificationToken in the DB.
+        // Treat them as already verified so they are not suddenly locked out.
+        if (!user.isEmailVerified() && user.getEmailVerificationToken() == null) {
+            user.setEmailVerified(true);
+            userRepository.save(user);
+        }
 
         return UserDetailsImpl.build(user);
     }

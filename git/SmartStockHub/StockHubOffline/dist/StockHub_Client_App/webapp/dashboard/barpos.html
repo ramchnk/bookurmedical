@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     <!-- Title Meta -->
+     <meta charset="utf-8" />
+     <title>POS</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta name="description" content="A fully responsive premium admin dashboard template" />
+     <meta name="author" content="Techzaa" />
+     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+     <!-- App favicon -->
+     <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+     <!-- Vendor css (Require in all Page) -->
+     <link href="assets/css/vendor.min.css" rel="stylesheet" type="text/css" />
+
+     <!-- Icons css (Require in all Page) -->
+     <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+
+     <!-- App css (Require in all Page) -->
+     <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" />
+     <link href="assets/css/mermaid.min.css" rel="stylesheet" type="text/css" />
+
+     <!-- Theme Config js (Require in all Page) -->
+     <script src="assets/js/config.js"></script>
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+
+<body>
+
+     <!-- START Wrapper -->
+     <div class="wrapper">
+
+          <!-- ========== Topbar Start ========== -->
+          <header class="topbar">
+               <div class="container-fluid">
+                    <div class="navbar-header">
+                         <div class="d-flex align-items-center">
+                              <!-- Menu Toggle Button -->
+                              <div class="topbar-item">
+                                   <button type="button" class="button-toggle-menu me-2">
+                                        <iconify-icon icon="solar:hamburger-menu-broken" class="fs-24 align-middle"></iconify-icon>
+                                   </button>
+                              </div>
+
+                              <!-- Menu Toggle Button -->
+                              <div class="topbar-item">
+                                   <h4 class="fw-bold topbar-button pe-none text-uppercase mb-0">Welcome!</h4>
+                              </div>
+                         </div>
+
+                         <div class="d-flex align-items-center gap-1">
+
+                              <!-- Theme Color (Light/Dark) -->
+                              <div class="topbar-item">
+                                   <button type="button" class="topbar-button" id="light-dark-mode">
+                                        <iconify-icon icon="solar:moon-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+                                   </button>
+                              </div>
+
+
+                              <!-- Theme Setting -->
+                              <div class="topbar-item d-none d-md-flex">
+                                   <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas" data-bs-target="#theme-settings-offcanvas" aria-controls="theme-settings-offcanvas">
+                                        <iconify-icon icon="solar:settings-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+                                   </button>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+          </header>
+
+          <!-- Right Sidebar (Theme Settings) -->
+          <div>
+               <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="theme-settings-offcanvas">
+                    <div class="d-flex align-items-center bg-primary p-3 offcanvas-header">
+                         <h5 class="text-white m-0">Theme Settings</h5>
+                         <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+
+                    <div class="offcanvas-body p-0">
+                         <div data-simplebar class="h-100">
+                              <div class="p-3 settings-bar">
+
+                                   <div>
+                                        <h5 class="mb-3 font-16 fw-semibold">Color Scheme</h5>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-bs-theme" id="layout-color-light" value="light">
+                                             <label class="form-check-label" for="layout-color-light">Light</label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-bs-theme" id="layout-color-dark" value="dark">
+                                             <label class="form-check-label" for="layout-color-dark">Dark</label>
+                                        </div>
+                                   </div>
+
+                                   <div>
+                                        <h5 class="my-3 font-16 fw-semibold">Topbar Color</h5>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-topbar-color" id="topbar-color-light" value="light">
+                                             <label class="form-check-label" for="topbar-color-light">Light</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-topbar-color" id="topbar-color-dark" value="dark">
+                                             <label class="form-check-label" for="topbar-color-dark">Dark</label>
+                                        </div>
+                                   </div>
+
+
+                                   <div>
+                                        <h5 class="my-3 font-16 fw-semibold">Menu Color</h5>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-color" id="leftbar-color-light" value="light">
+                                             <label class="form-check-label" for="leftbar-color-light">
+                                                  Light
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-color" id="leftbar-color-dark" value="dark">
+                                             <label class="form-check-label" for="leftbar-color-dark">
+                                                  Dark
+                                             </label>
+                                        </div>
+                                   </div>
+
+                                   <div>
+                                        <h5 class="my-3 font-16 fw-semibold">Sidebar Size</h5>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-size-default" value="default">
+                                             <label class="form-check-label" for="leftbar-size-default">
+                                                  Default
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-size-small" value="condensed">
+                                             <label class="form-check-label" for="leftbar-size-small">
+                                                  Condensed
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-hidden" value="hidden">
+                                             <label class="form-check-label" for="leftbar-hidden">
+                                                  Hidden
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-size-small-hover-active" value="sm-hover-active">
+                                             <label class="form-check-label" for="leftbar-size-small-hover-active">
+                                                  Small Hover Active
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-size-small-hover" value="sm-hover">
+                                             <label class="form-check-label" for="leftbar-size-small-hover">
+                                                  Small Hover
+                                             </label>
+                                        </div>
+                                   </div>
+
+                              </div>
+                         </div>
+                    </div>
+                    <div class="offcanvas-footer border-top p-3 text-center">
+                         <div class="row">
+                              <div class="col">
+                                   <button type="button" class="btn btn-danger w-100" id="reset-layout">Reset</button>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+          </div>
+          <!-- ========== Topbar End ========== -->
+
+          <!-- ========== App Menu Start ========== -->
+          <div class="main-nav">
+               <!-- Sidebar Logo -->
+               <div class="logo-box">
+                    <a href="index.html" class="logo-dark">
+                         <span class="menu-title" style="color:black;font-size:large;">IMS</span>
+                    </a>
+
+                    <a href="index.html" class="logo-light">
+                         <span class="menu-title" style="color:white;font-size:large;">IMS</span>
+                    </a>
+               </div>
+
+               <!-- Menu Toggle Button (sm-hover) -->
+               <button type="button" class="button-sm-hover" aria-label="Show Full Sidebar">
+                    <iconify-icon icon="solar:double-alt-arrow-right-bold-duotone" class="button-sm-hover-icon"></iconify-icon>
+               </button>
+
+                 <div class="scrollbar" data-simplebar>
+                    <ul class="navbar-nav menu-container" id="navbar-nav">
+                    </ul>
+               </div>
+          </div>
+          <!-- ========== App Menu End ========== -->
+
+          <!-- ==================================================== -->
+          <!-- Start right Content here -->
+          <!-- ==================================================== -->
+          <div>
+
+               <div class="page-content">
+
+                    <!-- Start Container Fluid -->
+                    <div class="container-xxl">
+
+                         <div class="row">
+                              <div class="col-xl-12">
+                                   <div class="card">
+                                        <div class="d-flex card-header justify-content-between align-items-center">
+                                             <div>
+                                                  <h4 class="card-title">POS</h4>
+                                             </div>
+                                        </div>
+                                        <div class="card bg-light-subtle">
+                                             <div class="card-header border-0">
+                                                  <div class="row justify-content-between align-items-center">
+                                                       <div class="col-lg-6">
+                                                            <div class="card-footer d-flex align-items-center justify-content-between bg-light-subtle">
+                                                                 <div>
+                                                                      <p class="fw-medium text-dark mb-0">Total Amount</p>
+                                                                 </div>
+                                                                 <div>
+                                                                      <h2><p id="total-amount" class="fw-medium text-dark mb-0">0.00</p></h2>
+                                                                 </div>
+
+                                                            </div>
+                                                       </div>
+                                                       <div class="col-lg-6">
+                                                            <div class="text-md-end mt-3 mt-md-0">
+                                                                 <a class="btn btn-success me-1"><i class="bx bx-plus"></i> Check Out</a>
+                                                            </div>
+                                                       </div>
+                                                  </div>
+                                             </div>
+                                        </div>
+                                        <div class="col-lg-16">
+                                             <div class="card">
+                                                   <div class="card-body">
+                                                       <table class="table table-bordered">
+                                                            <thead>
+                                                             <tr>
+                                                                 <th>#</th>
+                                                                 <th>Item Name</th>
+                                                                 <th>Price</th>
+                                                                 <th>Action</th>
+                                                             </tr>
+                                                            </thead>
+                                                            <tbody id="sales-table">
+                                                            </tbody>
+                                                       </table>
+                                                  </div>
+                                             </div>
+                                        </div>
+                                        
+                                   </div>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+               <!-- ==================================================== -->
+               <!-- End Page Content -->
+               <!-- ==================================================== -->
+
+
+          </div>
+     </div>
+     <script>
+        $(document).ready(function () {
+              let salesData = [];
+              let itemIndex = 1;
+              let totalAmount = 0;
+              const productMaster = localStorage.getItem('products');  
+              const products = productMaster ? JSON.parse(productMaster) : null;
+              const items = products.productList;
+
+              $(document).keypress(function (event) {
+                  if (event.which === 13 && salesData.length > 0) {
+                      let scannedCode = salesData.join('').trim();
+                      salesData = [];
+                      
+                      let item = items.find(i => i.UPC === scannedCode);
+                      if (item) {
+                          let rowId = `row-${itemIndex}`;
+                          let newRow = `<tr id="${rowId}"><td>${itemIndex++}</td><td>${item.SKU}</td><td class="sale-price">$${item.salePrice.toFixed(2)}</td><td class="quantity">1</td><td><button class="btn btn-danger btn-sm remove-item" data-id="${rowId}" data-sku="${item.SKU}" data-price="${item.salePrice}">Remove</button></td></tr>`;
+                          $('#sales-table').append(newRow);
+                          totalAmount += item.salePrice;
+                          $('#total-amount').text(totalAmount.toFixed(2));
+                      } else {
+                          alert('Item not found!');
+                      }
+                  } else {
+                      salesData.push(String.fromCharCode(event.which));
+                  }
+              });
+
+              $(document).on('click', '.remove-item', function () {
+                  let rowId = $(this).data('id');
+                  let itemPrice = parseFloat($(this).data('price'));
+                  $('#' + rowId).remove();
+                  totalAmount -= itemPrice;
+                  $('#total-amount').text(totalAmount.toFixed(2));
+              });
+
+              $(document).on('click', '.btn-success', function () {
+                  let checkoutData = {};
+                  
+                  $('#sales-table tr').each(function () {
+                      let sku = $(this).find('td:nth-child(2)').text();
+                      let price = parseFloat($(this).find('.sale-price').text().replace('$', ''));
+                      let quantity = parseInt($(this).find('.quantity').text());
+                      
+                      if (checkoutData[sku]) {
+                          checkoutData[sku].quantity += quantity;
+                          checkoutData[sku].totalPrice += price * quantity;
+                      } else {
+                          checkoutData[sku] = {
+                              SKU: sku,
+                              quantity: quantity,
+                              totalPrice: price * quantity
+                          };
+                      }
+                  });
+                  
+                  console.log(JSON.stringify(Object.values(checkoutData), null, 2));
+                  alert('Checkout JSON constructed. Check console for details.');
+              });
+          });
+    </script>
+    
+     <!-- Vendor Javascript (Require in all Page) -->
+     <script src="assets/js/vendor.js"></script>
+
+     <!-- App Javascript (Require in all Page) -->
+     <script src="assets/js/app.js"></script>
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+     <script src="assets/js/orders.js"></script>
+     <script src="assets/js/ledger.js"></script>
+     <script src="assets/js/dailychart.js"></script>
+    <!-- <script src="assets/js/http-util.js"> </script> -->
+     <script src="assets/js/storage-util.js"></script>
+     <script src="assets/js/table-gridjs.js"></script>
+     <script src="assets/js/gridjs.umd.js"></script>
+     <script>
+          restrictMenu();
+     </script>
+</body>
+
+</html>

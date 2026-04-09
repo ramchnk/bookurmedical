@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     <!-- Title Meta -->
+     <meta charset="utf-8" />
+     <title>P&L</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta name="description" content="A fully responsive premium admin dashboard template" />
+     <meta name="author" content="Techzaa" />
+     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+     <!-- App favicon -->
+     <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+     <!-- Vendor css (Require in all Page) -->
+     <link href="assets/css/vendor.min.css" rel="stylesheet" type="text/css" />
+
+     <!-- Icons css (Require in all Page) -->
+     <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+
+     <!-- App css (Require in all Page) -->
+     <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" />
+     <link href="assets/css/mermaid.min.css" rel="stylesheet" type="text/css" />
+     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+     <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/4.0.1/css/fixedHeader.dataTables.min.css">
+
+
+
+     <!-- Theme Config js (Require in all Page) -->
+     <script src="assets/js/config.js"></script>
+</head>
+
+<body>
+
+     <!-- START Wrapper -->
+     <div class="wrapper">
+
+          <!-- ========== Topbar Start ========== -->
+          <header class="topbar">
+               <div class="container-fluid">
+                    <div class="navbar-header">
+                         <div class="d-flex align-items-center">
+                              <!-- Menu Toggle Button -->
+                              <div class="topbar-item">
+                                   <button type="button" class="button-toggle-menu me-2">
+                                        <iconify-icon icon="solar:hamburger-menu-broken" class="fs-24 align-middle"></iconify-icon>
+                                   </button>
+                              </div>
+
+                              <!-- Menu Toggle Button -->
+                              <div class="topbar-item">
+                                   <h4 class="fw-bold topbar-button pe-none text-uppercase mb-0">Welcome to&nbsp;<span id="shopName"></span>&nbsp;!</h4>
+                              </div>
+                         </div>
+
+                         <div class="d-flex align-items-center gap-1">
+
+                              <!-- Theme Color (Light/Dark) -->
+                              <div class="topbar-item">
+                                   <button type="button" class="topbar-button" id="light-dark-mode">
+                                        <iconify-icon icon="solar:moon-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+                                   </button>
+                              </div>
+
+
+                              <!-- Theme Setting -->
+                              <div class="topbar-item d-none d-md-flex">
+                                   <button type="button" class="topbar-button" id="theme-settings-btn" data-bs-toggle="offcanvas" data-bs-target="#theme-settings-offcanvas" aria-controls="theme-settings-offcanvas">
+                                        <iconify-icon icon="solar:settings-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+                                   </button>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+          </header>
+
+          <!-- Right Sidebar (Theme Settings) -->
+          <div>
+               <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="theme-settings-offcanvas">
+                    <div class="d-flex align-items-center bg-primary p-3 offcanvas-header">
+                         <h5 class="text-white m-0">Theme Settings</h5>
+                         <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+
+                    <div class="offcanvas-body p-0">
+                         <div data-simplebar class="h-100">
+                              <div class="p-3 settings-bar">
+
+                                   <div>
+                                        <h5 class="mb-3 font-16 fw-semibold">Color Scheme</h5>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-bs-theme" id="layout-color-light" value="light">
+                                             <label class="form-check-label" for="layout-color-light">Light</label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-bs-theme" id="layout-color-dark" value="dark">
+                                             <label class="form-check-label" for="layout-color-dark">Dark</label>
+                                        </div>
+                                   </div>
+
+                                   <div>
+                                        <h5 class="my-3 font-16 fw-semibold">Topbar Color</h5>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-topbar-color" id="topbar-color-light" value="light">
+                                             <label class="form-check-label" for="topbar-color-light">Light</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-topbar-color" id="topbar-color-dark" value="dark">
+                                             <label class="form-check-label" for="topbar-color-dark">Dark</label>
+                                        </div>
+                                   </div>
+
+
+                                   <div>
+                                        <h5 class="my-3 font-16 fw-semibold">Menu Color</h5>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-color" id="leftbar-color-light" value="light">
+                                             <label class="form-check-label" for="leftbar-color-light">
+                                                  Light
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-color" id="leftbar-color-dark" value="dark">
+                                             <label class="form-check-label" for="leftbar-color-dark">
+                                                  Dark
+                                             </label>
+                                        </div>
+                                   </div>
+
+                                   <div>
+                                        <h5 class="my-3 font-16 fw-semibold">Sidebar Size</h5>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-size-default" value="default">
+                                             <label class="form-check-label" for="leftbar-size-default">
+                                                  Default
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-size-small" value="condensed">
+                                             <label class="form-check-label" for="leftbar-size-small">
+                                                  Condensed
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-hidden" value="hidden">
+                                             <label class="form-check-label" for="leftbar-hidden">
+                                                  Hidden
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-size-small-hover-active" value="sm-hover-active">
+                                             <label class="form-check-label" for="leftbar-size-small-hover-active">
+                                                  Small Hover Active
+                                             </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                             <input class="form-check-input" type="radio" name="data-menu-size" id="leftbar-size-small-hover" value="sm-hover">
+                                             <label class="form-check-label" for="leftbar-size-small-hover">
+                                                  Small Hover
+                                             </label>
+                                        </div>
+                                   </div>
+
+                              </div>
+                         </div>
+                    </div>
+                    <div class="offcanvas-footer border-top p-3 text-center">
+                         <div class="row">
+                              <div class="col">
+                                   <button type="button" class="btn btn-danger w-100" id="reset-layout">Reset</button>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+          </div>
+          <!-- ========== Topbar End ========== -->
+
+          <!-- ========== App Menu Start ========== -->
+          <div class="main-nav">
+               <!-- Sidebar Logo -->
+               <div class="logo-box">
+                    <a href="index.html" class="logo-dark">
+                         <span class="menu-title" style="color:black;font-size:large;">IMS</span>
+                    </a>
+
+                    <a href="index.html" class="logo-light">
+                         <span class="menu-title" style="color:white;font-size:large;">IMS</span>
+                    </a>
+               </div>
+
+               <!-- Menu Toggle Button (sm-hover) -->
+               <button type="button" class="button-sm-hover" aria-label="Show Full Sidebar">
+                    <iconify-icon icon="solar:double-alt-arrow-right-bold-duotone" class="button-sm-hover-icon"></iconify-icon>
+               </button>
+
+               <div class="scrollbar" data-simplebar>
+                    <ul class="navbar-nav menu-container" id="navbar-nav">
+                    </ul>
+               </div>
+          </div>
+          <!-- ========== App Menu End ========== -->
+
+          <!-- ==================================================== -->
+          <!-- Start right Content here -->
+          <!-- ==================================================== -->
+          <div class="page-content">
+
+               <!-- Start Container Fluid -->
+               <div class="container-fluid">
+
+                    <div class="row">
+                         <div class="col-xl-12">
+                              <div class="card">
+                                   <div class="card-header d-flex justify-content-between align-items-center gap-1">
+                                        <h4 class="card-title flex-grow-1">Monthly P&L</h4>
+                                   </div>
+                                   <div class="card-body">
+                                         <div class="row">
+                                             <div class="col-lg-4">
+                                                  <form>
+                                                       <div class="mb-3">
+                                                            <label for="product-name" class="form-label">From Date</label>
+                                                            <input type="text" id="pl-startDate" class="form-control" placeholder="Select Date">
+                                                       </div>
+                                                  </form>
+                                             </div>
+                                             <div class="col-lg-4">
+                                                  <form>
+                                                       <div class="mb-3">
+                                                            <label for="product-name" class="form-label">To Date</label>
+                                                            <input type="text" id="pl-endDate" class="form-control" placeholder="Select Date">
+                                                       </div>
+                                                  </form>
+                                             </div>
+                                             <div class="col-lg-2">
+                                                  <div class="text-center mt-3">
+                                                      <button id="fetch-expenses" class="btn btn-primary" onclick="init()">Get Report</button>
+                                                  </div>
+                                             </div>
+                                        </div>
+                                        <div class="row mt-4">
+                                           <div class="col-lg-12">
+                                               <div class="table-responsive">
+                                                   <table id="pl-report-table" class="table table-striped table-bordered" style="width: 100% !important;">
+                                                       <thead class="table-dark">
+                                                           <tr>
+                                                               <th>Item</th>
+                                                               <th>Opening Stock</th>
+                                                               <th>Purchase qty</th>
+                                                               <th>Sold Qty</th>
+                                                               <th>Sold Price</th>
+                                                               <th>Sold Cost</th>
+                                                               <th>Closing Balance</th>
+                                                               <th>Opening Value(SP)</th>
+                                                               <th>Received Value(SP)</th>
+                                                               <th>Closing Value(SP)</th>
+                                                               <th>Purchase value Per</th>
+                                                               <th>Opening Value</th>
+                                                               <th>Purch Value</th>
+                                                               <th>Purch Cost</th>
+                                                               <th>Profit Margin</th>
+                                                               <th>Margin %</th>
+                                                               <th>Closing Value</th> 
+                                                           </tr>
+                                                       </thead>
+                                                       <tbody id="pl-table"></tbody> 
+                                                   </table>
+                                               </div>
+                                           </div>
+                                       </div>
+                                   </div>
+                              </div>
+                         </div>
+
+                    </div>
+
+               </div>
+          </div>
+
+          <!-- ==================================================== -->
+          <!-- End Page Content -->
+          <!-- ==================================================== -->
+
+     </div>
+
+
+     <!-- END Wrapper -->
+
+     <!-- Vendor Javascript (Require in all Page) -->
+     <script src="assets/js/vendor.js"></script>
+
+     <!-- App Javascript (Require in all Page) -->
+     <script src="assets/js/app.js"></script>
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+     <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+     <script src="https://cdn.datatables.net/fixedheader/4.0.1/js/dataTables.fixedHeader.min.js"></script>
+
+     <script src="assets/js/http-util.js"> </script>
+     <script src="assets/js/storage-util.js"></script>
+     <script src="assets/js/table-gridjs.js"></script>
+     <script src="assets/js/gridjs.umd.js"></script>
+     <script src="assets/js/p&l.js"></script>
+     <script src="assets/js/form-flatepicker.js"></script>
+     <script>
+          restrictMenu();
+          document.querySelectorAll('#pl-startDate, #pl-endDate').forEach(element => {
+              flatpickr(element, {
+                  enableTime: false, 
+                  dateFormat: "Y-m-d"
+              });
+          });
+     </script>
+</body>
+
+</html>

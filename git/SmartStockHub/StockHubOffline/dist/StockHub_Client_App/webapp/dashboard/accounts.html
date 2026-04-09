@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Title Meta -->
+    <meta charset="utf-8" />
+    <title>Sales Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A fully responsive premium admin dashboard template" />
+    <meta name="author" content="Techzaa" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+    <!-- Vendor css (Require in all Page) -->
+    <link href="assets/css/vendor.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Icons css (Require in all Page) -->
+    <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- App css (Require in all Page) -->
+    <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/mermaid.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Theme Config js (Require in all Page) -->
+    <script src="assets/js/config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+
+<body>
+
+    <!-- START Wrapper -->
+    <div class="wrapper">
+
+        <!-- ========== Topbar Start ========== -->
+        <header class="topbar">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <div class="d-flex align-items-center">
+                        <!-- Menu Toggle Button -->
+                        <div class="topbar-item">
+                            <button type="button" class="button-toggle-menu me-2">
+                                <iconify-icon icon="solar:hamburger-menu-broken"
+                                    class="fs-24 align-middle"></iconify-icon>
+                            </button>
+                        </div>
+
+                        <!-- Menu Toggle Button -->
+                        <div class="topbar-item">
+                            <h4 class="fw-bold topbar-button pe-none text-uppercase mb-0">Welcome to&nbsp;<span
+                                    id="shopName"></span>&nbsp;!</h4>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-1">
+
+                        <!-- Theme Color (Light/Dark) -->
+                        <div class="topbar-item">
+                            <button type="button" class="topbar-button" id="light-dark-mode">
+                                <iconify-icon icon="solar:moon-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+                            </button>
+                        </div>
+
+
+                        <!-- Theme Setting -->
+                        <div class="topbar-item d-none d-md-flex">
+                            <button type="button" class="topbar-button" id="theme-settings-btn"
+                                data-bs-toggle="offcanvas" data-bs-target="#theme-settings-offcanvas"
+                                aria-controls="theme-settings-offcanvas">
+                                <iconify-icon icon="solar:settings-bold-duotone"
+                                    class="fs-24 align-middle"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Right Sidebar (Theme Settings) -->
+        <div>
+            <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="theme-settings-offcanvas">
+                <div class="d-flex align-items-center bg-primary p-3 offcanvas-header">
+                    <h5 class="text-white m-0">Theme Settings</h5>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+                </div>
+
+                <div class="offcanvas-body p-0">
+                    <div data-simplebar class="h-100">
+                        <div class="p-3 settings-bar">
+
+                            <div>
+                                <h5 class="mb-3 font-16 fw-semibold">Color Scheme</h5>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-bs-theme"
+                                        id="layout-color-light" value="light">
+                                    <label class="form-check-label" for="layout-color-light">Light</label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-bs-theme"
+                                        id="layout-color-dark" value="dark">
+                                    <label class="form-check-label" for="layout-color-dark">Dark</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h5 class="my-3 font-16 fw-semibold">Topbar Color</h5>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-topbar-color"
+                                        id="topbar-color-light" value="light">
+                                    <label class="form-check-label" for="topbar-color-light">Light</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-topbar-color"
+                                        id="topbar-color-dark" value="dark">
+                                    <label class="form-check-label" for="topbar-color-dark">Dark</label>
+                                </div>
+                            </div>
+
+
+                            <div>
+                                <h5 class="my-3 font-16 fw-semibold">Menu Color</h5>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-color"
+                                        id="leftbar-color-light" value="light">
+                                    <label class="form-check-label" for="leftbar-color-light">
+                                        Light
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-color"
+                                        id="leftbar-color-dark" value="dark">
+                                    <label class="form-check-label" for="leftbar-color-dark">
+                                        Dark
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h5 class="my-3 font-16 fw-semibold">Sidebar Size</h5>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-size-default" value="default">
+                                    <label class="form-check-label" for="leftbar-size-default">
+                                        Default
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-size-small" value="condensed">
+                                    <label class="form-check-label" for="leftbar-size-small">
+                                        Condensed
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-hidden" value="hidden">
+                                    <label class="form-check-label" for="leftbar-hidden">
+                                        Hidden
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-size-small-hover-active" value="sm-hover-active">
+                                    <label class="form-check-label" for="leftbar-size-small-hover-active">
+                                        Small Hover Active
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-size-small-hover" value="sm-hover">
+                                    <label class="form-check-label" for="leftbar-size-small-hover">
+                                        Small Hover
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="offcanvas-footer border-top p-3 text-center">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-danger w-100" id="reset-layout">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ========== Topbar End ========== -->
+
+        <!-- ========== App Menu Start ========== -->
+        <div class="main-nav">
+            <!-- Sidebar Logo -->
+            <div class="logo-box">
+                <a href="index.html" class="logo-dark">
+                    <span class="menu-title" style="color:black;font-size:large;">IMS</span>
+                </a>
+
+                <a href="index.html" class="logo-light">
+                    <span class="menu-title" style="color:white;font-size:large;">IMS</span>
+                </a>
+            </div>
+
+            <!-- Menu Toggle Button (sm-hover) -->
+            <button type="button" class="button-sm-hover" aria-label="Show Full Sidebar">
+                <iconify-icon icon="solar:double-alt-arrow-right-bold-duotone"
+                    class="button-sm-hover-icon"></iconify-icon>
+            </button>
+
+            <div class="scrollbar" data-simplebar>
+                <ul class="navbar-nav menu-container" id="navbar-nav">
+                </ul>
+            </div>
+        </div>
+        <!-- ========== App Menu End ========== -->
+
+        <!-- ==================================================== -->
+        <!-- Start right Content here -->
+        <!-- ==================================================== -->
+        <div>
+
+            <div class="page-content">
+
+                <!-- Start Container Fluid -->
+                <div class="container-xxl">
+
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <div class="card">
+                                <div class="d-flex card-header justify-content-between align-items-center">
+                                    <div>
+                                        <h4 class="card-title">Day Wise Sales</h4>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="row">
+                                        <div class="col-lg-4">
+                                            <form>
+                                                <div class="mb-3">
+                                                    <label for="product-name" class="form-label">From Date</label>
+                                                    <input type="text" id="accounts-startDate" class="form-control"
+                                                        placeholder="Select Date">
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <form>
+                                                <div class="mb-3">
+                                                    <label for="product-name" class="form-label">To Date</label>
+                                                    <input type="text" id="accounts-endDate" class="form-control"
+                                                        placeholder="Select Date">
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <div class="text-center mt-3">
+                                                <button id="fetch-expenses" class="btn btn-primary"
+                                                    onclick="loadDateWiseReport()">Get Report</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive" id="sales-table">
+                                        <table id="salesTable" class="display nowrap" style="width:100%">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Sales Amount</th>
+                                                    <th>Base Price</th>
+                                                    <th>Sales Profit</th>
+                                                    <th>View</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- End Container Fluid -->
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModalXl" tabindex="-1" aria-labelledby="exampleModalXlLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-fullscreen">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Sales Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="">
+                                <ul class="nav nav-tabs nav-justified">
+                                    <li class="nav-item">
+                                        <a href="#salesDetails" data-bs-toggle="tab" aria-expanded="true"
+                                            class="nav-link  active">
+                                            <span class="d-block d-sm-none"><i class="bx bx-home"></i></span>
+                                            <span class="d-none d-sm-block">Sales</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content pt-2 text-muted">
+                                    <div class="tab-pane  show active" id="salesDetails">
+                                        <div id="sales-details-table">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="modal fade" id="exampleModalXl-new" tabindex="-1"
+                    aria-labelledby="exampleModalFullscreenLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-fullscreen">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Add Sales Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+
+                                <ul class="nav nav-tabs nav-justified">
+                                    <li class="nav-item">
+                                        <a href="#salesPage" data-bs-toggle="tab" aria-expanded="true"
+                                            class="nav-link  active">
+                                            <span class="d-block d-sm-none"><i class="bx bx-home"></i></span>
+                                            <span class="d-none d-sm-block">Sales</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#profileTabsJustified" data-bs-toggle="tab" aria-expanded="false"
+                                            class="nav-link">
+                                            <span class="d-block d-sm-none"><i class="bx bx-user"></i></span>
+                                            <span class="d-none d-sm-block">Expenses</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#paymentModeTab" data-bs-toggle="tab" aria-expanded="false"
+                                            class="nav-link">
+                                            <span class="d-block d-sm-none"><i class="bx bx-user"></i></span>
+                                            <span class="d-none d-sm-block">Payment Mode</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#finalSettlement" data-bs-toggle="tab" aria-expanded="false"
+                                            class="nav-link" onclick="calcualteFinalSettlementAmount()">
+                                            <span class="d-block d-sm-none"><i class="bx bx-user"></i></span>
+                                            <span class="d-none d-sm-block">Final Settlement</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content pt-2 text-muted">
+                                    <div class="tab-pane  show active" id="salesPage">
+                                        <div id="sales-entry-table">
+
+                                        </div>
+                                        <div class="d-flex card-header justify-content-between align-items-center">
+                                            <div>
+                                                <h4 class="card-title"></h4>
+                                            </div>
+                                            <div style="padding-right: 100px;">
+                                                <div>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div
+                                                            class="avatar bg-light d-flex align-items-center justify-content-center rounded">
+                                                            <iconify-icon icon="solar:ticket-bold-duotone"
+                                                                class="fs-35 text-primary"></iconify-icon>
+                                                        </div>
+
+                                                        <div>
+                                                            <p class="text-dark fw-medium fs-16 mb-1">Total Sale Amount
+                                                            </p>
+                                                            <h2 class="fw-medium my-3" id="salePriceSum">0.00</h2>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="profileTabsJustified">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="validationDefault04" class="form-label">Expenses
+                                                    Details</label>
+                                                <select class="form-select ram-exp-name" id="1" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="validationDefault05" class="form-label">Amount</label>
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-1"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="2" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-2"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="3" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-3"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="4" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-4"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="5" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-5"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="6" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-6"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="7" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-7"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="8"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-8"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="9"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-9"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="10"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-10"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+
+                                            </div>
+                                            <div class="col-md-3">
+                                                <span>Total Expenses</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div id="total-expenses" class="card-title">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="paymentModeTab">
+                                        <div class="card border-success border">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-2 text-success">Payments Mehtods</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Card Payment</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control ram-payment"
+                                                            id="payment-card">
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Gpay</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control ram-payment"
+                                                            id="payment-gpay">
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>NetPanking</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control ram-payment"
+                                                            id="payment-netbanking">
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Total</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div id="total-digital-payment" class="card-title">0</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="finalSettlement">
+                                        <div class="card border-success border">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-2 text-success">Final Cash Settlement</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Total Sales</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div id="final-sales" class="text-dark">0</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Total Expenses</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div id="final-expenses" class="text-dark">0</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Total Digital Payment</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div id="final-digital-payment" class="text-dark">0</div>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Final Settlement</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div id="final-settlement" class="card-title">0</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <a onclick="enableButton()" class="btn btn-success btn-sm">I am
+                                                            verified All good</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="saveSales()" disabled
+                                    id="saleSaveButton">Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Members Sales Modal -->
+                <div class="modal fade" id="memberSales" tabindex="-1" aria-labelledby="memberSales" aria-hidden="true">
+                    <div class="modal-dialog modal-fullscreen">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="memberSaleslLabel">Members Wise Sales Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="">
+                                <div class="tab-content pt-2 text-muted">
+                                    <div class="tab-pane  show active" id="membersalesDetails">
+                                        <table id="member-sales-details-table"></table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ==================================================== -->
+            <!-- End Page Content -->
+            <!-- ==================================================== -->
+
+
+        </div>
+
+    </div>
+    <script>
+
+        function calcualteFinalSettlementAmount() {
+            var totSaleAmount = parseFloat($("#final-sales").text());
+            var totExpenses = parseFloat($("#final-expenses").text());
+            var totDigitalPayment = parseFloat($("#final-digital-payment").text());
+            $("#final-settlement").text(totSaleAmount - (totExpenses + totDigitalPayment));
+        }
+
+        function enableButton() {
+            $('#saleSaveButton').prop('disabled', false);
+        }
+
+    </script>
+    <!-- END Wrapper -->
+
+    <!-- Vendor Javascript (Require in all Page) -->
+    <script src="assets/js/vendor.js"></script>
+
+    <!-- App Javascript (Require in all Page) -->
+    <script src="assets/js/app.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script src="assets/js/dexie.min.js"></script>
+    <script src="assets/js/db.js"></script>
+    <script src="assets/js/http-util.js"> </script>
+    <script src="assets/js/storage-util.js"></script>
+    <script src="assets/js/accounts.js"></script>
+    <script src="assets/js/table-gridjs.js"></script>
+    <script src="assets/js/gridjs.umd.js"></script>
+    <script src="assets/js/form-flatepicker.js"></script>
+    <script>
+        restrictMenu();
+        document.querySelectorAll('#accounts-startDate, #accounts-endDate').forEach(element => {
+            flatpickr(element, {
+                enableTime: false,
+                dateFormat: "Y-m-d"
+            });
+        });
+    </script>
+
+</body>
+
+</html>

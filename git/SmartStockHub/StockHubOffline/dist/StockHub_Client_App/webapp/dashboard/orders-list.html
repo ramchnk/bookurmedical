@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Title Meta -->
+    <meta charset="utf-8" />
+    <title>Smart Stock Hub - Orders</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Smart Stock Hub" />
+    <meta property="og:site_name" content="Smart Stock Hub" />
+    <link rel="shortcut icon" href="assets/media/logos/favicon.ico" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+    <link href="assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/dexie.min.js"></script>
+    <script src="assets/js/db.js"></script>
+    <script src="assets/jquery/jquery.dataTables.min.js"></script>
+    <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/mermaid.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- Theme Config js (Require in all Page) -->
+    <script src="assets/js/config.js?v=1.0.0"></script>
+
+    <style>
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- START Wrapper -->
+    <div class="wrapper">
+
+        <!-- ========== Topbar Start ========== -->
+        <header class="topbar">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <div class="d-flex align-items-center">
+                        <!-- Menu Toggle Button -->
+                        <div class="topbar-item">
+                            <button type="button" class="button-toggle-menu me-2">
+                                <iconify-icon icon="solar:hamburger-menu-broken"
+                                    class="fs-24 align-middle"></iconify-icon>
+                            </button>
+                        </div>
+
+                        <!-- Menu Toggle Button -->
+                        <div class="topbar-item">
+                            <h4 class="fw-bold topbar-button pe-none text-uppercase mb-0">Welcome to&nbsp;<span
+                                    id="shopName"></span>&nbsp;!</h4>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-1">
+
+                        <!-- Theme Color (Light/Dark) -->
+                        <div class="topbar-item">
+                            <button type="button" class="topbar-button" id="light-dark-mode">
+                                <iconify-icon icon="solar:moon-bold-duotone" class="fs-24 align-middle"></iconify-icon>
+                            </button>
+                        </div>
+
+
+                        <!-- Theme Setting -->
+                        <div class="topbar-item d-none d-md-flex">
+                            <button type="button" class="topbar-button" id="theme-settings-btn"
+                                data-bs-toggle="offcanvas" data-bs-target="#theme-settings-offcanvas"
+                                aria-controls="theme-settings-offcanvas">
+                                <iconify-icon icon="solar:settings-bold-duotone"
+                                    class="fs-24 align-middle"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Right Sidebar (Theme Settings) -->
+        <div>
+            <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="theme-settings-offcanvas">
+                <div class="d-flex align-items-center bg-primary p-3 offcanvas-header">
+                    <h5 class="text-white m-0">Theme Settings</h5>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+                </div>
+
+                <div class="offcanvas-body p-0">
+                    <div data-simplebar class="h-100">
+                        <div class="p-3 settings-bar">
+
+                            <div>
+                                <h5 class="mb-3 font-16 fw-semibold">Color Scheme</h5>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-bs-theme"
+                                        id="layout-color-light" value="light">
+                                    <label class="form-check-label" for="layout-color-light">Light</label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-bs-theme"
+                                        id="layout-color-dark" value="dark">
+                                    <label class="form-check-label" for="layout-color-dark">Dark</label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h5 class="my-3 font-16 fw-semibold">Topbar Color</h5>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-topbar-color"
+                                        id="topbar-color-light" value="light">
+                                    <label class="form-check-label" for="topbar-color-light">Light</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-topbar-color"
+                                        id="topbar-color-dark" value="dark">
+                                    <label class="form-check-label" for="topbar-color-dark">Dark</label>
+                                </div>
+                            </div>
+
+
+                            <div>
+                                <h5 class="my-3 font-16 fw-semibold">Menu Color</h5>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-color"
+                                        id="leftbar-color-light" value="light">
+                                    <label class="form-check-label" for="leftbar-color-light">
+                                        Light
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-color"
+                                        id="leftbar-color-dark" value="dark">
+                                    <label class="form-check-label" for="leftbar-color-dark">
+                                        Dark
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h5 class="my-3 font-16 fw-semibold">Sidebar Size</h5>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-size-default" value="default">
+                                    <label class="form-check-label" for="leftbar-size-default">
+                                        Default
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-size-small" value="condensed">
+                                    <label class="form-check-label" for="leftbar-size-small">
+                                        Condensed
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-hidden" value="hidden">
+                                    <label class="form-check-label" for="leftbar-hidden">
+                                        Hidden
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-size-small-hover-active" value="sm-hover-active">
+                                    <label class="form-check-label" for="leftbar-size-small-hover-active">
+                                        Small Hover Active
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="data-menu-size"
+                                        id="leftbar-size-small-hover" value="sm-hover">
+                                    <label class="form-check-label" for="leftbar-size-small-hover">
+                                        Small Hover
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="offcanvas-footer border-top p-3 text-center">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-danger w-100" id="reset-layout">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ========== Topbar End ========== -->
+
+        <!-- ========== App Menu Start ========== -->
+        <div class="main-nav">
+            <!-- Sidebar Logo -->
+            <div class="logo-box">
+                <a href="index.html" class="logo-dark">
+                    <span class="menu-title" style="color:black;font-size:large;">IMS</span>
+                </a>
+
+                <a href="index.html" class="logo-light">
+                    <span class="menu-title" style="color:white;font-size:large;">IMS</span>
+                </a>
+            </div>
+
+            <!-- Menu Toggle Button (sm-hover) -->
+            <button type="button" class="button-sm-hover" aria-label="Show Full Sidebar">
+                <iconify-icon icon="solar:double-alt-arrow-right-bold-duotone"
+                    class="button-sm-hover-icon"></iconify-icon>
+            </button>
+
+            <div class="scrollbar" data-simplebar>
+                <ul class="navbar-nav menu-container" id="navbar-nav">
+                </ul>
+            </div>
+        </div>
+        <!-- ========== App Menu End ========== -->
+
+        <!-- ==================================================== -->
+        <!-- Start right Content here -->
+        <!-- ==================================================== -->
+        <div>
+
+            <div class="page-content">
+
+                <!-- Start Container Fluid -->
+                <div class="container-xxl">
+
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <div class="card">
+                                <div class="d-flex card-header justify-content-between align-items-center">
+                                    <div>
+                                        <h4 class="card-title">Day Wise Sales</h4>
+                                    </div>
+                                    <div class="ms-auto d-flex gap-2">
+                                        <a class="btn btn-sm btn-primary" onclick="printDailyChart(true)">
+                                            Print Chart
+                                        </a>
+                                        <a class="btn btn-sm btn-primary" onclick="loadProductTable()"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModalXl-new">
+                                            Add Sales
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive" id="sales-table">
+
+                                    </div>
+                                    <!-- end table-responsive -->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- End Container Fluid -->
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModalXl" tabindex="-1" aria-labelledby="exampleModalXlLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-fullscreen">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Sales Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="">
+                                <ul class="nav nav-tabs nav-justified">
+                                    <li class="nav-item">
+                                        <a href="#salesDetails" data-bs-toggle="tab" aria-expanded="true"
+                                            class="nav-link  active">
+                                            <span class="d-block d-sm-none"><i class="bx bx-home"></i></span>
+                                            <span class="d-none d-sm-block">Sales</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#expensesDetails" data-bs-toggle="tab" aria-expanded="false"
+                                            class="nav-link">
+                                            <span class="d-block d-sm-none"><i class="bx bx-user"></i></span>
+                                            <span class="d-none d-sm-block">Expenses</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" id="sales-summary-details">
+                                        <a href="#summaryDetails" data-bs-toggle="tab" aria-expanded="false"
+                                            class="nav-link">
+                                            <span class="d-block d-sm-none"><i class="bx bx-user"></i></span>
+                                            <span class="d-none d-sm-block">Summary</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content pt-2 text-muted">
+                                    <div class="tab-pane  show active" id="salesDetails">
+                                        <div>
+                                            <table id="sales-details-table" class="display" style="width:100%"></table>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="expensesDetails">
+                                        <div>
+                                            <table id="sales-expenses-table" class="display" style="width:100%"></table>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="summaryDetails">
+                                        <div>
+                                            <div class="col-md-6">
+                                                <table class="table table-bordered table-striped">
+                                                    <thead class="thead-dark">
+                                                        <tr>
+                                                            <th colspan="2" class="text-center">Summary of Today's Sales
+                                                                and Expenses</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr class="pettyCase-display">
+                                                            <td><strong> Opening Petty Cash</strong></td>
+                                                            <td id="summary-opening-petty-cash">0</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong> Expenses</strong></td>
+                                                            <td id="summary-final-expenses-new">0</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong> Digital Payment</strong></td>
+                                                            <td id="summary-digital-payment-new">0</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong> Kitchen Sales</strong></td>
+                                                            <td id="summary-kitchen-sales">0</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong> AC Charges</strong></td>
+                                                            <td id="summary-AC-Charges">0</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong> Cash in Hand</strong></td>
+                                                            <td id="summary-cash-in-hand">0</td>
+                                                        </tr>
+                                                        <tr class="pettyCase-display">
+                                                            <td><strong> Closing Petty Cash</strong></td>
+                                                            <td id="summary-closing-petty-cash">0</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Actual Liquor Sale</strong></td>
+                                                            <td id="summary-actual-liquor-sale">0</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Difference</strong></td>
+                                                            <td id="difference-liquor-sale">0</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="modal fade" id="exampleModalXl-new" tabindex="-1"
+                    aria-labelledby="exampleModalFullscreenLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-fullscreen">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Add Sales Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+
+                                <ul class="nav nav-tabs nav-justified">
+                                    <li class="nav-item">
+                                        <a href="#salesPage" data-bs-toggle="tab" aria-expanded="true"
+                                            class="nav-link  active">
+                                            <span class="d-block d-sm-none"><i class="bx bx-home"></i></span>
+                                            <span class="d-none d-sm-block">Sales</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#profileTabsJustified" data-bs-toggle="tab" aria-expanded="false"
+                                            class="nav-link">
+                                            <span class="d-block d-sm-none"><i class="bx bx-user"></i></span>
+                                            <span class="d-none d-sm-block">Expenses</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#paymentModeTab" data-bs-toggle="tab" aria-expanded="false"
+                                            class="nav-link">
+                                            <span class="d-block d-sm-none"><i class="bx bx-user"></i></span>
+                                            <span class="d-none d-sm-block">Amount Received</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#finalSettlement" data-bs-toggle="tab" aria-expanded="false"
+                                            class="nav-link" onclick="calcualteFinalSettlementAmount()">
+                                            <span class="d-block d-sm-none"><i class="bx bx-user"></i></span>
+                                            <span class="d-none d-sm-block">Final Settlement</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content pt-2 text-muted">
+                                    <div class="tab-pane  show active" id="salesPage">
+                                        <div id="sales-entry-table">
+
+                                        </div>
+                                        <div class="d-flex card-header justify-content-between align-items-center">
+                                            <div id="ac-sales-breakdown" style="display:none;">
+                                                <div class="d-flex gap-4">
+                                                    <div>
+                                                        <p class="text-dark fw-medium fs-16 mb-1">Non AC Sales</p>
+                                                        <h2 class="fw-medium my-3" id="nonAcSalePriceSum">0.00</h2>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-dark fw-medium fs-16 mb-1">AC Sales</p>
+                                                        <h2 class="fw-medium my-3" id="acSalePriceSum">0.00</h2>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="ms-auto" style="padding-right: 100px;">
+                                                <div>
+                                                    <p class="text-dark fw-medium fs-16 mb-1">Total Sale Amount</p>
+                                                    <h2 class="fw-medium my-3" id="salePriceSum">0.00</h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="profileTabsJustified">
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="validationDefault04" class="form-label">Expenses
+                                                    Details</label>
+                                                <select class="form-select ram-exp-name" id="1" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 ram-exp-nar" style="display:none;">
+                                                <label for="validationDefault05" class="form-label">Naration</label>
+                                                <input type="text" class="form-control" id="exp-naration-1" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="validationDefault05" class="form-label">Amount</label>
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-1"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="2" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 ram-exp-nar" style="display:none;">
+                                                <input type="text" class="form-control" id="exp-naration-2" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-2"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="3" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 ram-exp-nar" style="display:none;">
+                                                <input type="text" class="form-control" id="exp-naration-3" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-3"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="4" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 ram-exp-nar" style="display:none;">
+                                                <input type="text" class="form-control" id="exp-naration-4" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-4"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="5" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 ram-exp-nar" style="display:none;">
+                                                <input type="text" class="form-control" id="exp-naration-5" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-5"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="6" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 ram-exp-nar" style="display:none;">
+                                                <input type="text" class="form-control" id="exp-naration-6" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-6"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <select class="form-select ram-exp-name" id="7" required>
+                                                    <option selected disabled value="">Choose...</option>
+                                                    <option>Genral</option>
+                                                    <option>Stationary</option>
+                                                    <option>Food</option>
+                                                    <option>Miscellaneous</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 ram-exp-nar" style="display:none;">
+                                                <input type="text" class="form-control" id="exp-naration-7" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-7"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="8"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-8"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="9"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-9"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="10"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-10"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="11"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-11"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="12"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-12"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="13"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-13"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="14"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-14"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="15"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-15"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="16"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-16"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="17"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-17"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="18"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-18"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="19"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-19"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3 sale-exp-input">
+                                            <div class="col-md-3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp-free-text" id="20"
+                                                    required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control ram-exp" id="exp-amount-20"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+
+                                            </div>
+                                            <div class="col-md-3">
+                                                <span>Total Expenses</span>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div id="total-expenses" class="card-title">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="paymentModeTab">
+                                        <div class="card border-success border">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-2 text-success">Amount Received</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Card Payment</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control" id="payment-card">
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Digital Payment</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control" id="payment-gpay">
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Kitchen Sales</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control"
+                                                            id="payment-kitchenSales">
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3" id="other_income" style="display: none;">
+                                                    <div class="col-md-3">
+                                                        <span>Other Income</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control"
+                                                            id="payment-otherIncome-naration">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control"
+                                                            id="payment-otherIncome">
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3" id="sales-ac-charges">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>AC Charges</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control" id="payment-ac-charges">
+                                                    </div>
+                                                </div>
+                                                <div id="sales-money-balances" style="display: none;">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span>Bank Balance</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <input type="text" class="form-control"
+                                                                id="amount-bank-balance">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span>Cash In Hand</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <input type="text" class="form-control"
+                                                                id="amount-cashinhand">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span>TASMAC Balance</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <input type="text" class="form-control"
+                                                                id="amount-tasmac-balance">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <div id="sales-denomination">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+                                                            Denomination
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <span></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <span>500 X</span>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input type="text" class="form-control ram-payment-500"
+                                                                id="payment-netbanking">
+                                                        </div>
+                                                        <div class="col-md-2">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span id="500s">0</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <span>200 X</span>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input type="text" class="form-control ram-payment-200"
+                                                                id="payment-netbanking">
+                                                        </div>
+                                                        <div class="col-md-2">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span id="200s">0</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <span>100 X</span>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input type="text" class="form-control ram-payment-100"
+                                                                id="payment-netbanking">
+                                                        </div>
+                                                        <div class="col-md-2">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span id="100s">0</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <span>50 X</span>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input type="text" class="form-control ram-payment-50"
+                                                                id="payment-netbanking">
+                                                        </div>
+                                                        <div class="col-md-2">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span id="50s">0</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <span><b>Total</b></span>
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <div id="total-fullCurrency-value" class="card-title">0
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane" id="finalSettlement">
+                                        <div class="card border-success border">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-2 text-success">Final Cash Settlement</h5>
+                                                <div class="row g-3" style="display: none;" id="pettyCase-summary">
+                                                    <div class="col-md-3"></div>
+                                                    <div class="col-md-6">
+                                                        <table class="table table-bordered table-striped">
+                                                            <thead class="thead-dark">
+                                                                <tr>
+                                                                    <th colspan="2" class="text-center">Summary of
+                                                                        Today's Sales and Expenses</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td><strong> Opening Petty Cash</strong></td>
+                                                                    <td id="opening-petty-cash">0</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong> Expenses</strong></td>
+                                                                    <td id="final-expenses-new">0</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong> Digital Payment</strong></td>
+                                                                    <td id="digital-payment-new">0</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong> Kitchen Sales</strong></td>
+                                                                    <td id="kitchen-sales">0</td>
+                                                                </tr>
+                                                                <tr id="summary-AC-Charges">
+                                                                    <td><strong> AC Charges</strong></td>
+                                                                    <td id="final-ac-charges">0</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong> Cash in Hand</strong></td>
+                                                                    <td id="cash-in-hand">0</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong> Closing Petty Cash</strong></td>
+                                                                    <td>
+                                                                        <input type="text" class="form-control"
+                                                                            id="closing-petty-cash">
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong> Total Sale</strong></td>
+                                                                    <td id="total-sale">0</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Liquor Sale</strong></td>
+                                                                    <td id="liquor-sale">0</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Actual Liquor Sale</strong></td>
+                                                                    <td id="actual-liquor-sale">0</td>
+                                                                </tr>
+                                                                <tr id="diff-liquor-sale-row">
+                                                                    <td><strong>Difference Liquor Sale</strong></td>
+                                                                    <td id="diff-liquor-sale">0</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="col-md-3"></div>
+                                                </div>
+                                                <div id="non-pettyCase-summary" style="display: none;">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span>Total Sales</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div id="final-sales" class="text-dark">0</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span>Total Kitchen Sales</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div id="final-kitchen-sales" class="text-dark">0</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3" id="summary-other-income"
+                                                        style="display:none;">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span id="summary-other-income-label">Other Income</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div id="final-other-income" class="text-dark">0</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span>Total Expenses</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div id="final-expenses" class="text-dark">0</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span>Total Digital Payment</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div id="final-digital-payment" class="text-dark">0</div>
+                                                        </div>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <span>Final Settlement</span>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div id="final-settlement" class="card-title">0</div>
+                                                        </div>
+                                                    </div>
+                                                    <div id="finalSettlement-sec" style="display:none;">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-3">
+
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <span>Cash in Hand</span>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <input type="text" class="form-control"
+                                                                    id="final-cash-in-hand">
+                                                            </div>
+                                                            <div class="col-md-3">
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="row g-3">
+                                                            <div class="col-md-3">
+
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <span>Difference</span>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <div id="diff-settlement" class="card-title">0</div>
+                                                            </div>
+                                                            <div class="col-md-3">
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <span>Closing Date</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <select id="salesDate" class="form-select"
+                                                            style="width: 150px;">
+                                                            <!-- Dates will be populated by JavaScript -->
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                </div>
+                                                <div class="row g-3">
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <a onclick="enableButton()" id="iAMGdbtn"
+                                                            class="btn btn-success btn-sm">I am verified All good</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <div id="sales-Unit-btn" style="display:none;">
+                                    <button type="button" class="btn btn-primary" onclick="calculateAllUnits()">Show
+                                        Unit</button>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="saveAsDraft()"
+                                    id="saleDraftButton">Save
+                                    Draft</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="saveSales()" disabled
+                                    id="saleSaveButton">Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Members Sales Modal -->
+                <div class="modal fade" id="memberSales" tabindex="-1" aria-labelledby="memberSales" aria-hidden="true">
+                    <div class="modal-dialog modal-fullscreen">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="memberSaleslLabel">Members Wise Sales Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="">
+                                <div class="tab-content pt-2 text-muted">
+                                    <div class="tab-pane  show active" id="membersalesDetails">
+                                        <table id="member-sales-details-table"></table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" style="display: none;" class="btn btn-primary"
+                                    onclick="printMemberSalesBills()" id="printMemberSalesBill">Print Bills</button>
+                                <button type="button" class="btn btn-primary" onclick="openPrintPasses()"
+                                    id="printPassButton">Print Pass</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Members Sales Modal -->
+                <div class="modal fade" id="dailySaleSummary" tabindex="-1" aria-labelledby="memberSales"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-fullscreen">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Sale Summary</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="">
+                                <table id="daily-sales-summary" class="display"></table>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="updateSaleDate" tabindex="-1" aria-labelledby="updateSaleDate"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Change Sale Date</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="">
+                                <select id="updateSalesDate" class="form-select" style="width: 150px;">
+                                    <!-- Dates will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" onclick="updateSaleDate()"
+                                    id="updateSaleDateButton">Change Date</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- ==================================================== -->
+            <!-- End Page Content -->
+            <!-- ==================================================== -->
+
+
+        </div>
+    </div>
+    <script>
+
+
+        //Ram test
+        // Reference JSON List
+        var jsonList = [];
+
+        // Function to generate passes in a new tab
+        function openPrintPasses() {
+            const storedAccount = localStorage.getItem('account');
+
+            // Parse the JSON string back to a JavaScript object
+            const accountInfo = storedAccount ? JSON.parse(storedAccount) : null;
+
+
+            var listOfPasses = "";
+            var html = '<html lang="en"><head><title>Print Passes</title><style>body {font-family: Arial, sans-serif;margin: 0;padding: 0;background-color: #f8f9fa;}'
+                + '.a4 {width: 210mm; /* A4 width */height: 297mm; /* A4 height */padding: 10mm;box-sizing: border-box;background-color: white;page-break-after: always; /* Each A4 layout breaks to the next page */}'
+                + '.permit-container {display: flex;flex-wrap: wrap;justify-content: space-between;}'
+                + '.permit {width: 48%; /* Two permits per row */height: 52mm; /* Approximate height for each permit */padding: 10px;margin-bottom: 7mm;box-sizing: border-box;position: relative;border: 1px solid #000; /* Retain border for each permit */}'
+                + '.header {text-align: center;font-size: 14px;font-weight: bold;margin-bottom: 5px;line-height: 1.4;}'
+                + '.sub-header {text-align: center;font-size: 12px;margin-bottom: 10px;line-height: 1.2;}'
+                + '.details {font-size: 12px;line-height: 1.8;}'
+                + '.label {font-weight: bold;}'
+                + '.footer {position: absolute;bottom: 2px;left: 200px;font-size: 12px;font-weight: bold;}'
+                + '.row {display: flex;justify-content: space-between;}'
+                + 'img {width: 85%;height: auto;}'
+                + '</style></head><body><div class="a4"><div class="permit-container">';
+            // Populate the container with permit cards
+            jsonList.forEach(data => {
+                var permitHTML = `
+                 <div class="permit">
+                     <div class="header">
+                         `+ accountInfo.shopName + `<br>
+                         `+ accountInfo.city + `
+                     </div>
+                     <div class="sub-header">
+                         (See rules 17 and 34)<br>
+                         F.L.2.No.`+ accountInfo.licenceNO + `<br>
+                         <strong>PERMIT PASS</strong>
+                     </div>
+                     <div class="details">
+                         <div class="row">
+                             <div><span class="label">No:</span> ${data.No}</div>
+                             <div><span class="label">Date:</span> ${data.Date}</div>
+                         </div>
+                         <div><span class="label">Guest of:</span> ${data.Guest_of}</div>
+                         <div><span class="label">No. of Persons:</span> ${data.No_of_Persons}</div>
+                     </div>
+                     <div class="footer">
+                         <img src="http://tnfl2.com/images/`+ accountInfo.shopNumber + `.png">
+                         Authorised Signatory
+                     </div>
+                 </div>
+             `;
+                listOfPasses += permitHTML;
+            });
+            html += listOfPasses + `</div></div></body>`;
+            // Open in a new window and render the template content
+            const newWindow = window.open("", "_blank");
+            if (newWindow) {
+                newWindow.document.write(html);
+                newWindow.document.close();
+                newWindow.print();
+            }
+        }
+
+        function calcualteFinalSettlementAmount() {
+            var totSaleAmount = parseFloat($("#final-sales").text());
+            var totExpenses = parseFloat($("#final-expenses").text());
+            var totDigitalPayment = parseFloat($("#final-digital-payment").text());
+            var kitchenSale = parseFloat($("#final-kitchen-sales").text()) || 0;
+            var otherIncome = parseFloat($("#final-other-income").text()) || 0;
+            $("#final-settlement").text((totSaleAmount + kitchenSale + otherIncome) - (totExpenses + totDigitalPayment));
+        }
+
+    </script>
+    <!-- END Wrapper -->
+
+    <!-- Vendor Javascript (Require in all Page) -->
+    <script src="assets/js/vendor.js"></script>
+
+    <!-- App Javascript (Require in all Page) -->
+    <script src="assets/js/app.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script src="assets/js/orders.js?v=1.0.0"></script>
+    <script src="assets/js/report.js"></script>
+    <script src="assets/js/indent-sales.js"></script>
+    <script src="assets/js/ledger.js?v=1.02"></script>
+    <script src="assets/js/dailychart.js"></script>
+    <script src="assets/js/memberSales.js"></script>
+    <script src="assets/js/http-util.js"> </script>
+    <script src="assets/js/storage-util.js"></script>
+    <script src="assets/js/table-gridjs.js"></script>
+    <script src="assets/js/gridjs.umd.js"></script>
+    <script>
+        restrictMenu();
+    </script>
+</body>
+
+</html>
